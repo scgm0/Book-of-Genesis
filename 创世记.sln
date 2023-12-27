@@ -1,0 +1,19 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "创世记", "创世记.csproj", "{437C4D0C-1449-40B8-9074-9282B716A858}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+	Debug|Any CPU = Debug|Any CPU
+	ExportDebug|Any CPU = ExportDebug|Any CPU
+	ExportRelease|Any CPU = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{437C4D0C-1449-40B8-9074-9282B716A858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{437C4D0C-1449-40B8-9074-9282B716A858}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{437C4D0C-1449-40B8-9074-9282B716A858}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{437C4D0C-1449-40B8-9074-9282B716A858}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{437C4D0C-1449-40B8-9074-9282B716A858}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{437C4D0C-1449-40B8-9074-9282B716A858}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+	EndGlobalSection
+EndGlobal

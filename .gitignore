@@ -1,0 +1,7 @@
+# Godot 4+ specific ignores
+.godot/
+.idea/
+
+Utils.Key.cs
+export_presets.cfg
+qodana.yaml

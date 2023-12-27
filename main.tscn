@@ -1,0 +1,266 @@
+[gd_scene load_steps=19 format=3 uid="uid://diqreobfnlwp4"]
+
+[ext_resource type="Script" path="res://Main.cs" id="1_u5y2y"]
+[ext_resource type="FontFile" uid="uid://uutxc1xnjvw4" path="res://Assets/SiYuanSongTiRegular/SourceHanSerifCN-Bold-2.otf" id="2_6im0y"]
+[ext_resource type="Texture2D" uid="uid://ctu4f7q1kns2j" path="res://icon.svg" id="2_8lf3i"]
+[ext_resource type="Script" path="res://addons/SmoothScroll/SmoothScrollContainer.gd" id="3_e3qh5"]
+[ext_resource type="PackedScene" uid="uid://k2w3hc0p1xm3" path="res://game.tscn" id="4_8ufyh"]
+[ext_resource type="Texture2D" uid="uid://e36v3vq5a0bb" path="res://Assets/icon.png" id="4_t8qke"]
+[ext_resource type="Texture2D" uid="uid://bc2ybhg5fqgyb" path="res://Assets/LockViewport.svg" id="5_evqut"]
+[ext_resource type="FontFile" uid="uid://c3nplwskds5nt" path="res://Assets/SiYuanSongTiRegular/SourceHanSerifCN-Regular-1.otf" id="6_ad3b7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1lxls"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="LabelSettings" id="LabelSettings_xynrl"]
+line_spacing = 0.0
+font = ExtResource("2_6im0y")
+font_size = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xhw2b"]
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
+bg_color = Color(0, 0, 0, 0.290196)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="Theme" id="Theme_382wn"]
+RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
+RichTextLabel/font_sizes/bold_font_size = 18
+RichTextLabel/font_sizes/bold_italics_font_size = 18
+RichTextLabel/font_sizes/italics_font_size = 18
+RichTextLabel/font_sizes/mono_font_size = 18
+RichTextLabel/font_sizes/normal_font_size = 18
+RichTextLabel/fonts/bold_font = ExtResource("2_6im0y")
+RichTextLabel/fonts/bold_italics_font = null
+RichTextLabel/fonts/italics_font = null
+RichTextLabel/styles/normal = SubResource("StyleBoxFlat_xhw2b")
+
+[sub_resource type="Theme" id="Theme_i32w0"]
+Button/font_sizes/font_size = 25
+LineEdit/colors/font_placeholder_color = Color(0.87451, 0.87451, 0.87451, 0.333333)
+LineEdit/font_sizes/font_size = 25
+
+[sub_resource type="PackedScene" id="PackedScene_8v713"]
+_bundled = {
+"conn_count": 0,
+"conns": PackedInt32Array(),
+"editable_instances": [],
+"names": PackedStringArray("Game", "Control", "custom_minimum_size", "layout_mode", "anchors_preset", "anchor_left", "anchor_top", "anchor_right", "anchor_bottom", "offset_left", "offset_top", "offset_right", "offset_bottom", "grow_horizontal", "grow_vertical", "Main", "MarginContainer", "layout_mode", "anchors_preset", "anchor_right", "anchor_bottom", "grow_horizontal", "grow_vertical", "theme_override_constants/margin_left", "theme_override_constants/margin_top", "theme_override_constants/margin_right", "theme_override_constants/margin_bottom", "Control", "Control", "layout_mode", "VBoxContainer", "VBoxContainer", "layout_mode", "anchors_preset", "anchor_right", "anchor_bottom", "grow_horizontal", "grow_vertical", "HBoxContainer", "HBoxContainer", "layout_mode", "alignment", "Encrypt", "Button", "unique_name_in_owner", "layout_mode", "size_flags_vertical", "theme_override_font_sizes/font_size", "text", "Title", "Label", "unique_name_in_owner", "custom_minimum_size", "layout_mode", "size_flags_horizontal", "size_flags_vertical", "theme_override_styles/normal", "text", "label_settings", "horizontal_alignment", "Exit", "Button", "unique_name_in_owner", "layout_mode", "size_flags_horizontal", "size_flags_vertical", "theme_override_font_sizes/font_size", "text", "HBoxContainer2", "HBoxContainer", "layout_mode", "size_flags_vertical", "theme", "theme_override_constants/separation", "LeftText", "RichTextLabel", "unique_name_in_owner", "visible", "layout_mode", "size_flags_horizontal", "focus_mode", "bbcode_enabled", "scroll_following", "autowrap_mode", "selection_enabled", "CenterText", "RichTextLabel", "unique_name_in_owner", "visible", "layout_mode", "size_flags_horizontal", "focus_mode", "bbcode_enabled", "scroll_following", "autowrap_mode", "selection_enabled", "RightText", "RichTextLabel", "unique_name_in_owner", "visible", "layout_mode", "size_flags_horizontal", "focus_mode", "bbcode_enabled", "scroll_following", "autowrap_mode", "selection_enabled", "HBoxContainer3", "HBoxContainer", "clip_contents", "custom_minimum_size", "layout_mode", "theme", "theme_override_constants/separation", "alignment", "SmoothScrollContainer", "ScrollContainer", "layout_mode", "size_flags_horizontal", "horizontal_scroll_mode", "vertical_scroll_mode", "script", "follow_focus_", "allow_vertical_scroll", "auto_allow_scroll", "MarginContainer", "MarginContainer", "layout_mode", "size_flags_horizontal", "size_flags_vertical", "theme_override_constants/margin_left", "theme_override_constants/margin_top", "theme_override_constants/margin_right", "theme_override_constants/margin_bottom", "LeftButtonList", "HBoxContainer", "unique_name_in_owner", "layout_mode", "CommandEdit", "LineEdit", "unique_name_in_owner", "custom_minimum_size", "layout_mode", "size_flags_horizontal", "size_flags_vertical", "context_menu_enabled", "clear_button_enabled", "caret_blink", "SmoothScrollContainer2", "ScrollContainer", "layout_mode", "size_flags_horizontal", "horizontal_scroll_mode", "vertical_scroll_mode", "script", "follow_focus_", "allow_vertical_scroll", "auto_allow_scroll", "MarginContainer", "MarginContainer", "layout_mode", "size_flags_horizontal", "size_flags_vertical", "theme_override_constants/margin_left", "theme_override_constants/margin_top", "theme_override_constants/margin_right", "theme_override_constants/margin_bottom", "RightButtonList", "HBoxContainer", "unique_name_in_owner", "layout_mode"),
+"node_count": 20,
+"node_paths": [NodePath("."), NodePath("./Main"), NodePath("./Main/Control"), NodePath("./Main/Control/VBoxContainer"), NodePath("./Main/Control/VBoxContainer/HBoxContainer"), NodePath("./Main/Control/VBoxContainer/HBoxContainer"), NodePath("./Main/Control/VBoxContainer/HBoxContainer"), NodePath("./Main/Control/VBoxContainer"), NodePath("./Main/Control/VBoxContainer/HBoxContainer2"), NodePath("./Main/Control/VBoxContainer/HBoxContainer2"), NodePath("./Main/Control/VBoxContainer/HBoxContainer2"), NodePath("./Main/Control/VBoxContainer"), NodePath("./Main/Control/VBoxContainer/HBoxContainer3"), NodePath("./Main/Control/VBoxContainer/HBoxContainer3/SmoothScrollContainer"), NodePath("./Main/Control/VBoxContainer/HBoxContainer3/SmoothScrollContainer/MarginContainer"), NodePath("./Main/Control/VBoxContainer/HBoxContainer3"), NodePath("./Main/Control/VBoxContainer/HBoxContainer3"), NodePath("./Main/Control/VBoxContainer/HBoxContainer3/SmoothScrollContainer2"), NodePath("./Main/Control/VBoxContainer/HBoxContainer3/SmoothScrollContainer2/MarginContainer")],
+"nodes": PackedInt32Array(-1, -1, 1, 0, -1, 13, 2, 0, 3, 1, 4, 2, 5, 3, 6, 4, 7, 5, 8, 6, 9, 7, 10, 8, 11, 9, 12, 10, 13, 11, 14, 12, 0, 1073741824, 0, 16, 15, -1, 10, 17, 13, 18, 14, 19, 15, 20, 16, 21, 17, 22, 18, 23, 19, 24, 20, 25, 21, 26, 22, 0, 1073741825, 0, 28, 27, -1, 1, 29, 23, 0, 1073741826, 0, 31, 30, -1, 6, 32, 24, 33, 25, 34, 26, 35, 27, 36, 28, 37, 29, 0, 1073741827, 0, 39, 38, -1, 2, 40, 30, 41, 31, 0, 1073741828, 0, 43, 42, -1, 5, 44, 32, 45, 33, 46, 34, 47, 35, 48, 36, 0, 1073741829, 0, 50, 49, -1, 9, 51, 37, 52, 38, 53, 39, 54, 40, 55, 41, 56, 42, 57, 43, 58, 44, 59, 45, 0, 1073741830, 0, 61, 60, -1, 6, 62, 46, 63, 47, 64, 48, 65, 49, 66, 50, 67, 51, 0, 1073741831, 0, 69, 68, -1, 4, 70, 52, 71, 53, 72, 54, 73, 55, 0, 1073741832, 0, 75, 74, -1, 9, 76, 56, 77, 57, 78, 58, 79, 59, 80, 60, 81, 61, 82, 62, 83, 63, 84, 64, 0, 1073741833, 0, 86, 85, -1, 9, 87, 65, 88, 66, 89, 67, 90, 68, 91, 69, 92, 70, 93, 71, 94, 72, 95, 73, 0, 1073741834, 0, 97, 96, -1, 9, 98, 74, 99, 75, 100, 76, 101, 77, 102, 78, 103, 79, 104, 80, 105, 81, 106, 82, 0, 1073741835, 0, 108, 107, -1, 6, 109, 83, 110, 84, 111, 85, 112, 86, 113, 87, 114, 88, 0, 1073741836, 0, 116, 115, -1, 8, 117, 89, 118, 90, 119, 91, 120, 92, 121, 93, 122, 94, 123, 95, 124, 96, 0, 1073741837, 0, 126, 125, -1, 7, 127, 97, 128, 98, 129, 99, 130, 100, 131, 101, 132, 102, 133, 103, 0, 1073741838, 0, 135, 134, -1, 2, 136, 104, 137, 105, 0, 1073741839, 0, 139, 138, -1, 8, 140, 106, 141, 107, 142, 108, 143, 109, 144, 110, 145, 111, 146, 112, 147, 113, 0, 1073741840, 0, 149, 148, -1, 8, 150, 114, 151, 115, 152, 116, 153, 117, 154, 118, 155, 119, 156, 120, 157, 121, 0, 1073741841, 0, 159, 158, -1, 7, 160, 122, 161, 123, 162, 124, 163, 125, 164, 126, 165, 127, 166, 128, 0, 1073741842, 0, 168, 167, -1, 2, 169, 129, 170, 130, 0),
+"variants": [Vector2(1152, 648), 3, 8, 0.5, 0.5, 0.5, 0.5, -576.0, -324.0, 576.0, 324.0, 2, 2, 1, 15, 1.0, 1.0, 2, 2, 5, 5, 5, 5, 2, 1, 15, 1.0, 1.0, 2, 2, 2, 1, true, 2, 0, 18, "加密", true, Vector2(0, 65), 2, 6, 0, SubResource("StyleBoxFlat_1lxls"), "标题", SubResource("LabelSettings_xynrl"), 1, true, 2, 8, 0, 18, "退出", 2, 3, SubResource("Theme_382wn"), 10, true, false, 2, 3, 2, true, true, 1, true, true, false, 2, 3, 2, true, true, 1, true, true, false, 2, 3, 2, true, true, 1, true, true, Vector2(0, 55), 2, SubResource("Theme_i32w0"), 10, 1, 2, 3, 3, 0, ExtResource("3_e3qh5"), false, false, false, 2, 3, 3, 5, 5, 5, 5, true, 2, true, Vector2(500, 45), 2, 3, 4, false, true, true, 2, 3, 3, 0, ExtResource("3_e3qh5"), false, false, false, 2, 3, 3, 5, 5, 5, 5, true, 2],
+"version": 3
+}
+
+[sub_resource type="LabelSettings" id="LabelSettings_o2u6e"]
+font = ExtResource("2_6im0y")
+font_size = 20
+
+[sub_resource type="LabelSettings" id="LabelSettings_8hhd1"]
+line_spacing = 0.0
+font = ExtResource("6_ad3b7")
+font_size = 14
+
+[sub_resource type="PackedScene" id="PackedScene_oreih"]
+_bundled = {
+"conn_count": 0,
+"conns": PackedInt32Array(),
+"editable_instances": [],
+"names": PackedStringArray("WorldItem", "Panel", "custom_minimum_size", "mouse_filter", "MarginContainer", "MarginContainer", "layout_mode", "anchors_preset", "anchor_right", "anchor_bottom", "grow_horizontal", "grow_vertical", "theme_override_constants/margin_left", "theme_override_constants/margin_top", "theme_override_constants/margin_right", "theme_override_constants/margin_bottom", "HBoxContainer", "HBoxContainer", "layout_mode", "Icon", "TextureRect", "unique_name_in_owner", "custom_minimum_size", "layout_mode", "texture", "expand_mode", "stretch_mode", "Encrypt", "TextureRect", "unique_name_in_owner", "custom_minimum_size", "layout_mode", "anchors_preset", "anchor_left", "anchor_top", "anchor_right", "anchor_bottom", "offset_left", "offset_top", "grow_horizontal", "grow_vertical", "tooltip_text", "texture", "expand_mode", "stretch_mode", "VBoxContainer", "VBoxContainer", "layout_mode", "size_flags_horizontal", "Name", "Label", "unique_name_in_owner", "layout_mode", "size_flags_horizontal", "size_flags_vertical", "mouse_filter", "text", "label_settings", "horizontal_alignment", "vertical_alignment", "Description", "Label", "unique_name_in_owner", "layout_mode", "size_flags_vertical", "mouse_filter", "text", "label_settings", "horizontal_alignment", "Run", "Button", "unique_name_in_owner", "custom_minimum_size", "layout_mode", "mouse_filter", "theme_override_font_sizes/font_size", "text", "flat"),
+"node_count": 9,
+"node_paths": [NodePath("."), NodePath("./MarginContainer"), NodePath("./MarginContainer/HBoxContainer"), NodePath("./MarginContainer/HBoxContainer/Icon"), NodePath("./MarginContainer/HBoxContainer"), NodePath("./MarginContainer/HBoxContainer/VBoxContainer"), NodePath("./MarginContainer/HBoxContainer/VBoxContainer"), NodePath("./MarginContainer/HBoxContainer")],
+"nodes": PackedInt32Array(-1, -1, 1, 0, -1, 2, 2, 0, 3, 1, 0, 1073741824, 0, 5, 4, -1, 10, 6, 2, 7, 3, 8, 4, 9, 5, 10, 6, 11, 7, 12, 8, 13, 9, 14, 10, 15, 11, 0, 1073741825, 0, 17, 16, -1, 1, 18, 12, 0, 1073741826, 0, 20, 19, -1, 6, 21, 13, 22, 14, 23, 15, 24, 16, 25, 17, 26, 18, 0, 1073741827, 0, 28, 27, -1, 16, 29, 19, 30, 20, 31, 21, 32, 22, 33, 23, 34, 24, 35, 25, 36, 26, 37, 27, 38, 28, 39, 29, 40, 30, 41, 31, 42, 32, 43, 33, 44, 34, 0, 1073741828, 0, 46, 45, -1, 2, 47, 35, 48, 36, 0, 1073741829, 0, 50, 49, -1, 9, 51, 37, 52, 38, 53, 39, 54, 40, 55, 41, 56, 42, 57, 43, 58, 44, 59, 45, 0, 1073741830, 0, 61, 60, -1, 7, 62, 46, 63, 47, 64, 48, 65, 49, 66, 50, 67, 51, 68, 52, 0, 1073741831, 0, 70, 69, -1, 7, 71, 53, 72, 54, 73, 55, 74, 56, 75, 57, 76, 58, 77, 59, 0),
+"variants": [Vector2(500, 100), 1, 1, 15, 1.0, 1.0, 2, 2, 5, 5, 5, 5, 2, true, Vector2(90, 90), 2, ExtResource("4_t8qke"), 1, 5, true, Vector2(0, 20), 1, 3, 1.0, 1.0, 1.0, 1.0, -20.0, -20.0, 0, 0, "世界已加密", ExtResource("5_evqut"), 1, 4, 2, 3, true, 2, 3, 3, 1, "世界名称-0.0.1", SubResource("LabelSettings_o2u6e"), 1, 1, true, 2, 3, 1, "作者    
+一个空白的世界。", SubResource("LabelSettings_8hhd1"), 1, true, Vector2(90, 90), 2, 1, 20, "进入
+世界", true],
+"version": 3
+}
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_x1xvs"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_u5y2y")
+_gameScene = SubResource("PackedScene_8v713")
+_worldItem = SubResource("PackedScene_oreih")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_x1xvs")
+
+[node name="Background" type="Control" parent="PanelContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="PanelContainer/Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.290196, 0.290196, 0.290196, 1)
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Background"]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Home" type="Panel" parent="PanelContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="PanelContainer/Home"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_8lf3i")
+stretch_mode = 6
+
+[node name="ChooseWorldButton" type="Button" parent="PanelContainer/Home"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -36.0
+offset_top = -15.1667
+offset_right = 36.0
+offset_bottom = 15.1667
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 35
+text = "选择世界"
+
+[node name="TemplateWorldButton" type="Button" parent="PanelContainer/Home/ChooseWorldButton"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -74.0
+offset_top = 60.0
+offset_right = 74.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 35
+text = "模版世界"
+
+[node name="ModsPathHint" type="LinkButton" parent="PanelContainer/Home"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -53.0
+offset_top = -24.0
+offset_right = 53.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 25
+underline = 2
+
+[node name="Game" parent="PanelContainer" instance=ExtResource("4_8ufyh")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Window" type="CanvasLayer" parent="."]
+
+[node name="ChooseWorld" type="Panel" parent="Window"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SmoothScrollContainer" type="ScrollContainer" parent="Window/ChooseWorld"]
+layout_mode = 1
+anchors_preset = 13
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -251.0
+offset_right = 259.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+follow_focus = true
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+script = ExtResource("3_e3qh5")
+allow_horizontal_scroll = false
+
+[node name="MarginContainer" type="MarginContainer" parent="Window/ChooseWorld/SmoothScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 10
+
+[node name="ChooseWorldList" type="VBoxContainer" parent="Window/ChooseWorld/SmoothScrollContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Back" type="Button" parent="Window/ChooseWorld"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 50)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -80.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 62.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 20
+text = "返回"
+flat = true
