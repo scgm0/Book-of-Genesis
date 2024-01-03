@@ -450,7 +450,6 @@ public partial class Main : Control {
 		button.Text = str;
 		button.Pressed += () =>
 			EmitEvent(WorldEventType.RightButtonClick, str, button.GetIndex());
-		_rightButtonList.MoveChild(button, 0);
 		return button.GetIndex();
 	}
 

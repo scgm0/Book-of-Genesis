@@ -264,5 +264,6 @@ theme_override_constants/margin_bottom = 5
 
 [node name="RightButtonList" type="HBoxContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/SmoothScrollContainer2/MarginContainer"]
 unique_name_in_owner = true
+layout_direction = 3
 layout_mode = 2
 alignment = 1
