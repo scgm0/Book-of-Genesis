@@ -24,7 +24,7 @@ public static class StackTraceParser {
 				continue;
 
 			// 获取原始位置
-			var originalPosition = sourceMap?.OriginalPositionFor(frame.LineNumber.Value, frame.ColumnNumber.Value - 1);
+			var originalPosition = sourceMap?.OriginalPositionFor(frame.LineNumber.Value, frame.ColumnNumber.Value);
 			// 如果原始位置不存在，则跳过
 			if (originalPosition == null)
 				continue;

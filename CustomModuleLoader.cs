@@ -2,20 +2,17 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text.Json;
-using Esprima;
-using Esprima.Ast;
 using Godot;
 using Jint;
-using Jint.Runtime;
 using Jint.Runtime.Modules;
 using SourceMaps;
 using Engine = Jint.Engine;
 using FileAccess = Godot.FileAccess;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace 创世记;
 
-public class CustomModuleLoader : IModuleLoader {
+public class CustomModuleLoader : ModuleLoader {
 
 	private readonly Uri _basePath;
 	private readonly bool _restrictToBasePath;
@@ -52,7 +49,8 @@ public class CustomModuleLoader : IModuleLoader {
 		_modInfo = modInfo;
 	}
 
-	public ResolvedSpecifier Resolve(string? referencingModuleLocation, string specifier) {
+	public override ResolvedSpecifier Resolve(string? referencingModuleLocation, ModuleRequest moduleRequest) {
+		var specifier = moduleRequest.Specifier;
 		if (string.IsNullOrEmpty(specifier)) {
 			GD.PrintErr("模块说明符无效", specifier, referencingModuleLocation);
 			return default!;
@@ -69,7 +67,7 @@ public class CustomModuleLoader : IModuleLoader {
 			return default!;
 		} else {
 			return new ResolvedSpecifier(
-				specifier,
+				moduleRequest,
 				specifier,
 				null,
 				SpecifierType.Bare
@@ -94,7 +92,7 @@ public class CustomModuleLoader : IModuleLoader {
 
 		if (!_restrictToBasePath || _basePath.IsBaseOf(resolved))
 			return new ResolvedSpecifier(
-				specifier,
+				moduleRequest,
 				Uri.UnescapeDataString(resolved.AbsolutePath.ReplaceOnce("Z:/", "/")),
 				resolved,
 				SpecifierType.RelativeOrAbsolute
@@ -103,16 +101,17 @@ public class CustomModuleLoader : IModuleLoader {
 		return default!;
 	}
 
-	public Module LoadModule(Engine engine, ResolvedSpecifier resolved) {
+	override protected string LoadModuleContents(Engine engine, ResolvedSpecifier resolved) {
+		var specifier = resolved.ModuleRequest.Specifier;
 		if (resolved.Type != SpecifierType.RelativeOrAbsolute) {
 			GD.PrintErr(
-				$"默认模块加载器只能解析文件。您可以直接定义模块以允许使用 {nameof(Engine)}.{nameof(Engine.AddModule)}() 导入。尝试解析：“{resolved.Specifier}”。");
+				$"默认模块加载器只能解析文件。您可以直接定义模块以允许使用 {nameof(Engine)}.{nameof(Engine.AddModule)}() 导入。尝试解析：“{resolved.ModuleRequest.Specifier}”。");
 			return default!;
 		}
 
 		if (resolved.Uri == null) {
 			GD.PrintErr(
-				$"“{resolved.Type}”类型的模块“{resolved.Specifier}”没有解析的 URI。");
+				$"“{resolved.Type}”类型的模块“{specifier}”没有解析的 URI。");
 		}
 
 		Debug.Assert(resolved.Uri != null, "resolved.Uri != null");
@@ -120,7 +119,55 @@ public class CustomModuleLoader : IModuleLoader {
 			$"{(_inUser ? Utils.UserModsPath : Utils.ResModsPath)}{resolved.Key}";
 
 		if (!FileAccess.FileExists(fileName)) {
-			GD.PrintErr("找不到模块: ", resolved.Specifier);
+			GD.PrintErr("找不到模块: ", specifier);
+			GD.PrintErr(fileName);
+			return default!;
+		}
+
+		var code = FileAccess.GetFileAsString(fileName);
+		if (fileName.GetExtension() == "ts") {
+			if (FileAccess.FileExists($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.meta") &&
+				FileAccess.FileExists($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js")) {
+				var tsSha256 = FileAccess.GetSha256(fileName);
+				var tsMeta = JsonSerializer.Deserialize<TsMeta>(
+					FileAccess.GetFileAsString($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.meta"),
+					Utils.JsonSerializerOptions);
+				var jsSha256 = FileAccess.GetSha256($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js");
+				if (tsSha256 == tsMeta.TsSha256 && jsSha256 == tsMeta.JsSha256) {
+					code = FileAccess.GetFileAsString($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js");
+				} else {
+					TsGen(ref code, fileName, resolved);
+				}
+			} else {
+				TsGen(ref code, fileName, resolved);
+			}
+		}
+
+		RegisterSourceMap(ref code, resolved);
+		return code;
+	}
+
+
+	/*
+	public ModuleRecord LoadModule(Engine engine, ResolvedSpecifier resolved){
+		var specifier = resolved.ModuleRequest.Specifier;
+		if (resolved.Type != SpecifierType.RelativeOrAbsolute) {
+			GD.PrintErr(
+				$"默认模块加载器只能解析文件。您可以直接定义模块以允许使用 {nameof(Engine)}.{nameof(Engine.AddModule)}() 导入。尝试解析：“{resolved.ModuleRequest.Specifier}”。");
+			return default!;
+		}
+
+		if (resolved.Uri == null) {
+			GD.PrintErr(
+				$"“{resolved.Type}”类型的模块“{specifier}”没有解析的 URI。");
+		}
+
+		Debug.Assert(resolved.Uri != null, "resolved.Uri != null");
+		var fileName =
+			$"{(_inUser ? Utils.UserModsPath : Utils.ResModsPath)}{resolved.Key}";
+
+		if (!FileAccess.FileExists(fileName)) {
+			GD.PrintErr("找不到模块: ", specifier);
 			GD.PrintErr(fileName);
 			return default!;
 		}
@@ -162,6 +209,7 @@ public class CustomModuleLoader : IModuleLoader {
 		Debug.Assert(module != null, nameof(module) + " != null");
 		return module;
 	}
+	*/
 
 	private void TsGen(ref string code, string fileName, ResolvedSpecifier resolved) {
 		if (string.IsNullOrEmpty(code)) return;
@@ -173,7 +221,6 @@ public class CustomModuleLoader : IModuleLoader {
 			FileAccess.Open($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js", FileAccess.ModeFlags.Write);
 		jsFile.StoreString(code);
 		jsFile.Flush();
-		RegisterSourceMap(ref code, resolved);
 		var jsSha256 = FileAccess.GetSha256($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js");
 		using var tsMetaFile = FileAccess.Open($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.meta",
 			FileAccess.ModeFlags.Write);
@@ -195,6 +242,7 @@ public class CustomModuleLoader : IModuleLoader {
 			Utils.SourceMapCollection.Register(resolved.Key, sourceMap);
 		}
 	}
+
 
 	static private bool IsRelative(in string specifier) {
 		return specifier.StartsWith('.') || specifier.StartsWith('/');
