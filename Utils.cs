@@ -40,11 +40,11 @@ public static partial class Utils {
 	public static readonly GodotSynchronizationContext Context = (GodotSynchronizationContext)SynchronizationContext.Current;
 	public static readonly SceneTree Tree = Godot.Engine.GetMainLoop() as SceneTree;
 
-	public static readonly JsonSerializerOptions JsonSerializerOptions = new() {
-		PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-		TypeInfoResolver = SourceGenerationContext.Default,
-		Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-	};
+	// public static readonly JsonSerializerOptions JsonSerializerOptions = new() {
+	// 	PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+	// 	TypeInfoResolver = SourceGenerationContext.Default,
+	// 	Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+	// };
 
 	static Utils() {
 		if (!DirAccess.DirExistsAbsolute(UserModsPath)) {

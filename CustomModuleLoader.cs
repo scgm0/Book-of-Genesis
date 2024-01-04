@@ -130,9 +130,9 @@ public class CustomModuleLoader : ModuleLoader {
 			if (FileAccess.FileExists($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.meta") &&
 				FileAccess.FileExists($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js")) {
 				var tsSha256 = FileAccess.GetSha256(fileName);
-				var tsMeta = JsonSerializer.Deserialize<TsMeta>(
+				var tsMeta = JsonSerializer.Deserialize(
 					FileAccess.GetFileAsString($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.meta"),
-					Utils.JsonSerializerOptions);
+					SourceGenerationContext.Default.TsMeta);
 				var jsSha256 = FileAccess.GetSha256($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js");
 				if (tsSha256 == tsMeta.TsSha256 && jsSha256 == tsMeta.JsSha256) {
 					code = FileAccess.GetFileAsString($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js");

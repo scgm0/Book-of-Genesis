@@ -28,8 +28,8 @@ public partial class Main {
 					var modConfigPath = filePath.PathJoin("config.json");
 					if (FileAccess.FileExists(modConfigPath)) {
 						try {
-							var modInfo = JsonSerializer.Deserialize<ModInfo>(FileAccess.GetFileAsString(modConfigPath),
-								Utils.JsonSerializerOptions);
+							var modInfo = JsonSerializer.Deserialize(FileAccess.GetFileAsString(modConfigPath),
+								SourceGenerationContext.Default.ModInfo);
 							modInfo.Path = $"/{fileName}/";
 							modInfo.IsUser = true;
 							ModInfos[modInfo.ModKey] = modInfo;
@@ -56,8 +56,8 @@ public partial class Main {
 					var modConfigPath = filePath.PathJoin("config.json");
 					if (FileAccess.FileExists(modConfigPath)) {
 						try {
-							var modInfo = JsonSerializer.Deserialize<ModInfo>(FileAccess.GetFileAsString(modConfigPath),
-								Utils.JsonSerializerOptions);
+							var modInfo = JsonSerializer.Deserialize(FileAccess.GetFileAsString(modConfigPath),
+								SourceGenerationContext.Default.ModInfo);
 							modInfo.Path = $"/{fileName}/";
 							modInfo.IsUser = false;
 							modInfo.IsEncrypt =
