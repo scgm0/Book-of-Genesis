@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Text.Unicode;
 using System.Threading;
@@ -41,7 +42,7 @@ public static partial class Utils {
 
 	public static readonly JsonSerializerOptions JsonSerializerOptions = new() {
 		PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-		WriteIndented = true,
+		TypeInfoResolver = SourceGenerationContext.Default,
 		Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
 	};
 

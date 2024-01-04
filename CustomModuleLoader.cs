@@ -125,6 +125,7 @@ public class CustomModuleLoader : ModuleLoader {
 		}
 
 		var code = FileAccess.GetFileAsString(fileName);
+
 		if (fileName.GetExtension() == "ts") {
 			if (FileAccess.FileExists($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.meta") &&
 				FileAccess.FileExists($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js")) {
