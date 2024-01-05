@@ -124,14 +124,6 @@ public partial class Main : Control {
 		}
 	}
 
-	private void OnMetaClickedEventHandler(Variant meta, int index) {
-		try {
-			EmitEvent(WorldEventType.TextUrlClick, _jsonParser.Parse(meta.ToString()), index);
-		} catch (Exception) {
-			EmitEvent(WorldEventType.TextUrlClick, meta.ToString(), index);
-		}
-	}
-
 	public override void _PhysicsProcess(double delta) {
 		if (_currentWorld == null) return;
 		try {
@@ -143,6 +135,14 @@ public partial class Main : Control {
 
 			Log(e.ToString());
 			ExitWorld(1);
+		}
+	}
+
+	private void OnMetaClickedEventHandler(Variant meta, int index) {
+		try {
+			EmitEvent(WorldEventType.TextUrlClick, _jsonParser.Parse(meta.ToString()), index);
+		} catch (Exception) {
+			EmitEvent(WorldEventType.TextUrlClick, meta.ToString(), index);
 		}
 	}
 
@@ -368,38 +368,6 @@ public partial class Main : Control {
 		}
 	}
 
-	private Variant GetSaveValue(string section, string key) {
-		using var defaultValue = new GodotObject();
-		var value = CurrentModInfo.Config.GetValue(section, key, defaultValue);
-		if (value.Obj != defaultValue) defaultValue.Free();
-		return value;
-	}
-
-	private void SetSaveValue(string section, string key, JsValue value) {
-		CurrentModInfo.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
-		CurrentModInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentModInfo.Author}:{CurrentModInfo.Name}.save",
-			$"{CurrentModInfo.Author}:{CurrentModInfo.Name}");
-	}
-
-	private void SetRichText(RichTextLabel label, string text) {
-		LoadRichTextImg(ref text);
-		label.Text = text;
-	}
-
-	private void AddRichText(RichTextLabel label, string text) {
-		LoadRichTextImg(ref text);
-		label.AppendText(text);
-	}
-
-	private void LoadRichTextImg(ref string text) {
-		if (string.IsNullOrEmpty(text)) return;
-		foreach (Match match in Utils.ImgPathRegex().Matches(text)) {
-			var path = match.Groups["path"].Value;
-			var oldText = text.Substring(match.Index, match.Length);
-			text = text.Replace(oldText, oldText.Replace(path, LoadImageFile(path).ResourcePath));
-		}
-	}
-
 	private int[] SetLeftButtons(string[] names) {
 		if (_leftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
 			return default;
@@ -543,7 +511,7 @@ public partial class Main : Control {
 		_game.Visible = false;
 	}
 
-	private Texture2D LoadImageFile(string path) {
+	static private Texture2D LoadImageFile(string path) {
 		path = (CurrentModInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(CurrentModInfo.Path)
 			.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(path)) return null;
@@ -558,15 +526,47 @@ public partial class Main : Control {
 		return texture;
 	}
 
-	private void Log(params object[] strings) {
+	static private Variant GetSaveValue(string section, string key) {
+		using var defaultValue = new GodotObject();
+		var value = CurrentModInfo.Config.GetValue(section, key, defaultValue);
+		if (value.Obj != defaultValue) defaultValue.Free();
+		return value;
+	}
+
+	static private void SetSaveValue(string section, string key, JsValue value) {
+		CurrentModInfo.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
+		CurrentModInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentModInfo.Author}:{CurrentModInfo.Name}.save",
+			$"{CurrentModInfo.Author}:{CurrentModInfo.Name}");
+	}
+
+	static private void SetRichText(RichTextLabel label, string text) {
+		LoadRichTextImg(ref text);
+		label.Text = text;
+	}
+
+	static private void AddRichText(RichTextLabel label, string text) {
+		LoadRichTextImg(ref text);
+		label.AppendText(text);
+	}
+
+	static private void LoadRichTextImg(ref string text) {
+		if (string.IsNullOrEmpty(text)) return;
+		foreach (Match match in Utils.ImgPathRegex().Matches(text)) {
+			var path = match.Groups["path"].Value;
+			var oldText = text.Substring(match.Index, match.Length);
+			text = text.Replace(oldText, oldText.Replace(path, LoadImageFile(path).ResourcePath));
+		}
+	}
+
+	static private void Log(params object[] strings) {
 		GD.Print($"{CurrentModInfo.Name}: {string.Join(" ", strings.Select(o => o.ToString()))}");
 	}
 
-	private void Log(params string[] strings) {
+	static private void Log(params string[] strings) {
 		GD.Print($"{CurrentModInfo.Name}: {strings.Join(" ")}");
 	}
 
-	private void Log(string str) {
+	static private void Log(string str) {
 		GD.Print($"{CurrentModInfo.Name}: {str}");
 	}
 

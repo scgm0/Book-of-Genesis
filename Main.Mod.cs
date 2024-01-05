@@ -10,7 +10,7 @@ namespace 创世记;
 
 public partial class Main {
 	public static Engine CurrentEngine { get; private set; }
-	public static ModInfo CurrentModInfo;
+	public static ModInfo CurrentModInfo { get; private set; }
 	private JsObject _currentWorld;
 	private JsObject _currentWorldEvent;
 	private CancellationTokenSource _tcs = new();
@@ -38,7 +38,7 @@ public partial class Main {
 						}
 					}
 				} else if (fileName.GetExtension() == "modpack" || fileName.GetExtension() == "zip") {
-					GD.PrintS(filePath, ProjectSettings.LoadResourcePack(filePath, false));
+					GD.PrintS(filePath, ProjectSettings.LoadResourcePack(filePath));
 				}
 
 				fileName = userDir.GetNext();

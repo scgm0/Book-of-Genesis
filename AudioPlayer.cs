@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using Godot;
 using Jint;
 using Jint.Native;
@@ -85,7 +84,7 @@ public partial class AudioPlayer : AudioStreamPlayer {
 			throw new JavaScriptException($"{path} 文件不存在");
 		}
 
-		switch (path!.GetExtension()) {
+		switch (path.GetExtension()) {
 			case "ogg":
 				_audioStream = AudioStreamOggVorbis.LoadFromFile(path);
 				break;
