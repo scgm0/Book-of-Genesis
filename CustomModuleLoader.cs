@@ -21,7 +21,7 @@ public class CustomModuleLoader : ModuleLoader {
 
 	private CustomModuleLoader(string basePath, bool inUser, bool restrictToBasePath = true) {
 		if (string.IsNullOrWhiteSpace(basePath)) {
-			GD.PrintErr("值不能为空或空格", nameof(basePath));
+			Main.Log("值不能为空或空格", nameof(basePath));
 		}
 
 		_inUser = inUser;
@@ -29,7 +29,7 @@ public class CustomModuleLoader : ModuleLoader {
 
 		if (!Uri.TryCreate(basePath, UriKind.Absolute, out var temp)) {
 			if (!Path.IsPathRooted(basePath)) {
-				GD.PrintErr("路径必须是 root 的", nameof(basePath));
+				Main.Log("路径必须是 root 的", nameof(basePath));
 			}
 
 			Debug.Assert(basePath != null, nameof(basePath) + " != null");
@@ -52,7 +52,7 @@ public class CustomModuleLoader : ModuleLoader {
 	public override ResolvedSpecifier Resolve(string? referencingModuleLocation, ModuleRequest moduleRequest) {
 		var specifier = moduleRequest.Specifier;
 		if (string.IsNullOrEmpty(specifier)) {
-			GD.PrintErr("模块说明符无效", specifier, referencingModuleLocation);
+			Main.Log("模块说明符无效", specifier, referencingModuleLocation);
 			return default!;
 		}
 
@@ -63,7 +63,7 @@ public class CustomModuleLoader : ModuleLoader {
 			resolved = new Uri(referencingModuleLocation != null ? new Uri(_basePath, referencingModuleLocation) : _basePath,
 				specifier);
 		} else if (specifier[0] == '#') {
-			GD.PrintErr($"不支持 PACKAGE_IMPORTS_RESOLVE: '{specifier}'");
+			Main.Log($"不支持 PACKAGE_IMPORTS_RESOLVE: '{specifier}'");
 			return default!;
 		} else {
 			return new ResolvedSpecifier(
@@ -76,14 +76,14 @@ public class CustomModuleLoader : ModuleLoader {
 
 		if (resolved.IsFile) {
 			if (resolved.UserEscaped) {
-				GD.PrintErr("模块说明符无效",
+				Main.Log("模块说明符无效",
 					specifier,
 					referencingModuleLocation);
 				return default!;
 			}
 
 			if (!Path.HasExtension(resolved.LocalPath)) {
-				GD.PrintErr("不支持的目录导入",
+				Main.Log("不支持的目录导入",
 					specifier,
 					referencingModuleLocation);
 				return default!;
@@ -97,20 +97,20 @@ public class CustomModuleLoader : ModuleLoader {
 				resolved,
 				SpecifierType.RelativeOrAbsolute
 			);
-		GD.PrintErr("未经授权的模块路径", specifier, referencingModuleLocation);
+		Main.Log("未经授权的模块路径", specifier, referencingModuleLocation);
 		return default!;
 	}
 
 	override protected string LoadModuleContents(Engine engine, ResolvedSpecifier resolved) {
 		var specifier = resolved.ModuleRequest.Specifier;
 		if (resolved.Type != SpecifierType.RelativeOrAbsolute) {
-			GD.PrintErr(
+			Main.Log(
 				$"默认模块加载器只能解析文件。您可以直接定义模块以允许使用 {nameof(Engine)}.{nameof(Engine.AddModule)}() 导入。尝试解析：“{resolved.ModuleRequest.Specifier}”。");
 			return default!;
 		}
 
 		if (resolved.Uri == null) {
-			GD.PrintErr(
+			Main.Log(
 				$"“{resolved.Type}”类型的模块“{specifier}”没有解析的 URI。");
 		}
 
@@ -119,8 +119,7 @@ public class CustomModuleLoader : ModuleLoader {
 			$"{(_inUser ? Utils.UserModsPath : Utils.ResModsPath)}{resolved.Key}";
 
 		if (!FileAccess.FileExists(fileName)) {
-			GD.PrintErr("找不到模块: ", specifier);
-			GD.PrintErr(fileName);
+			Main.Log("找不到模块: ", specifier);
 			return default!;
 		}
 

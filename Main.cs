@@ -156,7 +156,7 @@ public partial class Main : Control {
 		}
 
 		foreach (var modInfo in ModInfos) {
-			GD.PrintS(modInfo.Key, modInfo.Value.JsonString);
+			Log(modInfo.Key, modInfo.Value.JsonString);
 			var worldItem = _worldItem.Instantiate();
 			worldItem.GetNode<Label>("%Name").Text = $"{modInfo.Value.Name}-{modInfo.Value.Version}";
 			worldItem.GetNode<Label>("%Description").Text = $"{modInfo.Value.Author}\n{modInfo.Value.Description}";
@@ -169,7 +169,7 @@ public partial class Main : Control {
 
 			worldItem.GetNode<Button>("%Run").Pressed += () => {
 				CurrentModInfo = modInfo.Value;
-				GD.Print("Run: ", CurrentModInfo.JsonString);
+				Log("Run: ", CurrentModInfo.JsonString);
 				_chooseWorld.Visible = false;
 				_background.Modulate = Color.FromHtml("#ffffff00");
 				_game.Visible = true;
@@ -558,16 +558,16 @@ public partial class Main : Control {
 		}
 	}
 
-	static private void Log(params object[] strings) {
-		GD.Print($"{CurrentModInfo.Name}: {string.Join(" ", strings.Select(o => o.ToString()))}");
+	public static void Log(params object[] strings) {
+		Log(string.Join(" ", strings.Select(o => o.ToString())));
 	}
 
-	static private void Log(params string[] strings) {
-		GD.Print($"{CurrentModInfo.Name}: {strings.Join(" ")}");
+	public static void Log(params string[] strings) {
+		Log(strings.Join(" "));
 	}
 
-	static private void Log(string str) {
-		GD.Print($"{CurrentModInfo.Name}: {str}");
+	public static void Log(string str) {
+		GD.Print($"[{DateTime.Now:yyyy/MM/dd HH:mm:ss.fff}]{(CurrentModInfo == null ? " " : $" {CurrentModInfo.Name}: ")}{str}");
 	}
 
 }
