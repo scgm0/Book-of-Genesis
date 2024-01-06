@@ -192,7 +192,7 @@ public partial class Main : Control {
 			_game.GetNode<Control>("Main").Visible = false;
 			RestoreDefaultSettings();
 			InitEngine();
-			CurrentEngine.ImportModule(CurrentModInfo.Main);
+			CurrentEngine.Modules.Import(CurrentModInfo.Main);
 			var tween = GetTree().CreateTween();
 			// tween.SetTrans(Tween.TransitionType.Linear);
 			tween.SetEase(Tween.EaseType.Out);
@@ -220,7 +220,7 @@ public partial class Main : Control {
 				options.EnableModules(new CustomModuleLoader(CurrentModInfo));
 			});
 			_jsonParser = new JsonParser(CurrentEngine);
-			var constraint = CurrentEngine.FindConstraint<CancellationConstraint>();
+			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
 			constraint?.Reset(_tcs.Token);
 			CurrentEngine.SetValue("print", new Action<string[]>(Log))
 				.SetValue("setTimeout", SetTimeout)
@@ -238,13 +238,13 @@ public partial class Main : Control {
 						_timers.Remove(id);
 					});
 
-			CurrentEngine.AddModule("events", Utils.Polyfill.Events);
-			CurrentEngine.AddModule("audio", builder => builder.ExportType<AudioPlayer>().ExportType<AudioPlayer>("default"));
+			CurrentEngine.Modules.Add("events", Utils.Polyfill.Events);
+			CurrentEngine.Modules.Add("audio", builder => builder.ExportType<AudioPlayer>().ExportType<AudioPlayer>("default"));
 
 			var currentWorld = new JsObject(CurrentEngine);
 			currentWorld.FastSetProperty("print",
 				new PropertyDescriptor(new DelegateWrapper(CurrentEngine, new Action<string[]>(Log)), true, false, true));
-			var worldEvent = CurrentEngine.Construct(CurrentEngine.ImportModule("events").Get("default"));
+			var worldEvent = CurrentEngine.Construct(CurrentEngine.Modules.Import("events").Get("default"));
 			currentWorld.DefineOwnProperty("event",
 				new GetSetPropertyDescriptor(
 					new DelegateWrapper(CurrentEngine, () => worldEvent),

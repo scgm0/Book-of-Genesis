@@ -43,7 +43,7 @@ public partial class AudioPlayer : AudioStreamPlayer {
 		Utils.Tree.Root.AddChild(this);
 		AddToGroup("Audio");
 		Finished += () => {
-			if(FinishedCallback is FunctionInstance) {
+			if(FinishedCallback is Function) {
 				FinishedCallback?.Call(thisObj: JsValue.FromObject(Main.CurrentEngine, this), []);
 			}
 		};

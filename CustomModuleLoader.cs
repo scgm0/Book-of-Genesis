@@ -105,7 +105,7 @@ public class CustomModuleLoader : ModuleLoader {
 		var specifier = resolved.ModuleRequest.Specifier;
 		if (resolved.Type != SpecifierType.RelativeOrAbsolute) {
 			Main.Log(
-				$"默认模块加载器只能解析文件。您可以直接定义模块以允许使用 {nameof(Engine)}.{nameof(Engine.AddModule)}() 导入。尝试解析：“{resolved.ModuleRequest.Specifier}”。");
+				$"默认模块加载器只能解析文件。您可以直接定义模块以允许使用 {nameof(Engine)}.{nameof(Engine.Modules.Add)}() 导入。尝试解析：“{resolved.ModuleRequest.Specifier}”。");
 			return default!;
 		}
 
