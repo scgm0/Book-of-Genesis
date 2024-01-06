@@ -169,7 +169,7 @@ public partial class Main : Control {
 
 			worldItem.GetNode<Button>("%Run").Pressed += () => {
 				CurrentModInfo = modInfo.Value;
-				Log("Run: ", CurrentModInfo.JsonString);
+				Log("Run:", CurrentModInfo.JsonString);
 				_chooseWorld.Visible = false;
 				_background.Modulate = Color.FromHtml("#ffffff00");
 				_game.Visible = true;
@@ -567,7 +567,8 @@ public partial class Main : Control {
 	}
 
 	public static void Log(string str) {
-		GD.Print($"[{DateTime.Now:yyyy/MM/dd HH:mm:ss.fff}]{(CurrentModInfo == null ? " " : $" {CurrentModInfo.Name}: ")}{str}");
+		GD.Print(
+			$"[{DateTime.Now:yyyy/MM/dd HH:mm:ss.fff}]{(CurrentModInfo == null ? " " : $" [{CurrentModInfo.Name}] ")}{str}");
 	}
 
 }

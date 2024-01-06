@@ -90,15 +90,17 @@ public class CustomModuleLoader : ModuleLoader {
 			}
 		}
 
-		if (!_restrictToBasePath || _basePath.IsBaseOf(resolved))
-			return new ResolvedSpecifier(
-				moduleRequest,
-				Uri.UnescapeDataString(resolved.AbsolutePath.ReplaceOnce("Z:/", "/")),
-				resolved,
-				SpecifierType.RelativeOrAbsolute
-			);
-		Main.Log("未经授权的模块路径", specifier, referencingModuleLocation);
-		return default!;
+		if (_restrictToBasePath && !_basePath.IsBaseOf(resolved)) {
+			Main.Log("未经授权的模块路径", specifier, referencingModuleLocation);
+			return default!;
+		}
+
+		return new ResolvedSpecifier(
+			moduleRequest,
+			Uri.UnescapeDataString(resolved.AbsolutePath.ReplaceOnce("Z:/", "/")),
+			resolved,
+			SpecifierType.RelativeOrAbsolute
+		);
 	}
 
 	override protected string LoadModuleContents(Engine engine, ResolvedSpecifier resolved) {
@@ -117,7 +119,7 @@ public class CustomModuleLoader : ModuleLoader {
 		Debug.Assert(resolved.Uri != null, "resolved.Uri != null");
 		var fileName =
 			$"{(_inUser ? Utils.UserModsPath : Utils.ResModsPath)}{resolved.Key}";
-
+		
 		if (!FileAccess.FileExists(fileName)) {
 			Main.Log("找不到模块: ", specifier);
 			return default!;
@@ -142,7 +144,7 @@ public class CustomModuleLoader : ModuleLoader {
 				TsGen(ref code, fileName, resolved);
 			}
 		}
-
+		
 		RegisterSourceMap(ref code, resolved);
 		return code;
 	}

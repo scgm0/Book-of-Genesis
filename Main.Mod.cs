@@ -38,7 +38,7 @@ public partial class Main {
 						}
 					}
 				} else if (fileName.GetExtension() == "modpack" || fileName.GetExtension() == "zip") {
-					Log(filePath, ProjectSettings.LoadResourcePack(filePath));
+					Log(fileName, ProjectSettings.LoadResourcePack(filePath));
 				}
 
 				fileName = userDir.GetNext();
@@ -50,8 +50,7 @@ public partial class Main {
 			resDir.ListDirBegin();
 			var fileName = resDir.GetNext();
 			while (fileName is not "" and not "." and not "..") {
-				var filePath = Utils.ResModsPath.PathJoin(fileName); 
-				Log(filePath, DirAccess.Open(filePath) == null);
+				var filePath = Utils.ResModsPath.PathJoin(fileName);
 				if (resDir.CurrentIsDir()) {
 					var modConfigPath = filePath.PathJoin("config.json");
 					if (FileAccess.FileExists(modConfigPath)) {
@@ -64,8 +63,8 @@ public partial class Main {
 								FileAccess.FileExists(
 									$"{Utils.ResModsPath}{modInfo.Path}/{$"{modInfo.Author}:{modInfo.Name}-{modInfo.Version}".EnBase64()}.isEncrypt");
 							ModInfos[modInfo.ModKey] = modInfo;
-						} catch (Exception e) {
-							Log(modConfigPath, e);
+						} catch (Exception) {
+							// Log(modConfigPath, e);
 						}
 					}
 				}
