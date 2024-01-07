@@ -230,12 +230,14 @@ public partial class Main : Control {
 						if (!_timers.TryGetValue(id, out var value)) return;
 						value?.Stop();
 						_timers.Remove(id);
+						value?.Dispose();
 					})
 				.SetValue("clearInterval",
 					(int id) => {
 						if (!_timers.TryGetValue(id, out var value)) return;
 						value?.Stop();
 						_timers.Remove(id);
+						value?.Dispose();
 					});
 
 			CurrentEngine.Modules.Add("events", Utils.Polyfill.Events);
@@ -448,16 +450,18 @@ public partial class Main : Control {
 		_timers[id] = timer;
 		timer.AutoReset = autoReset;
 		timer.Elapsed += (_, _) => {
-			if (!autoReset) {
-				_timers.Remove(id);
+			if (!_timers.ContainsKey(id)) {
 				timer.Dispose();
+				return;
 			}
 
-			Utils.Context.Post(_ => {
-					callback.Call(thisObj: JsValue.Undefined, values ?? []);
-					CurrentEngine.Advanced.ProcessTasks();
-				},
-				null);
+			Callable.From(() => {
+				callback.Call(thisObj: JsValue.Undefined, values ?? []);
+				CurrentEngine.Advanced.ProcessTasks();
+			}).CallDeferred();
+			if (autoReset) return;
+			_timers.Remove(id);
+			timer.Dispose();
 		};
 		timer.Enabled = true;
 		return id;
