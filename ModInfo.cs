@@ -17,9 +17,7 @@ public class ModInfo {
 
 	public ConfigFile Config { get; set; } = new();
 
-	public string ModKey {
-		get => $"{Author}_{Name}_{Version}";
-	}
+	public string ModKey { get => $"{Author}_{Name}_{Version}"; }
 
 	public string JsonString {
 		get =>

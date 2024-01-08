@@ -9,13 +9,13 @@ using Engine = Jint.Engine;
 namespace 创世记;
 
 public partial class Main {
-	public static Engine CurrentEngine { get; private set; }
-	public static ModInfo CurrentModInfo { get; private set; }
+
+	static private readonly Dictionary<string, ModInfo> ModInfos = new();
 	private JsObject _currentWorld;
 	private JsObject _currentWorldEvent;
 	private CancellationTokenSource _tcs = new();
-
-	static private readonly Dictionary<string, ModInfo> ModInfos = new();
+	public static Engine CurrentEngine { get; private set; }
+	public static ModInfo CurrentModInfo { get; private set; }
 
 	static private void LoadModInfos() {
 		ModInfos.Clear();
@@ -73,5 +73,4 @@ public partial class Main {
 			}
 		}
 	}
-
 }

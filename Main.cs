@@ -562,13 +562,9 @@ public partial class Main : Control {
 		}
 	}
 
-	public static void Log(params object[] strings) {
-		Log(string.Join(" ", strings.Select(o => o.ToString())));
-	}
+	public static void Log(params object[] strings) { Log(string.Join(" ", strings.Select(o => o.ToString()))); }
 
-	public static void Log(params string[] strings) {
-		Log(strings.Join(" "));
-	}
+	public static void Log(params string[] strings) { Log(strings.Join(" ")); }
 
 	public static void Log(string str) {
 		GD.Print(
