@@ -79,8 +79,8 @@ public struct WavFileHeader(uint subchunk1Size) {
 					var subFormat = file.GetBuffer(16);
 					header.HeaderSize += 22;
 					header.GuidSubFormat = new Guid(subFormat);
-					if (header.GuidSubFormat != WavFileHeader.SubTypePcm &&
-						header.GuidSubFormat != WavFileHeader.SubTypeIeeeFloat) {
+					if (header.GuidSubFormat != SubTypePcm &&
+						header.GuidSubFormat != SubTypeIeeeFloat) {
 						throw new Exception($"不支持的WAV文件类型: {header.GuidSubFormat}");
 					}
 

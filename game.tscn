@@ -1,7 +1,6 @@
-[gd_scene load_steps=9 format=3 uid="uid://k2w3hc0p1xm3"]
+[gd_scene load_steps=8 format=3 uid="uid://k2w3hc0p1xm3"]
 
 [ext_resource type="Script" path="res://addons/SmoothScroll/SmoothScrollContainer.gd" id="2_us7i4"]
-[ext_resource type="FontFile" uid="uid://uutxc1xnjvw4" path="res://Assets/SiYuanSongTiRegular/SourceHanSerifCN-Bold-2.otf" id="2_wiric"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pie2p"]
 
@@ -28,9 +27,6 @@ corner_radius_bottom_left = 5
 [sub_resource type="Theme" id="Theme_382wn"]
 Panel/styles/panel = SubResource("StyleBoxFlat_6exi8")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
-RichTextLabel/fonts/bold_font = ExtResource("2_wiric")
-RichTextLabel/fonts/bold_italics_font = null
-RichTextLabel/fonts/italics_font = null
 RichTextLabel/styles/focus = SubResource("StyleBoxEmpty_6v3t7")
 
 [sub_resource type="Theme" id="Theme_i32w0"]
@@ -93,7 +89,6 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
-focus_mode = 2
 theme_override_colors/selection_color = Color(1, 1, 1, 0.196078)
 theme_override_font_sizes/normal_font_size = 20
 theme_override_font_sizes/bold_font_size = 20
@@ -106,7 +101,6 @@ bbcode_enabled = true
 text = "标题"
 fit_content = true
 autowrap_mode = 0
-selection_enabled = true
 
 [node name="Exit" type="Button" parent="Main/Control/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true

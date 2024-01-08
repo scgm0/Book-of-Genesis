@@ -17,7 +17,7 @@ config/quit_on_go_back=false
 config/features=PackedStringArray("4.3", "C#", "GL Compatibility")
 run/flush_stdout_on_print=true
 run/low_processor_mode=true
-config/icon="res://icon.svg"
+config/icon="res://Assets/icon.png"
 run/disable_stderr.release=true
 
 [debug]
@@ -42,7 +42,7 @@ enabled=PackedStringArray("res://addons/SmoothScroll/plugin.cfg")
 
 [gui]
 
-theme/custom_font="res://Assets/SiYuanSongTiRegular/SourceHanSerifCN-Regular-1.otf"
+theme/custom_font="res://Assets/SourceHanSerifCN-Regular.otf"
 theme/default_font_multichannel_signed_distance_field=true
 theme/default_font_generate_mipmaps=true
 

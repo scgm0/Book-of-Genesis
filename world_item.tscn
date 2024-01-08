@@ -1,18 +1,19 @@
 [gd_scene load_steps=7 format=3 uid="uid://kbkbbjhef0jq"]
 
-[ext_resource type="Texture2D" uid="uid://e36v3vq5a0bb" path="res://Assets/icon.png" id="1_c1jmc"]
+[ext_resource type="Shader" path="res://Assets/CornerRadius.gdshader" id="1_3gy2n"]
+[ext_resource type="Texture2D" uid="uid://e36v3vq5a0bb" path="res://Assets/icon.png" id="2_fu85d"]
 [ext_resource type="Texture2D" uid="uid://bc2ybhg5fqgyb" path="res://Assets/LockViewport.svg" id="2_gnsyh"]
-[ext_resource type="FontFile" uid="uid://uutxc1xnjvw4" path="res://Assets/SiYuanSongTiRegular/SourceHanSerifCN-Bold-2.otf" id="3_7uxai"]
-[ext_resource type="FontFile" uid="uid://c3nplwskds5nt" path="res://Assets/SiYuanSongTiRegular/SourceHanSerifCN-Regular-1.otf" id="4_8ysd5"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8neca"]
+shader = ExtResource("1_3gy2n")
+shader_parameter/corner_scale = 0.095
 
 [sub_resource type="LabelSettings" id="LabelSettings_o2u6e"]
-font = ExtResource("3_7uxai")
-font_size = 20
+font_size = 22
 
 [sub_resource type="LabelSettings" id="LabelSettings_8hhd1"]
 line_spacing = 0.0
-font = ExtResource("4_8ysd5")
-font_size = 14
+font_size = 13
 
 [node name="WorldItem" type="Panel"]
 custom_minimum_size = Vector2(500, 100)
@@ -35,9 +36,10 @@ layout_mode = 2
 
 [node name="Icon" type="TextureRect" parent="MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
+material = SubResource("ShaderMaterial_8neca")
 custom_minimum_size = Vector2(90, 90)
 layout_mode = 2
-texture = ExtResource("1_c1jmc")
+texture = ExtResource("2_fu85d")
 expand_mode = 1
 stretch_mode = 5
 

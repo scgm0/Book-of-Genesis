@@ -77,7 +77,7 @@ public partial class AudioPlayer : AudioStreamPlayer {
 		_audioStream?.Dispose();
 
 		if (!FileAccess.FileExists(path)) {
-			throw new JavaScriptException($"{path} 文件不存在");
+			throw new JavaScriptException($"{path}文件不存在");
 		}
 
 		using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
@@ -94,7 +94,6 @@ public partial class AudioPlayer : AudioStreamPlayer {
 				_audioStream = new AudioStreamWav();
 				var wav = (AudioStreamWav)_audioStream;
 				var header = WavFileHeader.CreateFromFileAccess(file);
-				Console.WriteLine(header);
 				wav.Format = header.BitsPerSample switch {
 					8 => AudioStreamWav.FormatEnum.Format8Bits, 16 => AudioStreamWav.FormatEnum.Format16Bits, _ => wav.Format
 				};
