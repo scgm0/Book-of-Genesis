@@ -1,5 +1,0 @@
-[gd_resource type="SystemFont" format=3 uid="uid://02gmthtwdap7"]
-
-[resource]
-font_names = PackedStringArray("Noto Serif CJK SC", "Noto Sans CJK SC", "Noto Serif", "Sans-Serif")
-generate_mipmaps = true

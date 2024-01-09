@@ -42,8 +42,7 @@ enabled=PackedStringArray("res://addons/SmoothScroll/plugin.cfg")
 
 [gui]
 
-theme/custom_font="res://Assets/SourceHanSerifCN-Regular.otf"
-theme/default_font_multichannel_signed_distance_field=true
+theme/custom_font="res://Assets/Font/RegularFont.tres"
 theme/default_font_generate_mipmaps=true
 
 [importer_defaults]

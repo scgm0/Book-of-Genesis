@@ -1,19 +1,20 @@
-[gd_scene load_steps=7 format=3 uid="uid://kbkbbjhef0jq"]
+[gd_scene load_steps=8 format=3 uid="uid://kbkbbjhef0jq"]
 
 [ext_resource type="Shader" path="res://Assets/CornerRadius.gdshader" id="1_3gy2n"]
 [ext_resource type="Texture2D" uid="uid://e36v3vq5a0bb" path="res://Assets/icon.png" id="2_fu85d"]
 [ext_resource type="Texture2D" uid="uid://bc2ybhg5fqgyb" path="res://Assets/LockViewport.svg" id="2_gnsyh"]
+[ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="4_34lqs"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8neca"]
 shader = ExtResource("1_3gy2n")
 shader_parameter/corner_scale = 0.095
 
 [sub_resource type="LabelSettings" id="LabelSettings_o2u6e"]
-font_size = 22
+font = ExtResource("4_34lqs")
+font_size = 24
 
 [sub_resource type="LabelSettings" id="LabelSettings_8hhd1"]
 line_spacing = 0.0
-font_size = 13
 
 [node name="WorldItem" type="Panel"]
 custom_minimum_size = Vector2(500, 100)

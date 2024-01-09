@@ -190,7 +190,7 @@ public partial class Main : Control {
 	private void RunWorld() {
 		try {
 			_game.GetNode<Control>("Main").Visible = false;
-			RestoreDefaultSettings();
+			// RestoreDefaultSettings();
 			InitEngine();
 			CurrentEngine.Modules.Import(CurrentModInfo.Main);
 			var tween = GetTree().CreateTween();
@@ -492,6 +492,9 @@ public partial class Main : Control {
 		_leftText.SizeFlagsStretchRatio = 1;
 		_centerText.SizeFlagsStretchRatio = 1;
 		_rightText.SizeFlagsStretchRatio = 1;
+		_leftText.GetParent().GetParent<Panel>().Visible = false;
+		_centerText.GetParent().GetParent<Panel>().Visible = false;
+		_rightText.GetParent().GetParent<Panel>().Visible = false;
 
 		_commandEdit.Text = "";
 		_commandEdit.PlaceholderText = "";

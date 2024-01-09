@@ -1,0 +1,7 @@
+[gd_resource type="FontVariation" load_steps=2 format=3 uid="uid://ckxuwl0k7w18e"]
+
+[ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_7dfqy"]
+
+[resource]
+base_font = ExtResource("1_7dfqy")
+variation_transform = Transform2D(1, 0.25, 0, 1, 0, 0)

@@ -1,19 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://k2w3hc0p1xm3"]
+[gd_scene load_steps=11 format=3 uid="uid://k2w3hc0p1xm3"]
 
+[ext_resource type="FontVariation" uid="uid://bqh8d2c5h4cl" path="res://Assets/Font/BoldFont.tres" id="1_r5wvy"]
 [ext_resource type="Script" path="res://addons/SmoothScroll/SmoothScrollContainer.gd" id="2_us7i4"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pie2p"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cwa3d"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0, 0, 0, 0.372549)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
+[ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_xq01r"]
+[ext_resource type="FontVariation" uid="uid://dcqk6d3is3us1" path="res://Assets/Font/ItalicsFont.tres" id="3_c25ul"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6exi8"]
 bg_color = Color(0, 0, 0, 0.372549)
@@ -27,7 +17,23 @@ corner_radius_bottom_left = 5
 [sub_resource type="Theme" id="Theme_382wn"]
 Panel/styles/panel = SubResource("StyleBoxFlat_6exi8")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
+RichTextLabel/fonts/bold_font = ExtResource("1_r5wvy")
+RichTextLabel/fonts/bold_italics_font = ExtResource("2_xq01r")
+RichTextLabel/fonts/italics_font = ExtResource("3_c25ul")
 RichTextLabel/styles/focus = SubResource("StyleBoxEmpty_6v3t7")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pie2p"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cwa3d"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0.372549)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [sub_resource type="Theme" id="Theme_i32w0"]
 Button/font_sizes/font_size = 25
@@ -48,6 +54,7 @@ offset_right = 576.0
 offset_bottom = 324.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = SubResource("Theme_382wn")
 
 [node name="Main" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -113,7 +120,6 @@ text = "退出"
 [node name="HBoxContainer2" type="HBoxContainer" parent="Main/Control/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-theme = SubResource("Theme_382wn")
 theme_override_constants/separation = 10
 
 [node name="LeftPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]

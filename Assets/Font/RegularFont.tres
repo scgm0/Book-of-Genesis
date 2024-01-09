@@ -1,0 +1,9 @@
+[gd_resource type="FontVariation" load_steps=2 format=3 uid="uid://cuxvjlml6jkd6"]
+
+[ext_resource type="FontFile" uid="uid://da1crp3ujdhfu" path="res://Assets/Font/SourceHanSerifCN-Regular-sub.otf" id="1_1cpa0"]
+
+[resource]
+base_font = ExtResource("1_1cpa0")
+opentype_features = {
+1667329140: 0
+}
