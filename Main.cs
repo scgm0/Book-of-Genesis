@@ -206,7 +206,7 @@ public partial class Main : Control {
 				_currentWorld = (JsObject)CurrentEngine?.GetValue("World");
 			}));
 		} catch (JavaScriptException e) {
-			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace!)}");
+			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace ?? string.Empty)}");
 			ExitWorld(1);
 		}
 	}
@@ -365,7 +365,7 @@ public partial class Main : Control {
 		try {
 			_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [name.ToString("G").ToSnakeCase(), ..values]);
 		} catch (JavaScriptException e) {
-			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace!)}");
+			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace ?? string.Empty)}");
 			ExitWorld(1);
 		}
 	}
