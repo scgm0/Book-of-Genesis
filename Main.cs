@@ -523,21 +523,30 @@ public sealed partial class Main : Control {
 		_game.Visible = false;
 	}
 
-	static private Texture2D LoadImageFile(string path) {
-		return LoadImageFile(CurrentModInfo, path);
-	}
-	
+	static private Texture2D LoadImageFile(string path) { return LoadImageFile(CurrentModInfo, path); }
+
 	static private Texture2D LoadImageFile(ModInfo modInfo, string path) {
 		path = (modInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(modInfo.Path)
 			.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(path)) return null;
-		if (ResourceLoader.Exists(path)) {
-			return GD.Load<Texture2D>(path);
-		}
 
 		using var img = Image.LoadFromFile(path);
-		var texture = ImageTexture.CreateFromImage(img);
-		texture.TakeOverPath(path);
+		Texture2D texture;
+		if (ResourceLoader.Exists(path)) {
+			texture = GD.Load<Texture2D>(path);
+			switch (texture) {
+				case ImageTexture imageTexture:
+					imageTexture.Update(img);
+					break;
+				case CanvasTexture canvasTexture:
+					((ImageTexture)canvasTexture.DiffuseTexture).Update(img);
+					break;
+			}
+		} else {
+			texture = ImageTexture.CreateFromImage(img);
+		}
+
+		texture?.TakeOverPath(path);
 
 		return texture;
 	}
@@ -570,7 +579,23 @@ public sealed partial class Main : Control {
 		foreach (Match match in Utils.ImgPathRegex().Matches(text)) {
 			var path = match.Groups["path"].Value;
 			var oldText = text.Substring(match.Index, match.Length);
-			text = text.Replace(oldText, oldText.Replace(path, LoadImageFile(path).ResourcePath));
+			var properties = Utils.ParseExpressionsForValues(oldText);
+			var texture = LoadImageFile(path);
+			if (texture is not CanvasTexture canvasTexture) {
+				canvasTexture = new CanvasTexture();
+				canvasTexture.DiffuseTexture = texture;
+				canvasTexture.TextureFilter = TextureFilterEnum.Linear;
+				canvasTexture.TakeOverPath(texture.ResourcePath);
+				texture = canvasTexture;
+			}
+
+			if (properties.TryGetValue("filter", out var filter)) {
+				canvasTexture.TextureFilter = filter.AsString() switch {
+					"linear" => TextureFilterEnum.Linear, "nearest" => TextureFilterEnum.Nearest, _ => TextureFilterEnum.Linear
+				};
+			}
+
+			text = text.Replace(oldText, oldText.Replace(path, texture.ResourcePath));
 		}
 	}
 

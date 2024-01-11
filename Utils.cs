@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Godot;
+using Godot.Collections;
 using Jint;
 using Jint.Native;
 using Jint.Native.Json;
@@ -179,6 +181,17 @@ public static partial class Utils {
 
 	public static string UnEnBase64(this string str) {
 		return string.IsNullOrEmpty(str) ? "" : Encoding.UTF8.GetString(Convert.FromBase64String(str));
+	}
+
+	public static Dictionary ParseExpressionsForValues(string bbcode) {
+		var brkPos = bbcode.Find("[", 0);
+		var brkEnd = bbcode.Find("]", brkPos + 1);
+		var splitTagBlock = bbcode.Substr(brkPos + 1, brkEnd - brkPos - 1).Split(" ").ToList();
+		splitTagBlock.RemoveAt(0);
+		var ric = new RichTextLabel();
+		var properties = ric.ParseExpressionsForValues(splitTagBlock.ToArray());
+		ric.QueueFree();
+		return properties;
 	}
 
 	static private partial string SCRIPT_AES256_ENCRYPTION_KEY();
