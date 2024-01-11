@@ -20,10 +20,10 @@ namespace 创世记;
 public sealed partial class Main : Control {
 	[GetNode("%ChooseWorldButton")] private Button _chooseWorldButton;
 	[GetNode("%Home")] private Control _home;
-	[GetNode("%Game")] private Control _game;
 	[GetNode("%ChooseWorld")] private Control _chooseWorld;
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
 	[GetNode("%Background")] private Control _background;
+	[GetNode("%Game")] private Control _game;
 	[GetNode("%Game/%LeftButtonList")] private Control _leftButtonList;
 	[GetNode("%Game/%RightButtonList")] private Control _rightButtonList;
 	[GetNode("%Game/%LeftText")] private RichTextLabel _leftText;
@@ -67,40 +67,6 @@ public sealed partial class Main : Control {
 		};
 		GetNode<Button>("Window/ChooseWorld/Back").Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
-		_game.GetNode<Button>("%Exit").Pressed += () => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
-		_game.GetNode<Button>("%Encrypt").Pressed += () => {
-			Utils.ExportEncryptionModPck(CurrentModInfo);
-			ExitWorld();
-		};
-		_commandEdit.TextSubmitted += text => {
-			_commandEdit.Text = "";
-			EmitEvent(WorldEventType.Command, text);
-		};
-
-		_leftText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 0);
-		_centerText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 1);
-		_rightText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 2);
-
-		_leftText.Resized += async () => {
-			if (_leftText.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_leftText.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_left", 0);
-		};
-		_leftText.VisibilityChanged += async () => {
-			if (_leftText.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_leftText.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_left", 0);
-		};
-		_rightButtonList.Resized += async () => {
-			if (_rightButtonList.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_rightButtonList.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_right", 0);
-		};
-		_rightButtonList.VisibilityChanged += async () => {
-			if (_rightButtonList.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_rightButtonList.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_right", 0);
-		};
 
 		Utils.TsTransform.Prepare();
 	}
@@ -128,6 +94,9 @@ public sealed partial class Main : Control {
 		if (_currentWorld == null) return;
 		try {
 			EmitEvent(WorldEventType.Tick);
+		} catch (JavaScriptException e) {
+			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace ?? string.Empty)}");
+			ExitWorld(1);
 		} catch (Exception e) {
 			if (e is ExecutionCanceledException) {
 				return;
@@ -161,10 +130,9 @@ public sealed partial class Main : Control {
 			worldItem.GetNode<Label>("%Name").Text = $"{modInfo.Value.Name}-{modInfo.Value.Version}";
 			worldItem.GetNode<Label>("%Description").Text = $"{modInfo.Value.Author}\n{modInfo.Value.Description}";
 			worldItem.GetNode<TextureRect>("%Encrypt").Visible = modInfo.Value.IsEncrypt;
-			var iconPath = (modInfo.Value.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(modInfo.Value.Path)
-				.PathJoin(modInfo.Value.Icon);
-			if (FileAccess.FileExists(iconPath)) {
-				worldItem.GetNode<TextureRect>("%Icon").Texture = ImageTexture.CreateFromImage(Image.LoadFromFile(iconPath));
+			var icon = LoadImageFile(modInfo.Value, modInfo.Value.Icon);
+			if (icon != null) {
+				worldItem.GetNode<TextureRect>("%Icon").Texture = icon;
 			}
 
 			worldItem.GetNode<Button>("%Run").Pressed += () => {
@@ -189,12 +157,10 @@ public sealed partial class Main : Control {
 
 	private void RunWorld() {
 		try {
-			_game.GetNode<Control>("Main").Visible = false;
-			// RestoreDefaultSettings();
+			InitGame();
 			InitEngine();
 			CurrentEngine.Modules.Import(CurrentModInfo.Main);
 			var tween = GetTree().CreateTween();
-			// tween.SetTrans(Tween.TransitionType.Linear);
 			tween.SetEase(Tween.EaseType.Out);
 			tween.Parallel().TweenProperty(_game, "modulate:a", 1.5, 1.5);
 			tween.Parallel().TweenProperty(_background, "modulate:a", 1.5, 1.5);
@@ -209,6 +175,58 @@ public sealed partial class Main : Control {
 			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace ?? string.Empty)}");
 			ExitWorld(1);
 		}
+	}
+
+	private void InitGame() {
+		var oldGame = _game;
+		_game = _gameScene.Instantiate<Control>();
+		_game.GetNode<Control>("Main").Visible = false;
+		oldGame.AddSibling(_game);
+		oldGame.GetParent().RemoveChild(oldGame);
+		oldGame.QueueFree();
+		_game.Name = "Game";
+		_leftButtonList = _game.GetNode<Control>("%LeftButtonList");
+		_rightButtonList = _game.GetNode<Control>("%RightButtonList");
+		_leftText = _game.GetNode<RichTextLabel>("%LeftText");
+		_centerText = _game.GetNode<RichTextLabel>("%CenterText");
+		_rightText = _game.GetNode<RichTextLabel>("%RightText");
+		_commandEdit = _game.GetNode<LineEdit>("%CommandEdit");
+
+		_game.GetNode<Button>("%Exit").Pressed += () => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
+		_game.GetNode<Button>("%Encrypt").Pressed += () => {
+			Utils.ExportEncryptionModPck(CurrentModInfo);
+			ExitWorld();
+		};
+
+		_commandEdit.TextSubmitted += text => {
+			_commandEdit.Text = "";
+			EmitEvent(WorldEventType.Command, text);
+		};
+
+		_leftText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 0);
+		_centerText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 1);
+		_rightText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 2);
+
+		_leftText.Resized += async () => {
+			if (_leftText.GetChildCount() <= 0) return;
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			_leftText.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_left", 0);
+		};
+		_leftText.VisibilityChanged += async () => {
+			if (_leftText.GetChildCount() <= 0) return;
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			_leftText.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_left", 0);
+		};
+		_rightButtonList.Resized += async () => {
+			if (_rightButtonList.GetChildCount() <= 0) return;
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			_rightButtonList.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_right", 0);
+		};
+		_rightButtonList.VisibilityChanged += async () => {
+			if (_rightButtonList.GetChildCount() <= 0) return;
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			_rightButtonList.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_right", 0);
+		};
 	}
 
 	private void InitEngine() {
@@ -456,8 +474,14 @@ public sealed partial class Main : Control {
 			}
 
 			Callable.From(() => {
-				callback.Call(thisObj: JsValue.Undefined, values ?? []);
-				CurrentEngine.Advanced.ProcessTasks();
+				try {
+					callback.Call(thisObj: JsValue.Undefined, values ?? []);
+					CurrentEngine.Advanced.ProcessTasks();
+				} catch (JavaScriptException e) {
+					Log(
+						$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace ?? string.Empty)}");
+					ExitWorld(1);
+				} catch (ExecutionCanceledException) { }
 			}).CallDeferred();
 			if (autoReset) return;
 			_timers.Remove(id);
@@ -480,25 +504,6 @@ public sealed partial class Main : Control {
 			(node as AudioPlayer)?.Dispose();
 		}
 
-		SetLeftButtons([]);
-		SetRightButtons([]);
-
-		_leftText.Clear();
-		_centerText.Clear();
-		_rightText.Clear();
-		SetRichText(_leftText, null);
-		SetRichText(_centerText, null);
-		SetRichText(_rightText, null);
-		_leftText.SizeFlagsStretchRatio = 1;
-		_centerText.SizeFlagsStretchRatio = 1;
-		_rightText.SizeFlagsStretchRatio = 1;
-		_leftText.GetParent().GetParent<Panel>().Visible = false;
-		_centerText.GetParent().GetParent<Panel>().Visible = false;
-		_rightText.GetParent().GetParent<Panel>().Visible = false;
-
-		_commandEdit.Text = "";
-		_commandEdit.PlaceholderText = "";
-
 		_background.GetNode<ColorRect>("ColorRect").Color = Color.Color8(74, 74, 74);
 		_background.GetNode<TextureRect>("TextureRect").Texture = null;
 	}
@@ -519,7 +524,11 @@ public sealed partial class Main : Control {
 	}
 
 	static private Texture2D LoadImageFile(string path) {
-		path = (CurrentModInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(CurrentModInfo.Path)
+		return LoadImageFile(CurrentModInfo, path);
+	}
+	
+	static private Texture2D LoadImageFile(ModInfo modInfo, string path) {
+		path = (modInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(modInfo.Path)
 			.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(path)) return null;
 		if (ResourceLoader.Exists(path)) {
