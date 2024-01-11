@@ -133,8 +133,9 @@ interface WorldObject {
 	/**
 	 * 设置背景纹理
 	 * @param texturePath 纹理路径
+	 * @param textureFilter 纹理过滤模式，0为双线性插值，1为最近邻插值，默认为0
 	 */
-	setBackgroundTexture(texturePath: string): void;
+	setBackgroundTexture(texturePath: string, textureFilter?: number): void;
 	/**
 	 * 设置命令行提示文本
 	 * @param placeholderText 提示文本

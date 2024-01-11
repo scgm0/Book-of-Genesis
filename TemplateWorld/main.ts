@@ -3,7 +3,7 @@ import AudioPlayer from "audio";
 
 let a = AudioPlayer.playFile("gull_1");
 World.print(a.finishedCallback = function(){
-	World.print(this, this.currentPosition)
+	World.print(Utils, this.currentPosition)
 });
 
 let t = Date.now();
@@ -11,7 +11,7 @@ let id = setTimeout((...a1)=>{
 		World.print(...a1, (Date.now()-t)/1000);
 		World.addRightButton("777");
 	}, 1000, "a1", World.info.version);
-World.setBackgroundTexture("icon.png");
+World.setBackgroundTexture("icon.png", 1);
 World.event.on("ready", () => {
 	// clearTimeout(id);
 	World.print(import.meta.url, Date.now()-t);
@@ -36,7 +36,7 @@ World.event.on("right_button_click", (str, i) => {
 	if(str == "777") {
 		// World.removeLeftButton(-1);
 		World.setLeftText(`
-[img]icon.png[/img]
+[img filter=nearest]icon.png[/img]
 [i]好好好[/i]
 [bgcolor=red][url={"data": "yes"}]确定[/url][url=no]取消[/url][/bgcolor]
 [color=#ff00ff][url]无[/url][/color]

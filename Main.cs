@@ -282,7 +282,10 @@ public sealed partial class Main : Control {
 					}));
 			currentWorld.Set("setBackgroundTexture",
 				new DelegateWrapper(CurrentEngine,
-					(string path) => { _background.GetNode<TextureRect>("TextureRect").Texture = LoadImageFile(path); }));
+					(string path, TextureFilterEnum filter = TextureFilterEnum.Nearest) => {
+						GD.PrintS(filter);
+						_background.GetNode<TextureRect>("TextureRect").Texture = LoadImageFile(path, filter);
+					}));
 			currentWorld.Set("setTitle",
 				new DelegateWrapper(CurrentEngine,
 					(string title) => SetRichText(_game.GetNode<RichTextLabel>("%Title"), title)));
@@ -523,30 +526,27 @@ public sealed partial class Main : Control {
 		_game.Visible = false;
 	}
 
-	static private Texture2D LoadImageFile(string path) { return LoadImageFile(CurrentModInfo, path); }
+	static private CanvasTexture LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) { return LoadImageFile(CurrentModInfo, path, filter); }
 
-	static private Texture2D LoadImageFile(ModInfo modInfo, string path) {
+	static private CanvasTexture LoadImageFile(ModInfo modInfo, string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
 		path = (modInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(modInfo.Path)
 			.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(path)) return null;
 
 		using var img = Image.LoadFromFile(path);
-		Texture2D texture;
+		CanvasTexture texture;
 		if (ResourceLoader.Exists(path)) {
-			texture = GD.Load<Texture2D>(path);
-			switch (texture) {
-				case ImageTexture imageTexture:
-					imageTexture.Update(img);
-					break;
-				case CanvasTexture canvasTexture:
-					((ImageTexture)canvasTexture.DiffuseTexture).Update(img);
-					break;
-			}
+			texture = GD.Load<CanvasTexture>(path);
+			((ImageTexture)texture.DiffuseTexture).Update(img);
 		} else {
-			texture = ImageTexture.CreateFromImage(img);
+			var imageTexture = ImageTexture.CreateFromImage(img);
+			texture = new CanvasTexture();
+			texture.DiffuseTexture = imageTexture;
 		}
 
-		texture?.TakeOverPath(path);
+		texture.TextureFilter = filter;
+
+		texture.TakeOverPath(path);
 
 		return texture;
 	}
@@ -580,19 +580,16 @@ public sealed partial class Main : Control {
 			var path = match.Groups["path"].Value;
 			var oldText = text.Substring(match.Index, match.Length);
 			var properties = Utils.ParseExpressionsForValues(oldText);
-			var texture = LoadImageFile(path);
-			if (texture is not CanvasTexture canvasTexture) {
-				canvasTexture = new CanvasTexture();
-				canvasTexture.DiffuseTexture = texture;
-				canvasTexture.TextureFilter = TextureFilterEnum.Linear;
-				canvasTexture.TakeOverPath(texture.ResourcePath);
-				texture = canvasTexture;
-			}
+			CanvasTexture texture;
 
 			if (properties.TryGetValue("filter", out var filter)) {
-				canvasTexture.TextureFilter = filter.AsString() switch {
-					"linear" => TextureFilterEnum.Linear, "nearest" => TextureFilterEnum.Nearest, _ => TextureFilterEnum.Linear
+				texture = filter.AsString() switch {
+					"linear" => LoadImageFile(path),
+					"nearest" => LoadImageFile(path, TextureFilterEnum.Nearest),
+					_ => LoadImageFile(path)
 				};
+			} else {
+				texture = LoadImageFile(path);
 			}
 
 			text = text.Replace(oldText, oldText.Replace(path, texture.ResourcePath));
