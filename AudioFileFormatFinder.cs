@@ -1,5 +1,6 @@
 // ReSharper disable CheckNamespace
 
+// ReSharper disable UnusedMember.Global
 #nullable enable
 public static class AudioFileFormatFinder {
 	public static AudioFormat GetAudioFormat(byte[] fileHeader) {

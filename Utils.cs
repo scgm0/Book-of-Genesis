@@ -1,7 +1,6 @@
 using System;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using Godot;
 using Jint;
 using Jint.Native;
@@ -33,7 +32,6 @@ public static partial class Utils {
 
 	public static SourceMapCollection SourceMapCollection { get; set; } = new();
 	public static readonly TsTransform TsTransform = new();
-	public static readonly GodotSynchronizationContext Context = (GodotSynchronizationContext)SynchronizationContext.Current;
 	public static readonly SceneTree Tree = Godot.Engine.GetMainLoop() as SceneTree;
 
 	// public static readonly JsonSerializerOptions JsonSerializerOptions = new() {

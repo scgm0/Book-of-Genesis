@@ -16,7 +16,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace 创世记;
 
-public class CustomModuleLoader : IModuleLoader {
+sealed class CustomModuleLoader : IModuleLoader {
 
 	private readonly Uri _basePath;
 	private readonly bool _restrictToBasePath;

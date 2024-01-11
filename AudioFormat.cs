@@ -1,6 +1,5 @@
 // ReSharper disable CheckNamespace
 
-#nullable enable
 public enum AudioFormat {
 	Ogg,
 	Wav,

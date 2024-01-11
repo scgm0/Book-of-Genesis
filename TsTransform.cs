@@ -5,7 +5,7 @@ using Engine = Jint.Engine;
 
 namespace 创世记;
 
-public class TsTransform {
+public sealed class TsTransform {
 	private readonly Engine _engine = new(options => options.DebugMode(false));
 	private JsValue _compiler;
 	public JsObject Compile(string code, string fileName) => (JsObject)_engine.Invoke(_compiler, code, null, fileName);

@@ -8,7 +8,7 @@ using Engine = Jint.Engine;
 
 namespace 创世记;
 
-public partial class Main {
+public sealed partial class Main {
 
 	static private readonly Dictionary<string, ModInfo> ModInfos = new();
 	private JsObject _currentWorld;

@@ -2,15 +2,16 @@
 using System;
 using System.Text;
 using Godot;
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable CheckNamespace
 
-public struct WavFileHeader(uint subChunk1Size) {
+public struct WavFileHeader {
 	public uint ChunkId;
 	public uint ChunkSize;
 	public uint Format;
 	public uint SubChunk1Id;
-	public uint SubChunk1Size = subChunk1Size;
+	public uint SubChunk1Size;
 	public ushort AudioFormat;
 	public ushort NumChannels;
 	public uint SampleRate;
@@ -129,18 +130,5 @@ public struct WavFileHeader(uint subChunk1Size) {
 			$"SubChunk2Size:\t{SubChunk2Size}\n" + "[info]\n" + $"IsExtensible:\t\t{IsExtensible}\n" +
 			$"HeaderSize:\t\t{HeaderSize}\n" + $"Duration:\t\t{TimeSpan.FromSeconds(Duration)}\n" +
 			$"TotalSamples:\t\t{TotalSamples}";
-	}
-}
-
-public static class FieldAccessException {
-	public static uint Peek(this FileAccess file) {
-		var pos = file.GetPosition();
-		var @char = file.Get8();
-		file.Seek(pos);
-		return @char;
-	}
-
-	public static void Skip(this FileAccess file, ulong length) {
-		file.Seek(file.GetPosition() + length);
 	}
 }

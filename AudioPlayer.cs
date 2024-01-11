@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using Godot;
 using Jint;
 using Jint.Native;

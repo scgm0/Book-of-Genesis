@@ -17,7 +17,7 @@ using Timer = System.Timers.Timer;
 
 namespace 创世记;
 
-public partial class Main : Control {
+public sealed partial class Main : Control {
 	[GetNode("%ChooseWorldButton")] private Button _chooseWorldButton;
 	[GetNode("%Home")] private Control _home;
 	[GetNode("%Game")] private Control _game;

@@ -3,7 +3,7 @@ using Godot;
 
 namespace 创世记;
 
-public class ModInfo {
+public sealed class ModInfo {
 	public required string Name { get; set; }
 	public required string Author { get; set; }
 	public required string Main { get; set; }
