@@ -283,7 +283,6 @@ public sealed partial class Main : Control {
 			currentWorld.Set("setBackgroundTexture",
 				new DelegateWrapper(CurrentEngine,
 					(string path, TextureFilterEnum filter = TextureFilterEnum.Nearest) => {
-						GD.PrintS(filter);
 						_background.GetNode<TextureRect>("TextureRect").Texture = LoadImageFile(path, filter);
 					}));
 			currentWorld.Set("setTitle",
@@ -579,11 +578,11 @@ public sealed partial class Main : Control {
 		foreach (Match match in Utils.ImgPathRegex().Matches(text)) {
 			var path = match.Groups["path"].Value;
 			var oldText = text.Substring(match.Index, match.Length);
-			var properties = Utils.ParseExpressionsForValues(oldText);
+			var filter = Utils.ParseExpressionsForValues(oldText);
 			CanvasTexture texture;
 
-			if (properties.TryGetValue("filter", out var filter)) {
-				texture = filter.AsString() switch {
+			if (!string.IsNullOrEmpty(filter)) {
+				texture = filter switch {
 					"linear" => LoadImageFile(path),
 					"nearest" => LoadImageFile(path, TextureFilterEnum.Nearest),
 					_ => LoadImageFile(path)
