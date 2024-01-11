@@ -42,7 +42,7 @@ enabled=PackedStringArray("res://addons/SmoothScroll/plugin.cfg")
 
 [gui]
 
-theme/custom_font="res://Assets/Font/RegularFont.tres"
+theme/custom_font="res://Assets/Font/SourceHanSerifCN-Regular-sub.otf"
 theme/default_font_generate_mipmaps=true
 
 [importer_defaults]

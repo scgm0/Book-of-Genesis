@@ -36,12 +36,7 @@ public static partial class Utils {
 	public static SourceMapCollection SourceMapCollection { get; set; } = new();
 	public static readonly TsTransform TsTransform = new();
 	public static readonly SceneTree Tree = Godot.Engine.GetMainLoop() as SceneTree;
-
-	// public static readonly JsonSerializerOptions JsonSerializerOptions = new() {
-	// 	PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-	// 	TypeInfoResolver = SourceGenerationContext.Default,
-	// 	Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-	// };
+	public static readonly List<Texture2D> TextureCache = [];
 
 	static Utils() {
 		if (!DirAccess.DirExistsAbsolute(UserModsPath)) {

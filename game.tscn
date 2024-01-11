@@ -1,6 +1,6 @@
 [gd_scene load_steps=11 format=3 uid="uid://k2w3hc0p1xm3"]
 
-[ext_resource type="FontVariation" uid="uid://bqh8d2c5h4cl" path="res://Assets/Font/BoldFont.tres" id="1_r5wvy"]
+[ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_lwsvx"]
 [ext_resource type="Script" path="res://addons/SmoothScroll/SmoothScrollContainer.gd" id="2_us7i4"]
 [ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_xq01r"]
 [ext_resource type="FontVariation" uid="uid://dcqk6d3is3us1" path="res://Assets/Font/ItalicsFont.tres" id="3_c25ul"]
@@ -17,7 +17,7 @@ corner_radius_bottom_left = 5
 [sub_resource type="Theme" id="Theme_382wn"]
 Panel/styles/panel = SubResource("StyleBoxFlat_6exi8")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
-RichTextLabel/fonts/bold_font = ExtResource("1_r5wvy")
+RichTextLabel/fonts/bold_font = ExtResource("1_lwsvx")
 RichTextLabel/fonts/bold_italics_font = ExtResource("2_xq01r")
 RichTextLabel/fonts/italics_font = ExtResource("3_c25ul")
 RichTextLabel/styles/focus = SubResource("StyleBoxEmpty_6v3t7")

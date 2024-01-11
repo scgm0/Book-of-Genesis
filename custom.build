@@ -59,6 +59,8 @@
 		"NavigationObstacle2D",
 		"NavigationPolygon",
 		"NavigationRegion2D",
+		"NavigationServer2D"
+		"NavigationServer3D"
 		"Node2D",
 		"Node3D",
 		"Noise",

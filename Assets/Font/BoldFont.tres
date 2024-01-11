@@ -1,6 +1,0 @@
-[gd_resource type="FontVariation" load_steps=2 format=3 uid="uid://bqh8d2c5h4cl"]
-
-[ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_fcxox"]
-
-[resource]
-base_font = ExtResource("1_fcxox")

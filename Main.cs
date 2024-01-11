@@ -77,6 +77,10 @@ public sealed partial class Main : Control {
 				ExitWorld();
 			}
 
+			_gameScene.Dispose();
+			_worldItem.Dispose();
+			_globalConfig.Dispose();
+			GC.Collect();
 			GetTree().Quit();
 		} else if (what == NotificationWMGoBackRequest) {
 			if (_home.Visible) {
@@ -160,9 +164,10 @@ public sealed partial class Main : Control {
 			InitGame();
 			InitEngine();
 			CurrentEngine.Modules.Import(CurrentModInfo.Main);
-			var tween = GetTree().CreateTween();
+			using var tween = _game.CreateTween();
 			tween.SetEase(Tween.EaseType.Out);
 			tween.Parallel().TweenProperty(_game, "modulate:a", 1.5, 1.5);
+
 			tween.Parallel().TweenProperty(_background, "modulate:a", 1.5, 1.5);
 
 			tween.TweenCallback(Callable.From(() => {
@@ -506,6 +511,18 @@ public sealed partial class Main : Control {
 			(node as AudioPlayer)?.Dispose();
 		}
 
+		foreach (var (key, modInfo) in ModInfos) {
+			modInfo.Config.Dispose();
+		}
+
+		ModInfos.Clear();
+
+		foreach (var texture2D in Utils.TextureCache) {
+			texture2D.Dispose();
+		}
+
+		Utils.TextureCache.Clear();
+
 		_background.GetNode<ColorRect>("ColorRect").Color = Color.Color8(74, 74, 74);
 		_background.GetNode<TextureRect>("TextureRect").Texture = null;
 	}
@@ -525,27 +542,25 @@ public sealed partial class Main : Control {
 		_game.Visible = false;
 	}
 
-	static private CanvasTexture LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) { return LoadImageFile(CurrentModInfo, path, filter); }
+	static private CanvasTexture LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
+		return LoadImageFile(CurrentModInfo, path, filter);
+	}
 
-	static private CanvasTexture LoadImageFile(ModInfo modInfo, string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
+	static private CanvasTexture LoadImageFile(
+		ModInfo modInfo,
+		string path,
+		TextureFilterEnum filter = TextureFilterEnum.Linear) {
 		path = (modInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(modInfo.Path)
 			.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(path)) return null;
 
 		using var img = Image.LoadFromFile(path);
-		CanvasTexture texture;
-		if (ResourceLoader.Exists(path)) {
-			texture = GD.Load<CanvasTexture>(path);
-			((ImageTexture)texture.DiffuseTexture).Update(img);
-		} else {
-			var imageTexture = ImageTexture.CreateFromImage(img);
-			texture = new CanvasTexture();
-			texture.DiffuseTexture = imageTexture;
-		}
-
+		var texture = new CanvasTexture();
+		texture.DiffuseTexture = ImageTexture.CreateFromImage(img);
+		Utils.TextureCache.Add(texture.DiffuseTexture);
 		texture.TextureFilter = filter;
-
 		texture.TakeOverPath(path);
+		Utils.TextureCache.Add(texture);
 
 		return texture;
 	}
