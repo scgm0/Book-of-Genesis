@@ -115,10 +115,12 @@ grow_vertical = 0
 theme_override_font_sizes/font_size = 25
 underline = 2
 
-[node name="Game" parent="PanelContainer" instance=ExtResource("4_8ufyh")]
+[node name="Game" parent="." instance=ExtResource("4_8ufyh")]
 unique_name_in_owner = true
 visible = false
-layout_mode = 2
+layout_mode = 1
+size_flags_horizontal = 4
+size_flags_vertical = 4
 
 [node name="Window" type="CanvasLayer" parent="."]
 
