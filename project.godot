@@ -55,6 +55,7 @@ texture={
 
 buffering/agile_event_flushing=true
 pointing/emulate_touch_from_mouse=true
+pointing/android/enable_long_press_as_right_click=true
 
 [rendering]
 
