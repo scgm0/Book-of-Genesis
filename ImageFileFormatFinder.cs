@@ -13,7 +13,6 @@ public static class ImageFileFormatFinder {
 	public static ImageFormat GetImageFormat(byte[] fileHeader) {
 		var buffer = new byte[4];
 		System.Buffer.BlockCopy(fileHeader, 0, buffer, 0, 4);
-		GD.PrintS(buffer.Stringify());
 
 		if (Bmp.SequenceEqual(buffer.Take(Bmp.Length)))
 			return ImageFormat.Bmp;

@@ -1,9 +1,9 @@
 [gd_scene load_steps=11 format=3 uid="uid://k2w3hc0p1xm3"]
 
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_lwsvx"]
-[ext_resource type="Script" path="res://addons/SmoothScroll/SmoothScrollContainer.gd" id="2_us7i4"]
 [ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_xq01r"]
 [ext_resource type="FontVariation" uid="uid://dcqk6d3is3us1" path="res://Assets/Font/ItalicsFont.tres" id="3_c25ul"]
+[ext_resource type="Script" path="res://SmoothScroll.cs" id="4_ifeic"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6exi8"]
 bg_color = Color(0, 0, 0, 0.372549)
@@ -211,17 +211,14 @@ theme = SubResource("Theme_i32w0")
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="SmoothScrollContainer" type="ScrollContainer" parent="Main/Control/VBoxContainer/HBoxContainer3"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Main/Control/VBoxContainer/HBoxContainer3"]
 layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 0
-script = ExtResource("2_us7i4")
-follow_focus_ = false
-allow_vertical_scroll = false
-auto_allow_scroll = false
+script = ExtResource("4_ifeic")
 
-[node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/SmoothScrollContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -230,7 +227,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="LeftButtonList" type="HBoxContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/SmoothScrollContainer/MarginContainer"]
+[node name="LeftButtonList" type="HBoxContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
@@ -244,17 +241,14 @@ size_flags_vertical = 4
 context_menu_enabled = false
 caret_blink = true
 
-[node name="SmoothScrollContainer2" type="ScrollContainer" parent="Main/Control/VBoxContainer/HBoxContainer3"]
+[node name="ScrollContainer2" type="ScrollContainer" parent="Main/Control/VBoxContainer/HBoxContainer3"]
 layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 0
-script = ExtResource("2_us7i4")
-follow_focus_ = false
-allow_vertical_scroll = false
-auto_allow_scroll = false
+script = ExtResource("4_ifeic")
 
-[node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/SmoothScrollContainer2"]
+[node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -263,7 +257,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="RightButtonList" type="HBoxContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/SmoothScrollContainer2/MarginContainer"]
+[node name="RightButtonList" type="HBoxContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer2/MarginContainer"]
 unique_name_in_owner = true
 layout_direction = 3
 layout_mode = 2

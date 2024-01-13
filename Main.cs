@@ -126,7 +126,7 @@ public sealed partial class Main : Control {
 		LoadModInfos();
 		_home.Visible = false;
 		_chooseWorld.Visible = true;
-		var list = GetNode<VBoxContainer>("Window/ChooseWorld/SmoothScrollContainer/MarginContainer/ChooseWorldList");
+		var list = GetNode<VBoxContainer>("Window/ChooseWorld/ScrollContainer/MarginContainer/ChooseWorldList");
 		foreach (var child in list.GetChildren()) {
 			child.QueueFree();
 		}
@@ -218,22 +218,22 @@ public sealed partial class Main : Control {
 		_leftText.Resized += async () => {
 			if (_leftText.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_leftText.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_left", 0);
+			_leftText.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
 		};
 		_leftText.VisibilityChanged += async () => {
 			if (_leftText.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_leftText.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_left", 0);
+			_leftText.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
 		};
 		_rightButtonList.Resized += async () => {
 			if (_rightButtonList.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_rightButtonList.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_right", 0);
+			_rightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
 		_rightButtonList.VisibilityChanged += async () => {
 			if (_rightButtonList.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_rightButtonList.GetNode<ScrollContainer>("../..").CallDeferred("scroll_to_right", 0);
+			_rightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
 	}
 
