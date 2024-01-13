@@ -518,6 +518,9 @@ public sealed partial class Main : Control {
 		ModInfos.Clear();
 
 		foreach (var texture2D in Utils.TextureCache) {
+			texture2D.DiffuseTexture?.Dispose();
+			texture2D.DiffuseTexture = null;
+			texture2D.TakeOverPath(null);
 			texture2D.Dispose();
 		}
 
@@ -550,16 +553,38 @@ public sealed partial class Main : Control {
 		ModInfo modInfo,
 		string path,
 		TextureFilterEnum filter = TextureFilterEnum.Linear) {
-		path = (modInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(modInfo.Path)
+		var filePath = (modInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(modInfo.Path)
 			.PathJoin(path).SimplifyPath();
-		if (!FileAccess.FileExists(path)) return null;
+		if (!FileAccess.FileExists(filePath)) return null;
+		if (ResourceLoader.Exists(filePath)) {
+			var canvasTexture = GD.Load<CanvasTexture>(filePath);
+			if (canvasTexture.TextureFilter == filter) return GD.Load<CanvasTexture>(filePath);
+		}
 
-		using var img = Image.LoadFromFile(path);
+		var data = FileAccess.GetFileAsBytes(filePath);
+		using var img = new Image();
+		switch (ImageFileFormatFinder.GetImageFormat(data)) {
+			case ImageFormat.Png:
+				img.LoadPngFromBuffer(data);
+				break;
+			case ImageFormat.Jpg:
+				img.LoadJpgFromBuffer(data);
+				break;
+			case ImageFormat.Bmp:
+				img.LoadBmpFromBuffer(data);
+				break;
+			case ImageFormat.Webp:
+				img.LoadWebpFromBuffer(data);
+				break;
+			case ImageFormat.Unknown:
+			default:
+				throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
+		}
+
 		var texture = new CanvasTexture();
 		texture.DiffuseTexture = ImageTexture.CreateFromImage(img);
-		Utils.TextureCache.Add(texture.DiffuseTexture);
 		texture.TextureFilter = filter;
-		texture.TakeOverPath(path);
+		texture.TakeOverPath(filePath);
 		Utils.TextureCache.Add(texture);
 
 		return texture;

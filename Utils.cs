@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Godot;
-using Godot.Collections;
 using Jint;
 using Jint.Native;
 using Jint.Native.Json;
@@ -36,7 +35,7 @@ public static partial class Utils {
 	public static SourceMapCollection SourceMapCollection { get; set; } = new();
 	public static readonly TsTransform TsTransform = new();
 	public static readonly SceneTree Tree = Godot.Engine.GetMainLoop() as SceneTree;
-	public static readonly List<Texture2D> TextureCache = [];
+	public static readonly List<CanvasTexture> TextureCache = [];
 
 	static Utils() {
 		if (!DirAccess.DirExistsAbsolute(UserModsPath)) {
