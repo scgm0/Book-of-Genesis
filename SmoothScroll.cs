@@ -7,10 +7,15 @@ namespace 创世记;
 [Tool]
 [GlobalClass]
 public partial class SmoothScroll : ScrollContainer {
+
+	public enum ScrollType { Wheel, Bar, Drag }
+
 	private float _bottomDistance;
 	private bool _contentDragging;
 	private Control _contentNode;
 	private float _damping = 0.1f;
+
+	private Vector2 _dragRelative = Vector2.Zero;
 	private Vector2 _dragStartPos = Vector2.Zero;
 	private float[] _dragTempData = [];
 	private float _friction = 0.9f;
@@ -22,8 +27,6 @@ public partial class SmoothScroll : ScrollContainer {
 
 	private ScrollType _lastScrollType;
 	private float _leftDistance;
-
-	private Vector2 _oldDragPos = Vector2.Zero;
 	private Vector2 _pos = new(0, 0);
 	private float _rightDistance;
 	private Timer _scrollbarHideTimer = new();
@@ -200,7 +203,7 @@ public partial class SmoothScroll : ScrollContainer {
 			_lastScrollType = ScrollType.Drag;
 			_friction = 0.0f;
 			_dragStartPos = _contentNode.Position;
-			_oldDragPos = pos;
+			_dragRelative = pos;
 			InitDragTempData();
 		} else {
 			_contentDragging = false;
@@ -213,14 +216,14 @@ public partial class SmoothScroll : ScrollContainer {
 		if (!_contentDragging) return;
 		_isScrolling = true;
 		if (ShouldScrollHorizontal()) {
-			_dragTempData[0] += pos.X - _oldDragPos.X;
+			_dragTempData[0] += pos.X - _dragRelative.X;
 		}
 
 		if (ShouldScrollVertical()) {
-			_dragTempData[1] += pos.Y - _oldDragPos.Y;
+			_dragTempData[1] += pos.Y - _dragRelative.Y;
 		}
 
-		_oldDragPos = pos;
+		_dragRelative = pos;
 		RemoveAllChildrenFocus(this);
 		HandleContentDragging();
 	}
@@ -231,7 +234,7 @@ public partial class SmoothScroll : ScrollContainer {
 			_lastScrollType = ScrollType.Drag;
 			_friction = 0.0f;
 			_dragStartPos = _contentNode.Position;
-			_oldDragPos = pos;
+			_dragRelative = pos;
 			InitDragTempData();
 		} else {
 			_contentDragging = false;
@@ -281,20 +284,20 @@ public partial class SmoothScroll : ScrollContainer {
 		_lastScrollType = ScrollType.Bar;
 	}
 
-	private void _OnNodeAdded(Node node) {
+	public void _OnNodeAdded(Node node) {
 		if (node is not Control control || !Engine.IsEditorHint()) return;
 		if (IsAncestorOf(control)) {
 			control.MouseFilter = MouseFilterEnum.Pass;
 		}
 	}
 
-	private void _ScrollbarHideTimerTimeout() {
+	public void _ScrollbarHideTimerTimeout() {
 		if (!AnyScrollBarDragged()) {
 			HideScrollbars();
 		}
 	}
 
-	private bool SetHideScrollbarOverTime(bool value) {
+	public bool SetHideScrollbarOverTime(bool value) {
 		if (value == false) {
 			_scrollbarHideTimer?.Stop();
 
@@ -311,7 +314,7 @@ public partial class SmoothScroll : ScrollContainer {
 		return value;
 	}
 
-	public void Scroll(bool vertical, float axisVelocity, float axisPos, float delta) {
+	private void Scroll(bool vertical, float axisVelocity, float axisPos, float delta) {
 		if (vertical) {
 			if (!ShouldScrollVertical()) {
 				return;
@@ -369,7 +372,7 @@ public partial class SmoothScroll : ScrollContainer {
 		}
 	}
 
-	private float[] HandleOverDrag(bool vertical, float axisVelocity, float axisPos) {
+	public float[] HandleOverDrag(bool vertical, float axisVelocity, float axisPos) {
 		var dist1 = vertical ? _topDistance : _leftDistance;
 		var dist2 = vertical ? _bottomDistance : _rightDistance;
 
@@ -423,7 +426,7 @@ public partial class SmoothScroll : ScrollContainer {
 		}
 	}
 
-	private bool HandleScrollbarDrag() {
+	public bool HandleScrollbarDrag() {
 		if (_hScrollbarDragging) {
 			_velocity.X = 0.0f;
 			_pos.X = _contentNode.Position.X;
@@ -436,7 +439,7 @@ public partial class SmoothScroll : ScrollContainer {
 		return true;
 	}
 
-	private void HandleContentDragging() {
+	public void HandleContentDragging() {
 		if (ShouldScrollVertical()) {
 			var yPos = CalculatePosition(_dragTempData[2], _dragTempData[3], _dragTempData[1]) + _dragStartPos.Y;
 			_velocity.Y = (yPos - _pos.Y) / (float)GetProcessDeltaTime() / 100f;
@@ -471,7 +474,7 @@ public partial class SmoothScroll : ScrollContainer {
 		}
 	}
 
-	private void CalculateDistance() {
+	public void CalculateDistance() {
 		_bottomDistance = _contentNode.Position.Y + _contentNode.GetRect().Size.Y - GetRect().Size.Y;
 		_topDistance = _contentNode.Position.Y;
 		_rightDistance = _contentNode.Position.X + _contentNode.GetRect().Size.X - GetRect().Size.X;
@@ -486,12 +489,12 @@ public partial class SmoothScroll : ScrollContainer {
 		}
 	}
 
-	private float StopFrame(float vel) {
+	public float StopFrame(float vel) {
 		return Mathf.Floor(Mathf.Max(Mathf.Log(_justStopUnder / (Mathf.Abs(vel) + 0.001f)) / Mathf.Log(_friction * 0.999f),
 			0.0f));
 	}
 
-	private bool WillStopWithin(bool vertical, float vel) {
+	public bool WillStopWithin(bool vertical, float vel) {
 		var stopFrame = StopFrame(vel);
 
 		var stopDistance = vel * (1 - Mathf.Pow(_friction, stopFrame)) / (1 - _friction);
@@ -502,7 +505,7 @@ public partial class SmoothScroll : ScrollContainer {
 		return stopPos <= 0.0f && stopPos >= Mathf.Min(diff, 0.0f);
 	}
 
-	static private void RemoveAllChildrenFocus(Node node) {
+	public static void RemoveAllChildrenFocus(Node node) {
 		if (node is Control control) {
 			control.ReleaseFocus();
 		}
@@ -512,7 +515,7 @@ public partial class SmoothScroll : ScrollContainer {
 		}
 	}
 
-	private void UpdateState() {
+	public void UpdateState() {
 		if (_contentDragging || _vScrollbarDragging || _hScrollbarDragging || _velocity != Vector2.Zero) {
 			_isScrolling = true;
 		} else {
@@ -520,7 +523,7 @@ public partial class SmoothScroll : ScrollContainer {
 		}
 	}
 
-	private void InitDragTempData() {
+	public void InitDragTempData() {
 		_dragTempData = [0.0f, 0.0f, _topDistance, _bottomDistance, _leftDistance, _rightDistance];
 	}
 
@@ -589,7 +592,7 @@ public partial class SmoothScroll : ScrollContainer {
 
 	public void ScrollToRight(float duration = 0.5f) { ScrollXTo(Size.X - _contentNode.Size.X, duration); }
 
-	private bool IsOutsideTopBoundary(float yPos = default) {
+	public bool IsOutsideTopBoundary(float yPos = default) {
 		if (yPos == 0) {
 			yPos = _pos.Y;
 		}
@@ -597,7 +600,7 @@ public partial class SmoothScroll : ScrollContainer {
 		return yPos > 0.0f;
 	}
 
-	private bool IsOutsideBottomBoundary(float yPos = default) {
+	public bool IsOutsideBottomBoundary(float yPos = default) {
 		if (yPos == 0) {
 			yPos = _pos.Y;
 		}
@@ -605,7 +608,7 @@ public partial class SmoothScroll : ScrollContainer {
 		return yPos < Size.Y - _contentNode.Size.Y;
 	}
 
-	private bool IsOutsideLeftBoundary(float xPos = default) {
+	public bool IsOutsideLeftBoundary(float xPos = default) {
 		if (xPos == 0) {
 			xPos = _pos.X;
 		}
@@ -613,7 +616,7 @@ public partial class SmoothScroll : ScrollContainer {
 		return xPos > 0.0f;
 	}
 
-	private bool IsOutsideRightBoundary(float xPos = default) {
+	public bool IsOutsideRightBoundary(float xPos = default) {
 		if (xPos == 0) {
 			xPos = _pos.X;
 		}
@@ -621,12 +624,12 @@ public partial class SmoothScroll : ScrollContainer {
 		return xPos < Size.X - _contentNode.Size.X;
 	}
 
-	private bool AnyScrollBarDragged() {
+	public bool AnyScrollBarDragged() {
 		if (GetVScrollBar() == null) return GetHScrollBar().HasFocus();
 		return GetVScrollBar().HasFocus() || GetHScrollBar().HasFocus();
 	}
 
-	private bool ShouldScrollVertical() {
+	public bool ShouldScrollVertical() {
 		var disableScroll = _contentNode.Size.Y - Size.Y < 1 || (!AllowVerticalScroll && AutoAllowScroll) ||
 			!AllowVerticalScroll;
 		if (!disableScroll) return true;
@@ -634,7 +637,7 @@ public partial class SmoothScroll : ScrollContainer {
 		return false;
 	}
 
-	private bool ShouldScrollHorizontal() {
+	public bool ShouldScrollHorizontal() {
 		var disableScroll = _contentNode.Size.X - Size.X < 1 || (!AllowHorizontalScroll && AutoAllowScroll) ||
 			!AllowHorizontalScroll;
 		if (!disableScroll) return true;
@@ -642,7 +645,7 @@ public partial class SmoothScroll : ScrollContainer {
 		return false;
 	}
 
-	private void HideScrollbars() {
+	public void HideScrollbars() {
 		_scrollbarHideTween?.Kill();
 		_scrollbarHideTween = CreateTween();
 		_scrollbarHideTween.SetParallel();
@@ -650,13 +653,11 @@ public partial class SmoothScroll : ScrollContainer {
 		_scrollbarHideTween.TweenProperty(GetHScrollBar(), "modulate", Colors.Transparent, ScrollbarFadeOutTime);
 	}
 
-	private void ShowScrollbars() {
+	public void ShowScrollbars() {
 		_scrollbarHideTween?.Kill();
 		_scrollbarHideTween = CreateTween();
 		_scrollbarHideTween.SetParallel();
 		_scrollbarHideTween.TweenProperty(GetVScrollBar(), "modulate", Colors.White, ScrollbarFadeInTime);
 		_scrollbarHideTween.TweenProperty(GetHScrollBar(), "modulate", Colors.White, ScrollbarFadeInTime);
 	}
-
-	private enum ScrollType { Wheel, Bar, Drag }
 }

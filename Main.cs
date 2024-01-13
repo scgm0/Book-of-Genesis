@@ -44,8 +44,13 @@ public sealed partial class Main : Control {
 		if (Utils.IsAndroid) {
 			OS.RequestPermissions();
 		}
-		
-		Log(Environment.Version.ToString());
+
+		Log("\nPlatform:",
+			OS.GetName(),
+			"\nGameVersion:",
+			Utils.GameVersion,
+			"\nDotNetVersion:",
+			Environment.Version.ToString());
 
 		GetTree().AutoAcceptQuit = false;
 
@@ -593,10 +598,12 @@ public sealed partial class Main : Control {
 				default:
 					throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
 			}
+
 			imageTexture = ImageTexture.CreateFromImage(img);
 		}
+
 		texture.DiffuseTexture = imageTexture;
-		
+
 		return texture;
 	}
 

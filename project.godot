@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="创世记"
+config/version="0.1.0-test.1"
 run/main_scene="res://main.tscn"
 config/use_custom_user_dir=true
 config/quit_on_go_back=false
@@ -38,7 +39,7 @@ project/assembly_name="创世记"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/SmoothScroll/plugin.cfg")
+enabled=PackedStringArray()
 
 [gui]
 

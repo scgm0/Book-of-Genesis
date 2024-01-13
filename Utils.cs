@@ -11,15 +11,18 @@ using SourceMaps;
 using Engine = Jint.Engine;
 using JsonSerializer = Jint.Native.Json.JsonSerializer;
 
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace 创世记;
 
 public static partial class Utils {
 	static private readonly string ScriptAes256EncryptionKey = SCRIPT_AES256_ENCRYPTION_KEY();
 
 	public static readonly bool IsAndroid = OS.GetName() == "Android";
+	
+	public static readonly StringName GameVersion = ProjectSettings.GetSetting("application/config/version").AsStringName();
 
-	// ReSharper disable once MemberCanBePrivate.Global
-	public static readonly string AppName = ProjectSettings.GetSetting("application/config/name").AsStringName();
+	public static readonly StringName AppName = ProjectSettings.GetSetting("application/config/name").AsStringName();
 
 	public static readonly string SavesPath =
 		IsAndroid ? $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/Saves" : "user://Saves";
