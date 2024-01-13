@@ -13,6 +13,7 @@ using Jint.Runtime.Descriptors;
 using Jint.Runtime.Interop;
 using SourceMaps;
 using Engine = Jint.Engine;
+using Environment = System.Environment;
 using Timer = System.Timers.Timer;
 
 namespace 创世记;
@@ -43,6 +44,8 @@ public sealed partial class Main : Control {
 		if (Utils.IsAndroid) {
 			OS.RequestPermissions();
 		}
+		
+		Log(Environment.Version.ToString());
 
 		GetTree().AutoAcceptQuit = false;
 
@@ -556,37 +559,44 @@ public sealed partial class Main : Control {
 		var filePath = (modInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(modInfo.Path)
 			.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(filePath)) return null;
+		ImageTexture imageTexture = null;
 		if (ResourceLoader.Exists(filePath)) {
 			var canvasTexture = GD.Load<CanvasTexture>(filePath);
-			if (canvasTexture.TextureFilter == filter) return GD.Load<CanvasTexture>(filePath);
-		}
+			if (canvasTexture.TextureFilter == filter) {
+				return GD.Load<CanvasTexture>(filePath);
+			}
 
-		var data = FileAccess.GetFileAsBytes(filePath);
-		using var img = new Image();
-		switch (ImageFileFormatFinder.GetImageFormat(data)) {
-			case ImageFormat.Png:
-				img.LoadPngFromBuffer(data);
-				break;
-			case ImageFormat.Jpg:
-				img.LoadJpgFromBuffer(data);
-				break;
-			case ImageFormat.Bmp:
-				img.LoadBmpFromBuffer(data);
-				break;
-			case ImageFormat.Webp:
-				img.LoadWebpFromBuffer(data);
-				break;
-			case ImageFormat.Unknown:
-			default:
-				throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
+			imageTexture = (ImageTexture)canvasTexture.DiffuseTexture;
 		}
 
 		var texture = new CanvasTexture();
-		texture.DiffuseTexture = ImageTexture.CreateFromImage(img);
 		texture.TextureFilter = filter;
 		texture.TakeOverPath(filePath);
 		Utils.TextureCache.Add(texture);
-
+		if (imageTexture == null) {
+			var data = FileAccess.GetFileAsBytes(filePath);
+			using var img = new Image();
+			switch (ImageFileFormatFinder.GetImageFormat(data)) {
+				case ImageFormat.Png:
+					img.LoadPngFromBuffer(data);
+					break;
+				case ImageFormat.Jpg:
+					img.LoadJpgFromBuffer(data);
+					break;
+				case ImageFormat.Bmp:
+					img.LoadBmpFromBuffer(data);
+					break;
+				case ImageFormat.Webp:
+					img.LoadWebpFromBuffer(data);
+					break;
+				case ImageFormat.Unknown:
+				default:
+					throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
+			}
+			imageTexture = ImageTexture.CreateFromImage(img);
+		}
+		texture.DiffuseTexture = imageTexture;
+		
 		return texture;
 	}
 
