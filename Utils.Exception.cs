@@ -9,6 +9,17 @@ using Engine = Jint.Engine;
 namespace 创世记;
 
 public static partial class Utils {
+	public static uint Peek(this FileAccess file) {
+		var pos = file.GetPosition();
+		var @char = file.Get8();
+		file.Seek(pos);
+		return @char;
+	}
+
+	public static void Skip(this FileAccess file, ulong length) {
+		file.Seek(file.GetPosition() + length);
+	}
+	
 	public static string ReplaceOnce(this string str, string oldValue, string newValue) {
 		//获取字符串中oldValue的索引
 		var index = str.IndexOf(oldValue, StringComparison.Ordinal);
