@@ -110,4 +110,21 @@ public static partial class Utils {
 	public static string UnEnBase64(this string str) {
 		return string.IsNullOrEmpty(str) ? "" : Encoding.UTF8.GetString(Convert.FromBase64String(str));
 	}
+
+	static private void AddDir(this PckPacker packer, string path) {
+		using var dir = DirAccess.Open(path);
+		if (dir == null) return;
+		dir.ListDirBegin();
+		var fileName = dir.GetNext();
+		while (fileName is not "" and not "." and not "..") {
+			var filePath = path.PathJoin(fileName);
+			if (dir.CurrentIsDir()) {
+				packer.AddDir(filePath);
+			} else {
+				packer.AddFile(filePath.ReplaceOnce(UserWorldsPath, ResWorldsPath), filePath, true);
+			}
+
+			fileName = dir.GetNext();
+		}
+	}
 }

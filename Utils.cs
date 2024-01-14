@@ -42,7 +42,7 @@ public static partial class Utils {
 			32,
 			ScriptAes256EncryptionKey,
 			true);
-		PckAddDir(packer, $"{UserWorldsPath}{worldInfo.Path}");
+		packer.AddDir($"{UserWorldsPath}{worldInfo.Path}");
 		packer.AddFile(
 			$"{ResWorldsPath}{worldInfo.Path}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt",
 			"res://Assets/.Encrypt");
@@ -99,23 +99,6 @@ public static partial class Utils {
 		}
 
 		dir.Remove("./");
-	}
-
-	static private void PckAddDir(PckPacker packer, string path) {
-		using var dir = DirAccess.Open(path);
-		if (dir == null) return;
-		dir.ListDirBegin();
-		var fileName = dir.GetNext();
-		while (fileName is not "" and not "." and not "..") {
-			var filePath = path.PathJoin(fileName);
-			if (dir.CurrentIsDir()) {
-				PckAddDir(packer, filePath);
-			} else {
-				packer.AddFile(filePath.ReplaceOnce(UserWorldsPath, ResWorldsPath), filePath, true);
-			}
-
-			fileName = dir.GetNext();
-		}
 	}
 
 	static private partial string SCRIPT_AES256_ENCRYPTION_KEY();
