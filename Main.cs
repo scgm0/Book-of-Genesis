@@ -44,8 +44,21 @@ public sealed partial class Main : Control {
 		if (Utils.IsAndroid) {
 			OS.RequestPermissions();
 		}
+		
+		if (!DirAccess.DirExistsAbsolute(Utils.UserModsPath)) {
+			DirAccess.MakeDirRecursiveAbsolute(Utils.UserModsPath);
+		}
 
-		Log("\nPlatform:",
+		if (!DirAccess.DirExistsAbsolute(Utils.SavesPath)) {
+			DirAccess.MakeDirRecursiveAbsolute(Utils.SavesPath);
+		}
+
+		if (!DirAccess.DirExistsAbsolute(Utils.TsGenPath)) {
+			DirAccess.MakeDirRecursiveAbsolute(Utils.TsGenPath);
+		}
+
+		Log("Game Start",
+			"\nPlatform:",
 			OS.GetName(),
 			"\nGameVersion:",
 			Utils.GameVersion,

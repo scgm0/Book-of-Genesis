@@ -40,20 +40,6 @@ public static partial class Utils {
 	public static readonly SceneTree Tree = Godot.Engine.GetMainLoop() as SceneTree;
 	public static readonly List<CanvasTexture> TextureCache = [];
 
-	static Utils() {
-		if (!DirAccess.DirExistsAbsolute(UserModsPath)) {
-			DirAccess.MakeDirRecursiveAbsolute(UserModsPath);
-		}
-
-		if (!DirAccess.DirExistsAbsolute(SavesPath)) {
-			DirAccess.MakeDirRecursiveAbsolute(SavesPath);
-		}
-
-		if (!DirAccess.DirExistsAbsolute(TsGenPath)) {
-			DirAccess.MakeDirRecursiveAbsolute(TsGenPath);
-		}
-	}
-
 	public static class Polyfill {
 		public static readonly string Events = FileAccess.GetFileAsString("res:///Polyfill/Events.js");
 		public static readonly string Tsc = FileAccess.GetFileAsString("res:///Polyfill/Tsc.js");
