@@ -19,7 +19,7 @@ public static partial class Utils {
 	static private readonly string ScriptAes256EncryptionKey = SCRIPT_AES256_ENCRYPTION_KEY();
 
 	public static readonly bool IsAndroid = OS.GetName() == "Android";
-	
+
 	public static readonly StringName GameVersion = ProjectSettings.GetSetting("application/config/version").AsStringName();
 
 	public static readonly StringName AppName = ProjectSettings.GetSetting("application/config/name").AsStringName();
@@ -58,6 +58,58 @@ public static partial class Utils {
 		packer.Flush(true);
 	}
 
+	public static string ParseExpressionsForValues(string bbcode) {
+		var startIndex = bbcode.IndexOf('[') + 1;
+		var endIndex = bbcode.IndexOf(']');
+		var tagContent = bbcode.Substring(startIndex, endIndex - startIndex);
+		var tagParts = tagContent.Split(" ", false).ToList();
+		tagParts.RemoveAt(0);
+
+		var filterKey = tagParts.FirstOrDefault(p => p.StartsWith("filter"));
+		if (string.IsNullOrEmpty(filterKey)) return string.Empty;
+
+		var filterValue = tagParts.FirstOrDefault(p => p.StartsWith(filterKey));
+		return filterValue != null ? filterValue.Split("=", false)[1] : string.Empty;
+	}
+
+	public static void CopyDir(string sourceDir, string destDir) {
+		if (!DirAccess.DirExistsAbsolute(destDir)) {
+			DirAccess.MakeDirRecursiveAbsolute(destDir);
+		}
+
+		using var dir = DirAccess.Open(sourceDir);
+		if (dir == null) return;
+		dir.ListDirBegin();
+		var fileName = dir.GetNext();
+		while (fileName is not "" and not "." and not "..") {
+			if (!dir.CurrentIsDir()) {
+				dir.Copy($"{sourceDir}/{fileName}".SimplifyPath(), $"{destDir}/{fileName}".SimplifyPath());
+			} else {
+				CopyDir($"{sourceDir}/{fileName}".SimplifyPath(), $"{destDir}/{fileName}".SimplifyPath());
+			}
+
+			fileName = dir.GetNext();
+		}
+	}
+
+	public static void RemoveDir(string path) {
+		using var dir = DirAccess.Open(path);
+		if (dir == null) return;
+		dir.ListDirBegin();
+		var fileName = dir.GetNext();
+		while (fileName is not "" and not "." and not "..") {
+			if (!dir.CurrentIsDir()) {
+				dir.Remove($"{path}/{fileName}".SimplifyPath());
+			} else {
+				RemoveDir($"{path}/{fileName}".SimplifyPath());
+			}
+
+			fileName = dir.GetNext();
+		}
+
+		dir.Remove("./");
+	}
+
 	static private void PckAddDir(PckPacker packer, string path) {
 		using var dir = DirAccess.Open(path);
 		if (dir == null) return;
@@ -75,7 +127,6 @@ public static partial class Utils {
 		}
 	}
 
-	//替换字符串中的某个值
 	public static string ReplaceOnce(this string str, string oldValue, string newValue) {
 		//获取字符串中oldValue的索引
 		var index = str.IndexOf(oldValue, StringComparison.Ordinal);
@@ -166,21 +217,6 @@ public static partial class Utils {
 	public static string UnEnBase64(this string str) {
 		return string.IsNullOrEmpty(str) ? "" : Encoding.UTF8.GetString(Convert.FromBase64String(str));
 	}
-
-	public static string ParseExpressionsForValues(string bbcode) {
-		var startIndex = bbcode.IndexOf('[') + 1;
-		var endIndex = bbcode.IndexOf(']');
-		var tagContent = bbcode.Substring(startIndex, endIndex - startIndex);
-		var tagParts = tagContent.Split(" ", false).ToList();
-		tagParts.RemoveAt(0);
-
-		var filterKey = tagParts.FirstOrDefault(p => p.StartsWith("filter"));
-		if (string.IsNullOrEmpty(filterKey)) return string.Empty;
-
-		var filterValue = tagParts.FirstOrDefault(p => p.StartsWith(filterKey));
-		return filterValue != null ? filterValue.Split("=", false)[1] : string.Empty;
-	}
-
 
 	static private partial string SCRIPT_AES256_ENCRYPTION_KEY();
 
