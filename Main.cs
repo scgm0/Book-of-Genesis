@@ -41,9 +41,6 @@ public sealed partial class Main : Control {
 	private JsonParser _jsonParser;
 
 	public override void _Ready() {
-		if (Utils.IsAndroid) {
-			OS.RequestPermissions();
-		}
 		
 		if (!DirAccess.DirExistsAbsolute(Utils.UserModsPath)) {
 			DirAccess.MakeDirRecursiveAbsolute(Utils.UserModsPath);
