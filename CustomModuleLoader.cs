@@ -21,7 +21,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 	private readonly Uri _basePath;
 	private readonly bool _restrictToBasePath;
 	private readonly bool _inUser;
-	private readonly ModInfo? _modInfo;
+	private readonly WorldInfo? _worldInfo;
 
 	private CustomModuleLoader(string basePath, bool inUser, bool restrictToBasePath = true) {
 		if (string.IsNullOrWhiteSpace(basePath)) {
@@ -49,7 +49,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 		_basePath = uriBuilder.Uri;
 	}
 
-	public CustomModuleLoader(ModInfo modInfo) : this(modInfo.Path, modInfo.IsUser) { _modInfo = modInfo; }
+	public CustomModuleLoader(WorldInfo worldInfo) : this(worldInfo.Path, worldInfo.IsUser) { _worldInfo = worldInfo; }
 
 	public ResolvedSpecifier Resolve(string? referencingModuleLocation, ModuleRequest moduleRequest) {
 		var specifier = moduleRequest.Specifier;
@@ -156,7 +156,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 
 		Debug.Assert(resolved.Uri != null, "resolved.Uri != null");
 		var fileName =
-			$"{(_inUser ? Utils.UserModsPath : Utils.ResModsPath)}{resolved.Key}";
+			$"{(_inUser ? Utils.UserWorldsPath : Utils.ResWorldsPath)}{resolved.Key}";
 
 		if (!FileAccess.FileExists(fileName)) {
 			Main.Log("找不到模块: ", specifier);
@@ -166,15 +166,15 @@ sealed class CustomModuleLoader : IModuleLoader {
 		code = FileAccess.GetFileAsString(fileName);
 
 		if (fileName.GetExtension() == "ts") {
-			if (FileAccess.FileExists($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.meta") &&
-				FileAccess.FileExists($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js")) {
+			if (FileAccess.FileExists($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}.meta") &&
+				FileAccess.FileExists($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}.js")) {
 				var tsSha256 = FileAccess.GetSha256(fileName);
 				var tsMeta = JsonSerializer.Deserialize(
-					FileAccess.GetFileAsString($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.meta"),
+					FileAccess.GetFileAsString($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}.meta"),
 					SourceGenerationContext.Default.TsMeta);
-				var jsSha256 = FileAccess.GetSha256($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js");
+				var jsSha256 = FileAccess.GetSha256($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}.js");
 				if (tsSha256 == tsMeta.TsSha256 && jsSha256 == tsMeta.JsSha256) {
-					code = FileAccess.GetFileAsString($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js");
+					code = FileAccess.GetFileAsString($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}.js");
 				} else {
 					TsGen(ref code, fileName, resolved);
 				}
@@ -188,16 +188,16 @@ sealed class CustomModuleLoader : IModuleLoader {
 
 	private void TsGen(ref string code, string fileName, ResolvedSpecifier resolved) {
 		if (string.IsNullOrEmpty(code)) return;
-		DirAccess.MakeDirRecursiveAbsolute($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}".GetBaseDir());
+		DirAccess.MakeDirRecursiveAbsolute($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}".GetBaseDir());
 		var tsSha256 = FileAccess.GetSha256(fileName);
 		var res = Utils.TsTransform.Compile(FileAccess.GetFileAsString(fileName), resolved.Key);
 		code = res["outputText"].AsString();
 		using var jsFile =
-			FileAccess.Open($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js", FileAccess.ModeFlags.Write);
+			FileAccess.Open($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}.js", FileAccess.ModeFlags.Write);
 		jsFile.StoreString(code);
 		jsFile.Flush();
-		var jsSha256 = FileAccess.GetSha256($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.js");
-		using var tsMetaFile = FileAccess.Open($"{Utils.TsGenPath}/{_modInfo?.ModKey}{resolved.Key}.meta",
+		var jsSha256 = FileAccess.GetSha256($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}.js");
+		using var tsMetaFile = FileAccess.Open($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}.meta",
 			FileAccess.ModeFlags.Write);
 		tsMetaFile.StoreString($"{{\"ts_sha256\":\"{tsSha256}\",\"js_sha256\":\"{jsSha256}\"}}");
 		tsMetaFile.Flush();
@@ -211,7 +211,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 				SourceMapParser.Parse(sourceMappingUrl.Replace("data:application/json;base64,", "").UnEnBase64()));
 		} else {
 			var sourceFile =
-				$"{(_inUser ? Utils.UserModsPath : Utils.ResModsPath)}{new Uri(resolved.Uri!, sourceMappingUrl).AbsolutePath.ReplaceOnce("Z:/", "/")}";
+				$"{(_inUser ? Utils.UserWorldsPath : Utils.ResWorldsPath)}{new Uri(resolved.Uri!, sourceMappingUrl).AbsolutePath.ReplaceOnce("Z:/", "/")}";
 			if (!FileAccess.FileExists(sourceFile)) return;
 			var sourceMap = SourceMapParser.Parse(FileAccess.GetFileAsString(sourceFile));
 			Utils.SourceMapCollection.Register(resolved.Key, sourceMap);

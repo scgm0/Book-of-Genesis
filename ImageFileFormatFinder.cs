@@ -1,5 +1,4 @@
 using System.Linq;
-using Godot;
 
 namespace 创世记;
 

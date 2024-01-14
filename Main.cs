@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -35,15 +34,12 @@ public sealed partial class Main : Control {
 	[Export] private PackedScene _gameScene;
 	[Export] private PackedScene _worldItem;
 
-	private readonly Dictionary<int, Timer> _timers = new();
-	private readonly ConfigFile _globalConfig = new();
-
-	private JsonParser _jsonParser;
+	static private JsonParser _jsonParser;
 
 	public override void _Ready() {
 		
-		if (!DirAccess.DirExistsAbsolute(Utils.UserModsPath)) {
-			DirAccess.MakeDirRecursiveAbsolute(Utils.UserModsPath);
+		if (!DirAccess.DirExistsAbsolute(Utils.UserWorldsPath)) {
+			DirAccess.MakeDirRecursiveAbsolute(Utils.UserWorldsPath);
 		}
 
 		if (!DirAccess.DirExistsAbsolute(Utils.SavesPath)) {
@@ -65,19 +61,19 @@ public sealed partial class Main : Control {
 		GetTree().AutoAcceptQuit = false;
 
 		_home.GetNode<LinkButton>("ModsPathHint").Text =
-			$"世界存放位置：{ProjectSettings.GlobalizePath(Utils.UserModsPath.SimplifyPath())}";
+			$"世界存放位置：{ProjectSettings.GlobalizePath(Utils.UserWorldsPath.SimplifyPath())}";
 		_home.GetNode<LinkButton>("ModsPathHint").Uri =
-			$"{ProjectSettings.GlobalizePath(Utils.UserModsPath.SimplifyPath())}";
+			$"{ProjectSettings.GlobalizePath(Utils.UserWorldsPath.SimplifyPath())}";
 		_chooseWorldButton.Pressed += ChooseWorld;
 		_templateWorldButton.Pressed += () => {
-			DirAccess.MakeDirRecursiveAbsolute($"{Utils.UserModsPath}/模版世界");
+			DirAccess.MakeDirRecursiveAbsolute($"{Utils.UserWorldsPath}/模版世界");
 			using var dir = DirAccess.Open("res://TemplateWorld/");
 			if (dir == null) return;
 			dir.ListDirBegin();
 			var fileName = dir.GetNext();
 			while (fileName is not "" and not "." and not "..") {
 				if (!dir.CurrentIsDir() && fileName.GetExtension() != "import") {
-					dir.Copy($"res://TemplateWorld/{fileName}", $"{Utils.UserModsPath}/模版世界/{fileName}");
+					dir.Copy($"res://TemplateWorld/{fileName}", $"{Utils.UserWorldsPath}/模版世界/{fileName}");
 				}
 
 				fileName = dir.GetNext();
@@ -97,7 +93,7 @@ public sealed partial class Main : Control {
 
 			_gameScene.Dispose();
 			_worldItem.Dispose();
-			_globalConfig.Dispose();
+			Utils.GlobalConfig.Dispose();
 			GC.Collect();
 			GetTree().Quit();
 		} else if (what == NotificationWMGoBackRequest) {
@@ -138,7 +134,8 @@ public sealed partial class Main : Control {
 	}
 
 	private void ChooseWorld() {
-		LoadModInfos();
+		Utils.WorldInfos.Clear();
+		LoadWorldInfos();
 		_home.Visible = false;
 		_chooseWorld.Visible = true;
 		var list = GetNode<VBoxContainer>("Window/ChooseWorld/ScrollContainer/MarginContainer/ChooseWorldList");
@@ -146,31 +143,31 @@ public sealed partial class Main : Control {
 			child.QueueFree();
 		}
 
-		foreach (var modInfo in ModInfos) {
-			Log(modInfo.Key, modInfo.Value.JsonString);
+		foreach (var (key, worldInfo) in Utils.WorldInfos) {
+			Log(key, worldInfo.JsonString);
 			var worldItem = _worldItem.Instantiate();
-			worldItem.GetNode<Label>("%Name").Text = $"{modInfo.Value.Name}-{modInfo.Value.Version}";
-			worldItem.GetNode<Label>("%Description").Text = $"{modInfo.Value.Author}\n{modInfo.Value.Description}";
-			worldItem.GetNode<TextureRect>("%Encrypt").Visible = modInfo.Value.IsEncrypt;
-			var icon = LoadImageFile(modInfo.Value, modInfo.Value.Icon);
+			worldItem.GetNode<Label>("%Name").Text = $"{worldInfo.Name}-{worldInfo.Version}";
+			worldItem.GetNode<Label>("%Description").Text = $"{worldInfo.Author}\n{worldInfo.Description}";
+			worldItem.GetNode<TextureRect>("%Encrypt").Visible = worldInfo.IsEncrypt;
+			var icon = LoadImageFile(worldInfo, worldInfo.Icon);
 			if (icon != null) {
 				worldItem.GetNode<TextureRect>("%Icon").Texture = icon;
 			}
 
 			worldItem.GetNode<Button>("%Run").Pressed += () => {
-				CurrentModInfo = modInfo.Value;
-				Log("Run:", CurrentModInfo.JsonString);
+				CurrentWorldInfo = worldInfo;
+				Log("Run:", CurrentWorldInfo.JsonString);
 				_chooseWorld.Visible = false;
 				_background.Modulate = Color.FromHtml("#ffffff00");
 				_game.Visible = true;
-				_game.GetNode<RichTextLabel>("%Title").Text = $"{modInfo.Value.Name}-{modInfo.Value.Version}";
-				_game.GetNode<Button>("%Encrypt").Disabled = modInfo.Value.IsEncrypt;
-				modInfo.Value.Config.LoadEncryptedPass($"{Utils.SavesPath}/{modInfo.Value.Author}:{modInfo.Value.Name}.save",
-					$"{modInfo.Value.Author}:{modInfo.Value.Name}");
-				modInfo.Value.Config.SaveEncryptedPass($"{Utils.SavesPath}/{modInfo.Value.Author}:{modInfo.Value.Name}.save",
-					$"{modInfo.Value.Author}:{modInfo.Value.Name}");
-				_globalConfig.LoadEncryptedPass($"{Utils.SavesPath}/global.save", "global");
-				_globalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
+				_game.GetNode<RichTextLabel>("%Title").Text = $"{worldInfo.Name}-{worldInfo.Version}";
+				_game.GetNode<Button>("%Encrypt").Disabled = worldInfo.IsEncrypt;
+				worldInfo.Config.LoadEncryptedPass($"{Utils.SavesPath}/{worldInfo.Author}:{worldInfo.Name}.save",
+					$"{worldInfo.Author}:{worldInfo.Name}");
+				worldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{worldInfo.Author}:{worldInfo.Name}.save",
+					$"{worldInfo.Author}:{worldInfo.Name}");
+				Utils.GlobalConfig.LoadEncryptedPass($"{Utils.SavesPath}/global.save", "global");
+				Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 				RunWorld();
 			};
 			list.AddChild(worldItem);
@@ -181,7 +178,7 @@ public sealed partial class Main : Control {
 		try {
 			InitGame();
 			InitEngine();
-			CurrentEngine.Modules.Import(CurrentModInfo.Main);
+			CurrentEngine.Modules.Import(CurrentWorldInfo.Main);
 			using var tween = _game.CreateTween();
 			tween.SetEase(Tween.EaseType.Out);
 			tween.Parallel().TweenProperty(_game, "modulate:a", 1.5, 1.5);
@@ -217,7 +214,7 @@ public sealed partial class Main : Control {
 
 		_game.GetNode<Button>("%Exit").Pressed += () => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_game.GetNode<Button>("%Encrypt").Pressed += () => {
-			Utils.ExportEncryptionModPck(CurrentModInfo);
+			Utils.ExportEncryptionModPck(CurrentWorldInfo);
 			ExitWorld();
 		};
 
@@ -258,7 +255,7 @@ public sealed partial class Main : Control {
 			_tcs = new CancellationTokenSource();
 			CurrentEngine = new Engine(options => {
 				options.CancellationToken(new CancellationToken(true));
-				options.EnableModules(new CustomModuleLoader(CurrentModInfo));
+				options.EnableModules(new CustomModuleLoader(CurrentWorldInfo));
 			});
 			_jsonParser = new JsonParser(CurrentEngine);
 			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
@@ -268,16 +265,16 @@ public sealed partial class Main : Control {
 				.SetValue("setInterval", SetInterval)
 				.SetValue("clearTimeout",
 					(int id) => {
-						if (!_timers.TryGetValue(id, out var value)) return;
+						if (!Utils.Timers.TryGetValue(id, out var value)) return;
 						value?.Stop();
-						_timers.Remove(id);
+						Utils.Timers.Remove(id);
 						value?.Dispose();
 					})
 				.SetValue("clearInterval",
 					(int id) => {
-						if (!_timers.TryGetValue(id, out var value)) return;
+						if (!Utils.Timers.TryGetValue(id, out var value)) return;
 						value?.Stop();
-						_timers.Remove(id);
+						Utils.Timers.Remove(id);
 						value?.Dispose();
 					});
 
@@ -295,7 +292,7 @@ public sealed partial class Main : Control {
 			currentWorld.DefineOwnProperty("info",
 				new GetSetPropertyDescriptor(
 					new DelegateWrapper(CurrentEngine,
-						() => _jsonParser.Parse(CurrentModInfo.JsonString)),
+						() => _jsonParser.Parse(CurrentWorldInfo.JsonString)),
 					null));
 			currentWorld.Set("setBackgroundColor",
 				new DelegateWrapper(CurrentEngine,
@@ -380,7 +377,7 @@ public sealed partial class Main : Control {
 				new DelegateWrapper(CurrentEngine,
 					(string section, string key, JsValue defaultValue = null) => {
 						using var defaultGodotObject = new GodotObject();
-						var variant = _globalConfig.GetValue(section, key, defaultGodotObject);
+						var variant = Utils.GlobalConfig.GetValue(section, key, defaultGodotObject);
 						if (variant.Obj != defaultGodotObject) defaultGodotObject.Free();
 						var value = variant.VariantToJsValue(CurrentEngine);
 						return value == JsValue.Undefined ? defaultValue ?? JsValue.Undefined : value;
@@ -388,8 +385,8 @@ public sealed partial class Main : Control {
 			currentWorld.Set("setGlobalSaveValue",
 				new DelegateWrapper(CurrentEngine,
 					(string section, string key, JsValue value) => {
-						_globalConfig.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
-						_globalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
+						Utils.GlobalConfig.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
+						Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 					}));
 
 			currentWorld.Set("setCommandPlaceholderText",
@@ -490,10 +487,10 @@ public sealed partial class Main : Control {
 
 		var timer = new Timer(delay);
 		var id = timer.GetHashCode();
-		_timers[id] = timer;
+		Utils.Timers[id] = timer;
 		timer.AutoReset = autoReset;
 		timer.Elapsed += (_, _) => {
-			if (!_timers.ContainsKey(id)) {
+			if (!Utils.Timers.ContainsKey(id)) {
 				timer.Dispose();
 				return;
 			}
@@ -509,7 +506,7 @@ public sealed partial class Main : Control {
 				} catch (ExecutionCanceledException) { }
 			}).CallDeferred();
 			if (autoReset) return;
-			_timers.Remove(id);
+			Utils.Timers.Remove(id);
 			timer.Dispose();
 		};
 		timer.Enabled = true;
@@ -517,23 +514,23 @@ public sealed partial class Main : Control {
 	}
 
 	private void RestoreDefaultSettings() {
-		foreach (var keyValuePair in _timers) {
+		foreach (var keyValuePair in Utils.Timers) {
 			keyValuePair.Value.Stop();
 			keyValuePair.Value.Dispose();
 		}
 
-		_timers.Clear();
+		Utils.Timers.Clear();
 		_tcs.Cancel();
 
 		foreach (var node in Utils.Tree.GetNodesInGroup("Audio")) {
 			(node as AudioPlayer)?.Dispose();
 		}
 
-		foreach (var (key, modInfo) in ModInfos) {
-			modInfo.Config.Dispose();
+		foreach (var (_, worldInfo) in Utils.WorldInfos) {
+			worldInfo.Config.Dispose();
 		}
 
-		ModInfos.Clear();
+		Utils.WorldInfos.Clear();
 
 		foreach (var texture2D in Utils.TextureCache) {
 			texture2D.DiffuseTexture?.Dispose();
@@ -549,13 +546,13 @@ public sealed partial class Main : Control {
 	}
 
 	private void ExitWorld(int exitCode = 0) {
-		Log("Exit:", exitCode, CurrentModInfo.JsonString);
+		Log("Exit:", exitCode, CurrentWorldInfo.JsonString);
 		EmitEvent(WorldEventType.Exit, exitCode);
 		CurrentEngine.Dispose();
 		CurrentEngine = null;
 		_currentWorldEvent = null;
 		_currentWorld = null;
-		CurrentModInfo = null;
+		CurrentWorldInfo = null;
 
 		RestoreDefaultSettings();
 
@@ -564,14 +561,14 @@ public sealed partial class Main : Control {
 	}
 
 	static private CanvasTexture LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
-		return LoadImageFile(CurrentModInfo, path, filter);
+		return LoadImageFile(CurrentWorldInfo, path, filter);
 	}
 
 	static private CanvasTexture LoadImageFile(
-		ModInfo modInfo,
+		WorldInfo worldInfo,
 		string path,
 		TextureFilterEnum filter = TextureFilterEnum.Linear) {
-		var filePath = (modInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(modInfo.Path)
+		var filePath = (worldInfo.IsUser ? Utils.UserWorldsPath : Utils.ResWorldsPath).PathJoin(worldInfo.Path)
 			.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(filePath)) return null;
 		ImageTexture imageTexture = null;
@@ -619,15 +616,15 @@ public sealed partial class Main : Control {
 
 	static private Variant GetSaveValue(string section, string key) {
 		using var defaultValue = new GodotObject();
-		var value = CurrentModInfo.Config.GetValue(section, key, defaultValue);
+		var value = CurrentWorldInfo.Config.GetValue(section, key, defaultValue);
 		if (value.Obj != defaultValue) defaultValue.Free();
 		return value;
 	}
 
 	static private void SetSaveValue(string section, string key, JsValue value) {
-		CurrentModInfo.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
-		CurrentModInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentModInfo.Author}:{CurrentModInfo.Name}.save",
-			$"{CurrentModInfo.Author}:{CurrentModInfo.Name}");
+		CurrentWorldInfo.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
+		CurrentWorldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
+			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
 	}
 
 	static private void SetRichText(RichTextLabel label, string text) {
@@ -668,7 +665,6 @@ public sealed partial class Main : Control {
 
 	public static void Log(string str) {
 		GD.Print(
-			$"[{DateTime.Now:yyyy/MM/dd HH:mm:ss.fff}]{(CurrentModInfo == null ? " " : $" [{CurrentModInfo.Name}] ")}{str}");
+			$"[{DateTime.Now:yyyy/MM/dd HH:mm:ss.fff}]{(CurrentWorldInfo == null ? " " : $" [{CurrentWorldInfo.Name}] ")}{str}");
 	}
-
 }

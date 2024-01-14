@@ -40,7 +40,7 @@ public partial class AudioPlayer : AudioStreamPlayer {
 	}
 
 	public AudioPlayer SetAudioPath(string path) {
-		path = (Main.CurrentModInfo.IsUser ? Utils.UserModsPath : Utils.ResModsPath).PathJoin(Main.CurrentModInfo.Path)
+		path = (Main.CurrentWorldInfo.IsUser ? Utils.UserWorldsPath : Utils.ResWorldsPath).PathJoin(Main.CurrentWorldInfo.Path)
 			.PathJoin(path).SimplifyPath();
 		_audioStream?.Dispose();
 
