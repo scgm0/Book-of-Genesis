@@ -20,15 +20,14 @@ sealed class CustomModuleLoader : IModuleLoader {
 
 	private readonly Uri _basePath;
 	private readonly bool _restrictToBasePath;
-	private readonly bool _inUser;
+	private readonly bool _isRes;
 	private readonly WorldInfo? _worldInfo;
 
-	private CustomModuleLoader(string basePath, bool inUser, bool restrictToBasePath = true) {
+	private CustomModuleLoader(string basePath, bool restrictToBasePath = true) {
 		if (string.IsNullOrWhiteSpace(basePath)) {
 			Main.Log("值不能为空或空格", nameof(basePath));
 		}
-
-		_inUser = inUser;
+		
 		_restrictToBasePath = restrictToBasePath;
 
 		if (!Uri.TryCreate(basePath, UriKind.Absolute, out var temp)) {
@@ -49,7 +48,10 @@ sealed class CustomModuleLoader : IModuleLoader {
 		_basePath = uriBuilder.Uri;
 	}
 
-	public CustomModuleLoader(WorldInfo worldInfo) : this(worldInfo.Path, worldInfo.IsUser) { _worldInfo = worldInfo; }
+	public CustomModuleLoader(WorldInfo worldInfo) : this(worldInfo.Path) {
+		_worldInfo = worldInfo;
+		_isRes = worldInfo.GlobalPath.StartsWith("res://");
+	}
 
 	public ResolvedSpecifier Resolve(string? referencingModuleLocation, ModuleRequest moduleRequest) {
 		var specifier = moduleRequest.Specifier;
@@ -156,7 +158,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 
 		Debug.Assert(resolved.Uri != null, "resolved.Uri != null");
 		var fileName =
-			$"{(_inUser ? Utils.UserWorldsPath : Utils.ResWorldsPath)}{resolved.Key}";
+			$"{(_isRes ? Utils.ResWorldsPath : Utils.UserWorldsPath)}{resolved.Key}";
 
 		if (!FileAccess.FileExists(fileName)) {
 			Main.Log("找不到模块: ", specifier);
@@ -190,7 +192,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 		if (string.IsNullOrEmpty(code)) return;
 		DirAccess.MakeDirRecursiveAbsolute($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}".GetBaseDir());
 		var tsSha256 = FileAccess.GetSha256(fileName);
-		var res = Utils.TsTransform.Compile(FileAccess.GetFileAsString(fileName), resolved.Key);
+		var res = TsTransform.Compile(FileAccess.GetFileAsString(fileName), resolved.Key);
 		code = res["outputText"].AsString();
 		using var jsFile =
 			FileAccess.Open($"{Utils.TsGenPath}/{_worldInfo?.WorldKey}{resolved.Key}.js", FileAccess.ModeFlags.Write);
@@ -211,7 +213,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 				SourceMapParser.Parse(sourceMappingUrl.Replace("data:application/json;base64,", "").UnEnBase64()));
 		} else {
 			var sourceFile =
-				$"{(_inUser ? Utils.UserWorldsPath : Utils.ResWorldsPath)}{new Uri(resolved.Uri!, sourceMappingUrl).AbsolutePath.ReplaceOnce("Z:/", "/")}";
+				$"{(_isRes ? Utils.ResWorldsPath : Utils.UserWorldsPath)}{new Uri(resolved.Uri!, sourceMappingUrl).AbsolutePath.ReplaceOnce("Z:/", "/")}";
 			if (!FileAccess.FileExists(sourceFile)) return;
 			var sourceMap = SourceMapParser.Parse(FileAccess.GetFileAsString(sourceFile));
 			Utils.SourceMapCollection.Register(resolved.Key, sourceMap);

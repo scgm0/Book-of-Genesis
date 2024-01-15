@@ -1,14 +1,7 @@
-using System;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Godot;
-using Jint;
-using Jint.Native;
-using Jint.Native.Json;
 using SourceMaps;
-using Engine = Jint.Engine;
-using JsonSerializer = Jint.Native.Json.JsonSerializer;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -17,6 +10,7 @@ namespace 创世记;
 public static partial class Utils {
 
 	public const string ResWorldsPath = "res://Worlds";
+
 	static private readonly string ScriptAes256EncryptionKey = SCRIPT_AES256_ENCRYPTION_KEY();
 
 	public static readonly bool IsAndroid = OS.GetName() == "Android";
@@ -33,10 +27,9 @@ public static partial class Utils {
 
 	public static readonly string TsGenPath =
 		IsAndroid ? $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/TsGen" : "user://TsGen";
-	
-	public static SourceMapCollection SourceMapCollection { get; set; } = new();
 
-	public static void ExportEncryptionModPck(WorldInfo worldInfo) {
+	public static void ExportEncryptionWorldPck(WorldInfo worldInfo) {
+		Main.Log("加密开始:", worldInfo.JsonString);
 		var packer = new PckPacker();
 		packer.PckStart($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.modpack",
 			32,
@@ -47,6 +40,7 @@ public static partial class Utils {
 			$"{ResWorldsPath}{worldInfo.Path}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt",
 			"res://Assets/.Encrypt");
 		packer.Flush(true);
+		Main.Log("加密结束:", ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.modpack"));
 	}
 
 	public static string ParseExpressionsForValues(string bbcode) {

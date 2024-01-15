@@ -37,7 +37,6 @@ public sealed partial class Main : Control {
 	static private JsonParser _jsonParser;
 
 	public override void _Ready() {
-		
 		if (!DirAccess.DirExistsAbsolute(Utils.UserWorldsPath)) {
 			DirAccess.MakeDirRecursiveAbsolute(Utils.UserWorldsPath);
 		}
@@ -50,7 +49,7 @@ public sealed partial class Main : Control {
 			DirAccess.MakeDirRecursiveAbsolute(Utils.TsGenPath);
 		}
 
-		Log("Game Start",
+		Log("游戏开始",
 			"\nPlatform:",
 			OS.GetName(),
 			"\nGameVersion:",
@@ -82,7 +81,7 @@ public sealed partial class Main : Control {
 		GetNode<Button>("Window/ChooseWorld/Back").Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
-		Utils.TsTransform.Prepare();
+		TsTransform.Prepare();
 	}
 
 	public override void _Notification(int what) {
@@ -134,11 +133,13 @@ public sealed partial class Main : Control {
 	}
 
 	private void ChooseWorld() {
+		Log("加载世界列表");
 		Utils.WorldInfos.Clear();
-		LoadWorldInfos();
+		LoadWorldInfos(Utils.UserWorldsPath, true);
+		LoadWorldInfos(Utils.ResWorldsPath);
 		_home.Visible = false;
 		_chooseWorld.Visible = true;
-		var list = GetNode<VBoxContainer>("Window/ChooseWorld/ScrollContainer/MarginContainer/ChooseWorldList");
+		var list = GetNode<VBoxContainer>("%WorldList");
 		foreach (var child in list.GetChildren()) {
 			child.QueueFree();
 		}
@@ -154,9 +155,9 @@ public sealed partial class Main : Control {
 				worldItem.GetNode<TextureRect>("%Icon").Texture = icon;
 			}
 
-			worldItem.GetNode<Button>("%Run").Pressed += () => {
+			worldItem.GetNode<Button>("%Choose").Pressed += () => {
 				CurrentWorldInfo = worldInfo;
-				Log("Run:", CurrentWorldInfo.JsonString);
+				Log("进入世界:", CurrentWorldInfo.JsonString);
 				_chooseWorld.Visible = false;
 				_background.Modulate = Color.FromHtml("#ffffff00");
 				_game.Visible = true;
@@ -170,6 +171,7 @@ public sealed partial class Main : Control {
 				Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 				RunWorld();
 			};
+			worldItem.GetNode<Button>("%Choose").Text = "进入\n世界";
 			list.AddChild(worldItem);
 		}
 	}
@@ -214,7 +216,7 @@ public sealed partial class Main : Control {
 
 		_game.GetNode<Button>("%Exit").Pressed += () => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_game.GetNode<Button>("%Encrypt").Pressed += () => {
-			Utils.ExportEncryptionModPck(CurrentWorldInfo);
+			Utils.ExportEncryptionWorldPck(CurrentWorldInfo);
 			ExitWorld();
 		};
 
@@ -252,14 +254,14 @@ public sealed partial class Main : Control {
 	private void InitEngine() {
 		try {
 			Utils.SourceMapCollection = new SourceMapCollection();
-			_tcs = new CancellationTokenSource();
+			Utils.Tcs = new CancellationTokenSource();
 			CurrentEngine = new Engine(options => {
 				options.CancellationToken(new CancellationToken(true));
 				options.EnableModules(new CustomModuleLoader(CurrentWorldInfo));
 			});
 			_jsonParser = new JsonParser(CurrentEngine);
 			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
-			constraint?.Reset(_tcs.Token);
+			constraint?.Reset(Utils.Tcs.Token);
 			CurrentEngine.SetValue("print", new Action<string[]>(Log))
 				.SetValue("setTimeout", SetTimeout)
 				.SetValue("setInterval", SetInterval)
@@ -520,7 +522,7 @@ public sealed partial class Main : Control {
 		}
 
 		Utils.Timers.Clear();
-		_tcs.Cancel();
+		Utils.Tcs.Cancel();
 
 		foreach (var node in Utils.Tree.GetNodesInGroup("Audio")) {
 			(node as AudioPlayer)?.Dispose();
@@ -546,7 +548,7 @@ public sealed partial class Main : Control {
 	}
 
 	private void ExitWorld(int exitCode = 0) {
-		Log("Exit:", exitCode, CurrentWorldInfo.JsonString);
+		Log("退出世界:", exitCode, CurrentWorldInfo.JsonString);
 		EmitEvent(WorldEventType.Exit, exitCode);
 		CurrentEngine.Dispose();
 		CurrentEngine = null;
@@ -568,8 +570,7 @@ public sealed partial class Main : Control {
 		WorldInfo worldInfo,
 		string path,
 		TextureFilterEnum filter = TextureFilterEnum.Linear) {
-		var filePath = (worldInfo.IsUser ? Utils.UserWorldsPath : Utils.ResWorldsPath).PathJoin(worldInfo.Path)
-			.PathJoin(path).SimplifyPath();
+		var filePath = worldInfo.GlobalPath.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(filePath)) return null;
 		ImageTexture imageTexture = null;
 		if (ResourceLoader.Exists(filePath)) {

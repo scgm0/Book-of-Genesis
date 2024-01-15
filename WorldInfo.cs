@@ -11,7 +11,7 @@ public sealed record WorldInfo {
 	public string Version { get; set; } = "0.0.1";
 	public string Description { get; set; } = "";
 	public string Path { get; set; } = "";
-	public bool IsUser { get; set; } = true;
+	public string GlobalPath { get; set; } = "";
 	public bool IsEncrypt { get; set; }
 	public ConfigFile Config { get; set; } = new();
 	public string WorldKey { get => $"{Author}_{Name}_{Version}"; }

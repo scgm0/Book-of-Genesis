@@ -40,8 +40,7 @@ public partial class AudioPlayer : AudioStreamPlayer {
 	}
 
 	public AudioPlayer SetAudioPath(string path) {
-		path = (Main.CurrentWorldInfo.IsUser ? Utils.UserWorldsPath : Utils.ResWorldsPath).PathJoin(Main.CurrentWorldInfo.Path)
-			.PathJoin(path).SimplifyPath();
+		path = Main.CurrentWorldInfo.GlobalPath.PathJoin(path).SimplifyPath();
 		_audioStream?.Dispose();
 
 		if (!FileAccess.FileExists(path)) {
