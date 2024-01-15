@@ -55,7 +55,7 @@ public partial class AudioPlayer : AudioStreamPlayer {
 				break;
 			case AudioFormat.Mp3:
 				_audioStream = new AudioStreamMP3();
-				(_audioStream as AudioStreamMP3)!.Data = FileAccess.GetFileAsBytes(path);
+				((AudioStreamMP3)_audioStream).Data = FileAccess.GetFileAsBytes(path);
 				break;
 			case AudioFormat.Wav:
 				_audioStream = new AudioStreamWav();

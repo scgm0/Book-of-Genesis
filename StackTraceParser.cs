@@ -17,7 +17,7 @@ public static class StackTraceParser {
 			// 获取源映射
 			var sourceMap = sourceMaps.GetSourceMapFor(frame.File);
 			// 如果文件中包含问号，则获取没有问号部分的源映射
-			if (sourceMap == null && frame.File?.IndexOf('?') >= 0)
+			if (sourceMap == null && frame.File?.Contains('?') == true)
 				sourceMap = sourceMaps.GetSourceMapFor(frame.File[..frame.File.IndexOf('?')]);
 
 			// 如果行号或列号不存在，则跳过

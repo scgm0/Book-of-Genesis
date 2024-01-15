@@ -1,7 +1,6 @@
 using System.Linq;
 using System.Text.RegularExpressions;
 using Godot;
-using SourceMaps;
 
 // ReSharper disable MemberCanBePrivate.Global
 

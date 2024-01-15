@@ -516,16 +516,16 @@ public sealed partial class Main : Control {
 	}
 
 	private void RestoreDefaultSettings() {
-		foreach (var keyValuePair in Utils.Timers) {
-			keyValuePair.Value.Stop();
-			keyValuePair.Value.Dispose();
+		foreach (var (_, timer) in Utils.Timers) {
+			timer.Stop();
+			timer.Dispose();
 		}
 
 		Utils.Timers.Clear();
 		Utils.Tcs.Cancel();
 
-		foreach (var node in Utils.Tree.GetNodesInGroup("Audio")) {
-			(node as AudioPlayer)?.Dispose();
+		foreach (var node in Utils.Tree.GetNodesInGroup("Audio").OfType<AudioPlayer>()) {
+			node.Dispose();
 		}
 
 		foreach (var (_, worldInfo) in Utils.WorldInfos) {

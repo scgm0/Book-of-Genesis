@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="创世记"
-config/version="0.1.0-test.1"
+config/version="0.1.0.20"
 run/main_scene="res://main.tscn"
 config/use_custom_user_dir=true
 config/quit_on_go_back=false
@@ -44,6 +44,7 @@ enabled=PackedStringArray()
 [gui]
 
 theme/custom_font="res://Assets/Font/SourceHanSerifCN-Regular-sub.otf"
+theme/default_font_multichannel_signed_distance_field=true
 theme/default_font_generate_mipmaps=true
 
 [importer_defaults]
