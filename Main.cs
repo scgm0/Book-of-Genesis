@@ -84,6 +84,18 @@ public sealed partial class Main : Control {
 		TsTransform.Prepare();
 	}
 
+	public override void _Input(InputEvent @event) {
+		if (!@event.IsActionPressed("ui_select")) return;
+		using var pressedEvent = new InputEventMouseButton();
+		pressedEvent.ButtonIndex = MouseButton.Left;
+		pressedEvent.Pressed = true;
+		pressedEvent.Position = GetGlobalMousePosition();
+		Input.ParseInputEvent(pressedEvent);
+		using var releasedEvent = (InputEventMouseButton)pressedEvent.Duplicate(true);
+		releasedEvent.Pressed = false;
+		Input.Singleton.CallDeferred(Input.MethodName.ParseInputEvent, releasedEvent);
+	}
+
 	public override void _Notification(int what) {
 		if (what == NotificationWMCloseRequest) {
 			if (CurrentEngine != null) {
