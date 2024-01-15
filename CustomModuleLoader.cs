@@ -111,8 +111,8 @@ sealed class CustomModuleLoader : IModuleLoader {
 
 		try {
 			LoadModuleContents(resolved, out code);
-		} catch (Exception) {
-			throw new JavaScriptException($"无法加载模块{source}");
+		} catch (Exception e) {
+			throw new JavaScriptException($"无法加载模块: {source}\n{e}");
 		}
 		
 		var isJson = resolved.ModuleRequest.IsJsonModule();
@@ -121,8 +121,8 @@ sealed class CustomModuleLoader : IModuleLoader {
 			JsValue module;
 			try {
 				module = new JsonParser(engine).Parse(code);
-			} catch (Exception) {
-				throw new JavaScriptException($"无法加载模块{source}");
+			} catch (Exception e) {
+				throw new JavaScriptException($"无法加载模块: {source}\n{e}");
 			}
 
 			moduleRecord = ModuleFactory.BuildJsonModule(engine, module, source);
@@ -131,9 +131,9 @@ sealed class CustomModuleLoader : IModuleLoader {
 			try {
 				module = new JavaScriptParser().ParseModule(code, source);
 			} catch (ParserException ex) {
-				throw new JavaScriptException($"加载模块时出错：{source}：{ex.Error}");
-			} catch (Exception) {
-				throw new JavaScriptException($"无法加载模块{source}");
+				throw new JavaScriptException($"加载模块时出错: {source}\n{ex.Error}");
+			} catch (Exception e) {
+				throw new JavaScriptException($"无法加载模块: {source}\n{e}");
 			}
 
 			moduleRecord = ModuleFactory.BuildSourceTextModule(engine, module);

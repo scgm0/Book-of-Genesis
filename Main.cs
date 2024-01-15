@@ -660,7 +660,7 @@ public sealed partial class Main : Control {
 		}
 	}
 
-	public static void Log(params object[] strings) { Log(string.Join(" ", strings.Select(o => o.ToString()))); }
+	public static void Log(params object[] objects) { Log(string.Join(" ", objects.Select(o => o.ToString()))); }
 
 	public static void Log(params string[] strings) { Log(strings.Join(" ")); }
 
