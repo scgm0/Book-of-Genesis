@@ -14,12 +14,13 @@ public sealed partial class Main {
 	public static WorldInfo CurrentWorldInfo { get; private set; }
 
 	static private void LoadWorldInfos(string worldsPath, bool loadPackage = false) {
-		using var userDir = DirAccess.Open(worldsPath);
-		userDir.ListDirBegin();
-		var fileName = userDir.GetNext();
+		using var dir = DirAccess.Open(worldsPath.SimplifyPath());
+		if(dir == null) return;
+		dir.ListDirBegin();
+		var fileName = dir.GetNext();
 		while (fileName is not "" and not "." and not "..") {
 			var filePath = worldsPath.PathJoin(fileName);
-			if (userDir.CurrentIsDir()) {
+			if (dir.CurrentIsDir()) {
 				var worldConfigPath = filePath.PathJoin("config.json");
 				if (FileAccess.FileExists(worldConfigPath)) {
 					try {
@@ -43,7 +44,7 @@ public sealed partial class Main {
 				Log(fileName, ProjectSettings.LoadResourcePack(filePath));
 			}
 
-			fileName = userDir.GetNext();
+			fileName = dir.GetNext();
 		}
 	}
 }
