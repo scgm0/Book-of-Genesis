@@ -64,20 +64,7 @@ public sealed partial class Main : Control {
 		_home.GetNode<LinkButton>("ModsPathHint").Uri =
 			$"{ProjectSettings.GlobalizePath(Utils.UserWorldsPath.SimplifyPath())}";
 		_chooseWorldButton.Pressed += ChooseWorld;
-		_templateWorldButton.Pressed += () => {
-			DirAccess.MakeDirRecursiveAbsolute($"{Utils.UserWorldsPath}/模版世界");
-			using var dir = DirAccess.Open("res://TemplateWorld/");
-			if (dir == null) return;
-			dir.ListDirBegin();
-			var fileName = dir.GetNext();
-			while (fileName is not "" and not "." and not "..") {
-				if (!dir.CurrentIsDir() && fileName.GetExtension() != "import") {
-					dir.Copy($"res://TemplateWorld/{fileName}", $"{Utils.UserWorldsPath}/模版世界/{fileName}");
-				}
-
-				fileName = dir.GetNext();
-			}
-		};
+		_templateWorldButton.Pressed += ChooseTemplate;
 		GetNode<Button>("Window/ChooseWorld/Back").Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
@@ -186,6 +173,44 @@ public sealed partial class Main : Control {
 			worldItem.GetNode<Button>("%Choose").Text = "进入\n世界";
 			list.AddChild(worldItem);
 		}
+
+		Log("世界列表加载完成");
+	}
+
+	private void ChooseTemplate() {
+		Log("加载模版列表");
+		ClearCache();
+		LoadWorldInfos(Utils.ResTemplatesPath);
+		_home.Visible = false;
+		_chooseWorld.Visible = true;
+		var list = GetNode<VBoxContainer>("%WorldList");
+		foreach (var child in list.GetChildren()) {
+			child.QueueFree();
+		}
+
+		foreach (var (key, worldInfo) in Utils.WorldInfos) {
+			Log(key, worldInfo.JsonString);
+			var worldItem = _worldItem.Instantiate();
+			worldItem.GetNode<Label>("%Name").Text = $"{worldInfo.Name}-{worldInfo.Version}";
+			worldItem.GetNode<Label>("%Description").Text = $"{worldInfo.Author}\n{worldInfo.Description}";
+			worldItem.GetNode<TextureRect>("%Encrypt").Visible = worldInfo.IsEncrypt;
+			var icon = LoadImageFile(worldInfo, worldInfo.Icon);
+			if (icon != null) {
+				worldItem.GetNode<TextureRect>("%Icon").Texture = icon;
+			}
+
+			worldItem.GetNode<Button>("%Choose").Pressed += () => {
+				var exportPath = Utils.UserWorldsPath.PathJoin($"{worldInfo.Name}-{worldInfo.Version}");
+				Log("导出模版:", worldInfo.JsonString);
+				Utils.CopyDir(worldInfo.GlobalPath, Utils.UserWorldsPath.PathJoin($"{worldInfo.Name}-{worldInfo.Version}"));
+				Log("导出模版完成:", exportPath);
+				GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
+			};
+			worldItem.GetNode<Button>("%Choose").Text = "导出\n模版";
+			list.AddChild(worldItem);
+		}
+
+		Log("模版列表加载完成");
 	}
 
 	private void RunWorld() {
