@@ -15,7 +15,7 @@ public sealed partial class Main {
 
 	static private void LoadWorldInfos(string worldsPath, bool loadPackage = false) {
 		using var dir = DirAccess.Open(worldsPath.SimplifyPath());
-		if(dir == null) return;
+		if (dir == null) return;
 		dir.ListDirBegin();
 		var fileName = dir.GetNext();
 		while (fileName is not "" and not "." and not "..") {

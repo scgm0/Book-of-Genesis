@@ -49,7 +49,7 @@ public sealed partial class Main : Control {
 			DirAccess.MakeDirRecursiveAbsolute(Utils.TsGenPath);
 		}
 
-		Log("游戏开始",
+		Log("启动游戏",
 			"\nPlatform:",
 			OS.GetName(),
 			"\nGameVersion:",
@@ -93,6 +93,7 @@ public sealed partial class Main : Control {
 			_worldItem.Dispose();
 			Utils.GlobalConfig.Dispose();
 			GC.Collect();
+			Log("退出游戏");
 			GetTree().Quit();
 		} else if (what == NotificationWMGoBackRequest) {
 			if (_home.Visible) {
@@ -613,12 +614,12 @@ public sealed partial class Main : Control {
 		if (!FileAccess.FileExists(filePath)) return null;
 		ImageTexture? imageTexture = null;
 		if (ResourceLoader.Exists(filePath)) {
-			var canvasTexture = GD.Load<CanvasTexture>(filePath);
-			if (canvasTexture.TextureFilter == filter) {
+			var canvasTexture = GD.Load<CanvasTexture?>(filePath);
+			if (canvasTexture != null && canvasTexture.TextureFilter == filter) {
 				return GD.Load<CanvasTexture>(filePath);
 			}
 
-			imageTexture = (ImageTexture)canvasTexture.DiffuseTexture;
+			imageTexture = canvasTexture?.DiffuseTexture as ImageTexture;
 		}
 
 		var texture = new CanvasTexture();

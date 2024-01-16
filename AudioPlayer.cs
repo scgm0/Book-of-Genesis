@@ -26,7 +26,7 @@ public partial class AudioPlayer : AudioStreamPlayer {
 
 	public bool IsPlaying { get => Playing; }
 
-	public bool Loop { set => _audioStream?.Set("loop", value); get => (bool)(_audioStream?.Get("loop") ?? false); }
+	public bool Loop { set => Set("parameters/looping", value); get => Get("parameters/looping").AsBool(); }
 
 	public AudioPlayer() {
 		Utils.Tree.Root.AddChild(this);
