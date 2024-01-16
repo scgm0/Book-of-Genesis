@@ -34,7 +34,7 @@ public sealed partial class Main : Control {
 	[Export] private PackedScene _gameScene;
 	[Export] private PackedScene _worldItem;
 
-	static private JsonParser _jsonParser;
+	static private JsonParser? _jsonParser;
 
 	public override void _Ready() {
 		if (!DirAccess.DirExistsAbsolute(Utils.UserWorldsPath)) {
@@ -111,7 +111,7 @@ public sealed partial class Main : Control {
 		try {
 			EmitEvent(WorldEventType.Tick);
 		} catch (JavaScriptException e) {
-			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace ?? string.Empty)}");
+			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 			ExitWorld(1);
 		} catch (Exception e) {
 			if (e is ExecutionCanceledException) {
@@ -125,7 +125,7 @@ public sealed partial class Main : Control {
 
 	private void OnMetaClickedEventHandler(Variant meta, int index) {
 		try {
-			EmitEvent(WorldEventType.TextUrlClick, _jsonParser.Parse(meta.ToString()), index);
+			EmitEvent(WorldEventType.TextUrlClick, _jsonParser!.Parse(meta.ToString()), index);
 		} catch (Exception) {
 			EmitEvent(WorldEventType.TextUrlClick, meta.ToString(), index);
 		}
@@ -217,7 +217,7 @@ public sealed partial class Main : Control {
 		try {
 			InitGame();
 			InitEngine();
-			CurrentEngine.Modules.Import(CurrentWorldInfo.Main);
+			CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
 			using var tween = _game.CreateTween();
 			tween.SetEase(Tween.EaseType.Out);
 			tween.Parallel().TweenProperty(_game, "modulate:a", 1.5, 1.5);
@@ -228,10 +228,10 @@ public sealed partial class Main : Control {
 				_game.GetNode<Control>("Main").Visible = true;
 				_currentWorldEvent = CurrentEngine.GetValue("World").Get("event").As<JsObject>()!;
 				EmitEvent(WorldEventType.Ready);
-				_currentWorld = (JsObject)CurrentEngine?.GetValue("World");
+				_currentWorld = (JsObject)CurrentEngine.GetValue("World");
 			}));
 		} catch (JavaScriptException e) {
-			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace ?? string.Empty)}");
+			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 			ExitWorld(1);
 		}
 	}
@@ -253,7 +253,7 @@ public sealed partial class Main : Control {
 
 		_game.GetNode<Button>("%Exit").Pressed += () => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_game.GetNode<Button>("%Encrypt").Pressed += () => {
-			Utils.ExportEncryptionWorldPck(CurrentWorldInfo);
+			Utils.ExportEncryptionWorldPck(CurrentWorldInfo!);
 			ExitWorld();
 		};
 
@@ -294,7 +294,7 @@ public sealed partial class Main : Control {
 			Utils.Tcs = new CancellationTokenSource();
 			CurrentEngine = new Engine(options => {
 				options.CancellationToken(new CancellationToken(true));
-				options.EnableModules(new CustomModuleLoader(CurrentWorldInfo));
+				options.EnableModules(new CustomModuleLoader(CurrentWorldInfo!));
 			});
 			_jsonParser = new JsonParser(CurrentEngine);
 			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
@@ -305,16 +305,16 @@ public sealed partial class Main : Control {
 				.SetValue("clearTimeout",
 					(int id) => {
 						if (!Utils.Timers.TryGetValue(id, out var value)) return;
-						value?.Stop();
+						value.Stop();
 						Utils.Timers.Remove(id);
-						value?.Dispose();
+						value.Dispose();
 					})
 				.SetValue("clearInterval",
 					(int id) => {
 						if (!Utils.Timers.TryGetValue(id, out var value)) return;
-						value?.Stop();
+						value.Stop();
 						Utils.Timers.Remove(id);
-						value?.Dispose();
+						value.Dispose();
 					});
 
 			CurrentEngine.Modules.Add("events", Utils.Polyfill.Events);
@@ -331,7 +331,7 @@ public sealed partial class Main : Control {
 			currentWorld.DefineOwnProperty("info",
 				new GetSetPropertyDescriptor(
 					new DelegateWrapper(CurrentEngine,
-						() => _jsonParser.Parse(CurrentWorldInfo.JsonString)),
+						() => _jsonParser.Parse(CurrentWorldInfo!.JsonString)),
 					null));
 			currentWorld.Set("setBackgroundColor",
 				new DelegateWrapper(CurrentEngine,
@@ -406,7 +406,7 @@ public sealed partial class Main : Control {
 
 			currentWorld.Set("getSaveValue",
 				new DelegateWrapper(CurrentEngine,
-					(string section, string key, JsValue defaultValue = null) => {
+					(string section, string key, JsValue? defaultValue = null) => {
 						var value = GetSaveValue(section, key).VariantToJsValue(CurrentEngine);
 						return value == JsValue.Undefined ? defaultValue ?? JsValue.Undefined : value;
 					}));
@@ -414,7 +414,7 @@ public sealed partial class Main : Control {
 				new DelegateWrapper(CurrentEngine, SetSaveValue));
 			currentWorld.Set("getGlobalSaveValue",
 				new DelegateWrapper(CurrentEngine,
-					(string section, string key, JsValue defaultValue = null) => {
+					(string section, string key, JsValue? defaultValue = null) => {
 						using var defaultGodotObject = new GodotObject();
 						var variant = Utils.GlobalConfig.GetValue(section, key, defaultGodotObject);
 						if (variant.Obj != defaultGodotObject) defaultGodotObject.Free();
@@ -444,14 +444,14 @@ public sealed partial class Main : Control {
 		try {
 			_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [name.ToString("G").ToSnakeCase(), ..values]);
 		} catch (JavaScriptException e) {
-			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace ?? string.Empty)}");
+			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 			ExitWorld(1);
 		}
 	}
 
 	private int[] SetLeftButtons(string[] names) {
 		if (_leftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return default;
+			return _leftButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
 		}
 
 		foreach (var node in _leftButtonList.GetChildren()) {
@@ -481,7 +481,7 @@ public sealed partial class Main : Control {
 
 	private int[] SetRightButtons(string[] names) {
 		if (_rightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return default;
+			return _rightButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
 		}
 
 		foreach (var node in _rightButtonList.GetChildren()) {
@@ -509,18 +509,18 @@ public sealed partial class Main : Control {
 		node.QueueFree();
 	}
 
-	private int SetTimeout(JsValue callback, int delay, params JsValue[] values) {
+	private int SetTimeout(JsValue callback, int delay, params JsValue[]? values) {
 		return AddTimer(false, callback, delay, values);
 	}
 
-	private int SetInterval(JsValue callback, int delay, params JsValue[] values) {
+	private int SetInterval(JsValue callback, int delay, params JsValue[]? values) {
 		return AddTimer(true, callback, delay, values);
 	}
 
-	private int AddTimer(bool autoReset, JsValue callback, int delay, params JsValue[] values) {
+	private int AddTimer(bool autoReset, JsValue callback, int delay, params JsValue[]? values) {
 		if (delay <= 0) {
 			callback.Call(thisObj: JsValue.Undefined, values ?? Array.Empty<JsValue>());
-			CurrentEngine.Advanced.ProcessTasks();
+			CurrentEngine!.Advanced.ProcessTasks();
 			return 0;
 		}
 
@@ -537,10 +537,10 @@ public sealed partial class Main : Control {
 			Callable.From(() => {
 				try {
 					callback.Call(thisObj: JsValue.Undefined, values ?? []);
-					CurrentEngine.Advanced.ProcessTasks();
+					CurrentEngine?.Advanced.ProcessTasks();
 				} catch (JavaScriptException e) {
 					Log(
-						$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection, e.JavaScriptStackTrace ?? string.Empty)}");
+						$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 					ExitWorld(1);
 				} catch (ExecutionCanceledException) { }
 			}).CallDeferred();
@@ -558,7 +558,7 @@ public sealed partial class Main : Control {
 			timer.Dispose();
 		}
 
-		Utils.Timers?.Clear();
+		Utils.Timers.Clear();
 		Utils.Tcs?.Cancel();
 		Utils.Tcs = null;
 		Utils.SourceMapCollection = null;
@@ -587,9 +587,9 @@ public sealed partial class Main : Control {
 	}
 
 	private void ExitWorld(int exitCode = 0) {
-		Log("退出世界:", exitCode, CurrentWorldInfo.JsonString);
+		Log("退出世界:", exitCode, CurrentWorldInfo?.JsonString ?? string.Empty);
 		EmitEvent(WorldEventType.Exit, exitCode);
-		CurrentEngine.Dispose();
+		CurrentEngine?.Dispose();
 		CurrentEngine = null;
 		_currentWorldEvent = null;
 		_currentWorld = null;
@@ -601,17 +601,17 @@ public sealed partial class Main : Control {
 		_game.Visible = false;
 	}
 
-	static private CanvasTexture LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
-		return LoadImageFile(CurrentWorldInfo, path, filter);
+	static private CanvasTexture? LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
+		return LoadImageFile(CurrentWorldInfo!, path, filter);
 	}
 
-	static private CanvasTexture LoadImageFile(
+	static private CanvasTexture? LoadImageFile(
 		WorldInfo worldInfo,
 		string path,
 		TextureFilterEnum filter = TextureFilterEnum.Linear) {
 		var filePath = worldInfo.GlobalPath.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(filePath)) return null;
-		ImageTexture imageTexture = null;
+		ImageTexture? imageTexture = null;
 		if (ResourceLoader.Exists(filePath)) {
 			var canvasTexture = GD.Load<CanvasTexture>(filePath);
 			if (canvasTexture.TextureFilter == filter) {
@@ -656,13 +656,13 @@ public sealed partial class Main : Control {
 
 	static private Variant GetSaveValue(string section, string key) {
 		using var defaultValue = new GodotObject();
-		var value = CurrentWorldInfo.Config.GetValue(section, key, defaultValue);
+		var value = CurrentWorldInfo!.Config.GetValue(section, key, defaultValue);
 		if (value.Obj != defaultValue) defaultValue.Free();
 		return value;
 	}
 
 	static private void SetSaveValue(string section, string key, JsValue value) {
-		CurrentWorldInfo.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
+		CurrentWorldInfo!.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
 		CurrentWorldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
 			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
 	}
@@ -683,7 +683,7 @@ public sealed partial class Main : Control {
 			var path = match.Groups["path"].Value;
 			var oldText = text.Substring(match.Index, match.Length);
 			var filter = Utils.ParseExpressionsForValues(oldText);
-			CanvasTexture texture;
+			CanvasTexture? texture;
 
 			if (!string.IsNullOrEmpty(filter)) {
 				texture = filter switch {
@@ -695,7 +695,9 @@ public sealed partial class Main : Control {
 				texture = LoadImageFile(path);
 			}
 
-			text = text.Replace(oldText, oldText.Replace(path, texture.ResourcePath));
+			if (texture != null) {
+				text = text.Replace(oldText, oldText.Replace(path, texture.ResourcePath));
+			}
 		}
 	}
 

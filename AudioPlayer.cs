@@ -1,4 +1,3 @@
-#nullable enable
 using Godot;
 using Jint;
 using Jint.Native;
@@ -34,13 +33,13 @@ public partial class AudioPlayer : AudioStreamPlayer {
 		AddToGroup("Audio");
 		Finished += () => {
 			if (FinishedCallback is Function) {
-				FinishedCallback?.Call(thisObj: JsValue.FromObject(Main.CurrentEngine, this), []);
+				FinishedCallback?.Call(thisObj: JsValue.FromObject(Main.CurrentEngine!, this), []);
 			}
 		};
 	}
 
 	public AudioPlayer SetAudioPath(string path) {
-		path = Main.CurrentWorldInfo.GlobalPath.PathJoin(path).SimplifyPath();
+		path = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
 		_audioStream?.Dispose();
 
 		if (!FileAccess.FileExists(path)) {

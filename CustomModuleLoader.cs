@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -19,16 +18,16 @@ namespace 创世记;
 sealed class CustomModuleLoader : IModuleLoader {
 
 	private readonly Uri _basePath;
-	private readonly bool _restrictToBasePath;
 	private readonly bool _isRes;
-	private readonly WorldInfo? _worldInfo;
+	private readonly WorldInfo _worldInfo;
 
-	private CustomModuleLoader(string basePath, bool restrictToBasePath = true) {
+	public CustomModuleLoader(WorldInfo worldInfo) {
+		_worldInfo = worldInfo;
+		_isRes = worldInfo.GlobalPath.StartsWith("res://");
+		var basePath = _worldInfo.Path;
 		if (string.IsNullOrWhiteSpace(basePath)) {
 			Main.Log("值不能为空或空格", nameof(basePath));
 		}
-
-		_restrictToBasePath = restrictToBasePath;
 
 		if (!Uri.TryCreate(basePath, UriKind.Absolute, out var temp)) {
 			if (!Path.IsPathRooted(basePath)) {
@@ -48,15 +47,10 @@ sealed class CustomModuleLoader : IModuleLoader {
 		_basePath = uriBuilder.Uri;
 	}
 
-	public CustomModuleLoader(WorldInfo worldInfo) : this(worldInfo.Path) {
-		_worldInfo = worldInfo;
-		_isRes = worldInfo.GlobalPath.StartsWith("res://");
-	}
-
 	public ResolvedSpecifier Resolve(string? referencingModuleLocation, ModuleRequest moduleRequest) {
 		var specifier = moduleRequest.Specifier;
 		if (string.IsNullOrEmpty(specifier)) {
-			Main.Log("模块说明符无效", specifier, referencingModuleLocation);
+			Main.Log("模块说明符无效", specifier, referencingModuleLocation ?? string.Empty);
 			return default!;
 		}
 
@@ -82,26 +76,26 @@ sealed class CustomModuleLoader : IModuleLoader {
 			if (resolved.UserEscaped) {
 				Main.Log("模块说明符无效",
 					specifier,
-					referencingModuleLocation);
+					referencingModuleLocation ?? string.Empty);
 				return default!;
 			}
 
 			if (!Path.HasExtension(resolved.LocalPath)) {
 				Main.Log("不支持的目录导入",
 					specifier,
-					referencingModuleLocation);
+					referencingModuleLocation ?? string.Empty);
 				return default!;
 			}
 		}
 
-		if (!_restrictToBasePath || _basePath.IsBaseOf(resolved))
+		if (_basePath.IsBaseOf(resolved))
 			return new ResolvedSpecifier(
 				moduleRequest,
 				Uri.UnescapeDataString(resolved.AbsolutePath.ReplaceOnce("Z:/", "/")),
 				resolved,
 				SpecifierType.RelativeOrAbsolute
 			);
-		Main.Log("未经授权的模块路径", specifier, referencingModuleLocation);
+		Main.Log("未经授权的模块路径", specifier, referencingModuleLocation ?? string.Empty);
 		return default!;
 	}
 
@@ -168,7 +162,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 		code = FileAccess.GetFileAsString(fileName);
 
 		if (fileName.GetExtension() == "ts") {
-			var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo!.Path, $"/{_worldInfo.WorldKey}/"))
+			var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo.Path, $"/{_worldInfo.WorldKey}/"))
 				.SimplifyPath();
 			if (FileAccess.FileExists($"{cachePath}.meta") &&
 				FileAccess.FileExists($"{cachePath}.js")) {
@@ -192,7 +186,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 
 	private void TsGen(ref string code, string fileName, ResolvedSpecifier resolved) {
 		if (string.IsNullOrEmpty(code)) return;
-		var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo!.Path, $"/{_worldInfo.WorldKey}/"))
+		var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo.Path, $"/{_worldInfo.WorldKey}/"))
 			.SimplifyPath();
 		DirAccess.MakeDirRecursiveAbsolute($"{cachePath}".GetBaseDir());
 		var tsSha256 = FileAccess.GetSha256(fileName);
@@ -213,14 +207,14 @@ sealed class CustomModuleLoader : IModuleLoader {
 		if (!Utils.SourceMapPathRegex().IsMatch(code)) return;
 		var sourceMappingUrl = Utils.SourceMapPathRegex().Match(code).Value;
 		if (sourceMappingUrl.StartsWith("data:application/json;base64,")) {
-			Utils.SourceMapCollection.Register(resolved.Key,
+			Utils.SourceMapCollection?.Register(resolved.Key,
 				SourceMapParser.Parse(sourceMappingUrl.Replace("data:application/json;base64,", "").UnEnBase64()));
 		} else {
 			var sourceFile =
 				$"{(_isRes ? Utils.ResWorldsPath : Utils.UserWorldsPath)}{new Uri(resolved.Uri!, sourceMappingUrl).AbsolutePath.ReplaceOnce("Z:/", "/")}";
 			if (!FileAccess.FileExists(sourceFile)) return;
 			var sourceMap = SourceMapParser.Parse(FileAccess.GetFileAsString(sourceFile));
-			Utils.SourceMapCollection.Register(resolved.Key, sourceMap);
+			Utils.SourceMapCollection?.Register(resolved.Key, sourceMap);
 		}
 	}
 

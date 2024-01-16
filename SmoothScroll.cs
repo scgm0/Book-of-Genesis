@@ -12,7 +12,7 @@ public partial class SmoothScroll : ScrollContainer {
 
 	private float _bottomDistance;
 	private bool _contentDragging;
-	private Control _contentNode;
+	private Control _contentNode = null!;
 	private float _damping = 0.1f;
 
 	private Vector2 _dragRelative = Vector2.Zero;
@@ -29,8 +29,8 @@ public partial class SmoothScroll : ScrollContainer {
 	private float _leftDistance;
 	private Vector2 _pos = new(0, 0);
 	private float _rightDistance;
-	private Timer _scrollbarHideTimer = new();
-	private Tween _scrollbarHideTween;
+	private Timer? _scrollbarHideTimer = new();
+	private Tween? _scrollbarHideTween;
 	private float _topDistance;
 
 	private Vector2 _velocity = new(0, 0);
@@ -98,7 +98,7 @@ public partial class SmoothScroll : ScrollContainer {
 		}
 
 		AddChild(_scrollbarHideTimer);
-		_scrollbarHideTimer.Timeout += _ScrollbarHideTimerTimeout;
+		_scrollbarHideTimer!.Timeout += _ScrollbarHideTimerTimeout;
 		if (HideScrollbarOverTime) {
 			_scrollbarHideTimer.Start(ScrollbarHideTime);
 		}
@@ -128,7 +128,7 @@ public partial class SmoothScroll : ScrollContainer {
 	private void _ScrollbarInput(InputEvent ev) {
 		if (HideScrollbarOverTime) {
 			ShowScrollbars();
-			_scrollbarHideTimer.Start(ScrollbarHideTime);
+			_scrollbarHideTimer?.Start(ScrollbarHideTime);
 		}
 
 		if (ev is not InputEventMouseButton mouseButton) return;
@@ -141,7 +141,7 @@ public partial class SmoothScroll : ScrollContainer {
 	public override void _GuiInput(InputEvent @event) {
 		if (_hideScrollbarOverTime) {
 			ShowScrollbars();
-			_scrollbarHideTimer.Start(ScrollbarHideTime);
+			_scrollbarHideTimer?.Start(ScrollbarHideTime);
 		}
 
 		_vScrollbarDragging = GetVScrollBar().HasFocus();
@@ -539,8 +539,7 @@ public partial class SmoothScroll : ScrollContainer {
 		}
 
 		var tween = CreateTween();
-		var tweener = tween.TweenProperty(this, "pos:x", xPos, duration);
-		tweener.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quint);
+		tween.TweenProperty(this, "pos:x", xPos, duration).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quint);
 	}
 
 	public void ScrollYTo(float yPos, float duration = 0.5f) {
@@ -555,8 +554,7 @@ public partial class SmoothScroll : ScrollContainer {
 		}
 
 		var tween = CreateTween();
-		var tweener = tween.TweenProperty(this, "pos:y", yPos, duration);
-		tweener.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quint);
+		tween.TweenProperty(this, "pos:y", yPos, duration).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Quint);
 	}
 
 	public void ScrollPageUp(float duration = 0.5f) {

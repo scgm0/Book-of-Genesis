@@ -1,4 +1,3 @@
-#nullable enable
 using Godot;
 
 namespace 创世记;

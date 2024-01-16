@@ -35,7 +35,7 @@ public static partial class Utils {
 		//如果jsValue是字符串，则返回字符串
 		if (jsValue.IsString()) return jsValue.AsString();
 		//如果jsValue是对象，则使用JsonSerializer将对象序列化，并返回字符串
-		return jsValue.IsObject() ? new JsonSerializer(engine).Serialize(jsValue).ToString() : null;
+		return (jsValue.IsObject() ? new JsonSerializer(engine).Serialize(jsValue).ToString() : null) ?? string.Empty;
 	}
 
 	public static JsValue VariantToJsValue(this Variant variant, Engine engine) {

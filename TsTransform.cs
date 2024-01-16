@@ -7,7 +7,7 @@ namespace 创世记;
 
 public static class TsTransform {
 	static private readonly Engine Engine = new(options => options.DebugMode(false));
-	static private JsValue _compiler;
+	static private JsValue _compiler = null!;
 	public static JsObject Compile(string code, string fileName) => (JsObject)_compiler.Call(code, JsValue.Undefined, fileName);
 
 	public static void Prepare() {
