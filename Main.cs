@@ -146,7 +146,7 @@ public sealed partial class Main : Control {
 
 	private void ChooseWorld() {
 		Log("加载世界列表");
-		Utils.WorldInfos.Clear();
+		ClearCache();
 		LoadWorldInfos(Utils.UserWorldsPath, true);
 		LoadWorldInfos(Utils.ResWorldsPath);
 		_home.Visible = false;
@@ -527,14 +527,16 @@ public sealed partial class Main : Control {
 		return id;
 	}
 
-	private void RestoreDefaultSettings() {
+	private void ClearCache() {
 		foreach (var (_, timer) in Utils.Timers) {
 			timer.Stop();
 			timer.Dispose();
 		}
 
-		Utils.Timers.Clear();
-		Utils.Tcs.Cancel();
+		Utils.Timers?.Clear();
+		Utils.Tcs?.Cancel();
+		Utils.Tcs = null;
+		Utils.SourceMapCollection = null;
 
 		foreach (var node in Utils.Tree.GetNodesInGroup("Audio").OfType<AudioPlayer>()) {
 			node.Dispose();
@@ -568,7 +570,7 @@ public sealed partial class Main : Control {
 		_currentWorld = null;
 		CurrentWorldInfo = null;
 
-		RestoreDefaultSettings();
+		ClearCache();
 
 		_home.Visible = true;
 		_game.Visible = false;
