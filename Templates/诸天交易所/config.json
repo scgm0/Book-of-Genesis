@@ -1,7 +1,0 @@
-{
-    "name": "诸天交易所(移植)",
-    "version": "0.0.1",
-    "author": "神麤詭末",
-    "description": "诸天交易所(移植)。",
-    "main": "./main.ts"
-}

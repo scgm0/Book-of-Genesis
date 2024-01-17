@@ -48,6 +48,8 @@ public sealed partial class Main : Control {
 		if (!DirAccess.DirExistsAbsolute(Utils.TsGenPath)) {
 			DirAccess.MakeDirRecursiveAbsolute(Utils.TsGenPath);
 		}
+		
+		ProjectSettings.LoadResourcePack(Utils.TemplateZipPath);
 
 		Log("启动游戏",
 			"\nPlatform:",
@@ -663,7 +665,7 @@ public sealed partial class Main : Control {
 	}
 
 	static private void SetSaveValue(string section, string key, JsValue value) {
-		CurrentWorldInfo!.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
+		CurrentWorldInfo!.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine!));
 		CurrentWorldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
 			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
 	}
