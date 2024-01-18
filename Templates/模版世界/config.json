@@ -1,0 +1,8 @@
+{
+    "name": "模版世界",
+    "version": "0.0.1",
+    "author": "神麤詭末",
+    "description": "一个空白的世界。",
+    "icon": "./icon.png",
+    "main": "./main.ts"
+}

@@ -1,0 +1,20 @@
+{
+    "include": [
+        "./*"
+    ],
+    "exclude": [],
+    "compilerOptions": {
+        "rootDir": "./",
+        "baseUrl": "./",
+        "target": "ESNext",
+        "module": "ESNext",
+        "allowJs": true,
+        "checkJs": true,
+        "lib": [
+            "ESNext"
+        ],
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "sourceRoot": "."
+    }
+}
