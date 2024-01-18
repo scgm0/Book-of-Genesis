@@ -181,7 +181,7 @@ public sealed partial class Main : Control {
 	private void ChooseTemplate() {
 		Log("加载模版列表");
 		ClearCache();
-		LoadWorldInfos(Utils.ResTemplatesPath);
+		LoadWorldInfos(ProjectSettings.GlobalizePath(Utils.ResTemplatesPath));
 		_home.Visible = false;
 		_chooseWorld.Visible = true;
 		var list = GetNode<VBoxContainer>("%WorldList");
@@ -663,7 +663,7 @@ public sealed partial class Main : Control {
 	}
 
 	static private void SetSaveValue(string section, string key, JsValue value) {
-		CurrentWorldInfo!.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
+		CurrentWorldInfo!.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine!));
 		CurrentWorldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
 			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
 	}
