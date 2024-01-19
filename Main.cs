@@ -48,6 +48,8 @@ public sealed partial class Main : Control {
 		if (!DirAccess.DirExistsAbsolute(Utils.TsGenPath)) {
 			DirAccess.MakeDirRecursiveAbsolute(Utils.TsGenPath);
 		}
+		
+		ProjectSettings.LoadResourcePack(Utils.TemplateZipPath);
 
 		Log("启动游戏",
 			"\nPlatform:",
@@ -181,7 +183,7 @@ public sealed partial class Main : Control {
 	private void ChooseTemplate() {
 		Log("加载模版列表");
 		ClearCache();
-		LoadWorldInfos(ProjectSettings.GlobalizePath(Utils.ResTemplatesPath));
+		LoadWorldInfos(Utils.ResTemplatesPath);
 		_home.Visible = false;
 		_chooseWorld.Visible = true;
 		var list = GetNode<VBoxContainer>("%WorldList");
