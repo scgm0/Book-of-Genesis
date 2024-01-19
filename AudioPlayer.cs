@@ -14,7 +14,8 @@ using FileAccess = Godot.FileAccess;
 // ReSharper disable once CheckNamespace
 // ReSharper disable once ClassNeverInstantiated.Global
 
-public partial class AudioPlayer : AudioStreamPlayer {
+public sealed class AudioPlayer {
+	private readonly AudioStreamPlayer _player = new();
 	private AudioStream? _audioStream;
 	private string? _audioStreamPath;
 
@@ -22,20 +23,20 @@ public partial class AudioPlayer : AudioStreamPlayer {
 
 	public double Duration { get => _audioStream?.GetLength() ?? 0; }
 
-	public float CurrentPosition { get => GetPlaybackPosition(); }
+	public float CurrentPosition { get => _player.GetPlaybackPosition(); }
 
-	public bool IsPlaying { get => Playing; }
+	public bool IsPlaying { get => _player.Playing; }
 
-	public bool Loop { set => Set("parameters/looping", value); get => Get("parameters/looping").AsBool(); }
+	public bool Loop { set => _player.Set("parameters/looping", value); get => _player.Get("parameters/looping").AsBool(); }
 
 	public AudioPlayer() {
-		Utils.Tree.Root.AddChild(this);
-		AddToGroup("Audio");
-		Finished += () => {
-			if (FinishedCallback is Function) {
-				FinishedCallback?.Call(thisObj: JsValue.FromObject(Main.CurrentEngine!, this), []);
+		Utils.Tree.Root.AddChild(_player); 
+		_player.Finished += () => {
+			if (FinishedCallback is Function function) {
+				function.Call(thisObj: JsValue.FromObject(Main.CurrentEngine!, this), []);
 			}
 		};
+		Utils.AudioPlayerCache.Add(this);
 	}
 
 	public AudioPlayer SetAudioPath(string path) {
@@ -76,7 +77,7 @@ public partial class AudioPlayer : AudioStreamPlayer {
 		}
 
 		_audioStreamPath = path;
-		Stream = _audioStream;
+		_player.Stream = _audioStream;
 		return this;
 	}
 
@@ -85,7 +86,7 @@ public partial class AudioPlayer : AudioStreamPlayer {
 			throw new JavaScriptException("未设置音频文件");
 		}
 
-		StreamPaused = true;
+		_player.StreamPaused = true;
 		return this;
 	}
 
@@ -98,26 +99,26 @@ public partial class AudioPlayer : AudioStreamPlayer {
 			return this;
 		}
 
-		if (StreamPaused) {
-			StreamPaused = false;
+		if (_player.StreamPaused) {
+			_player.StreamPaused = false;
 			return this;
 		}
 
-		StreamPaused = false;
-		base.Play(fromPosition ?? CurrentPosition);
+		_player.StreamPaused = false;
+		_player.Play(fromPosition ?? CurrentPosition);
 		return this;
 	}
 
-	public new AudioPlayer Seek(float pos) {
+	public AudioPlayer Seek(float pos) {
 		if (_audioStream == null) {
 			throw new JavaScriptException("未设置音频文件");
 		}
 
-		base.Seek(pos);
+		_player.Seek(pos);
 		return this;
 	}
 
-	public new AudioPlayer Stop() {
+	public AudioPlayer Stop() {
 		if (_audioStream == null) {
 			throw new JavaScriptException("未设置音频文件");
 		}
@@ -126,14 +127,14 @@ public partial class AudioPlayer : AudioStreamPlayer {
 			return this;
 		}
 
-		base.Stop();
+		_player.Stop();
 		return this;
 	}
 
-	public new void Dispose() {
-		_audioStream?.Dispose();
+	public void Dispose() {
 		Stop();
-		QueueFree();
+		_audioStream?.Dispose();
+		_player.QueueFree(); 
 	}
 
 	public static AudioPlayer PlayFile(
@@ -141,8 +142,9 @@ public partial class AudioPlayer : AudioStreamPlayer {
 		bool loop = false,
 		float? fromPosition = null,
 		JsValue? finishCallback = null) {
-		var audioPlayer = new AudioPlayer();
-		audioPlayer.FinishedCallback = finishCallback;
+		var audioPlayer = new AudioPlayer {
+			FinishedCallback = finishCallback
+		};
 		audioPlayer.SetAudioPath(path);
 		audioPlayer.Loop = loop;
 		audioPlayer.Play(fromPosition);

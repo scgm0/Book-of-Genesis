@@ -566,9 +566,10 @@ public sealed partial class Main : Control {
 		Utils.Tcs = null;
 		Utils.SourceMapCollection = null;
 
-		foreach (var node in Utils.Tree.GetNodesInGroup("Audio").OfType<AudioPlayer>()) {
-			node.Dispose();
+		foreach (var audioPlayer in Utils.AudioPlayerCache) {
+			audioPlayer.Dispose();
 		}
+		Utils.AudioPlayerCache.Clear();
 
 		foreach (var (_, worldInfo) in Utils.WorldInfos) {
 			worldInfo.Config.Dispose();
