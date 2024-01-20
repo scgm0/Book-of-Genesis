@@ -11,7 +11,7 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_x1xvs"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y4xe3"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ath5f"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -24,7 +24,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0knp3"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_25peb"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -37,7 +37,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m7roh"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lpyox"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -50,32 +50,31 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_41qf5"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t5krn"]
 resource_local_to_scene = true
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(0.1, 0.1, 0.1, 0.6)
+bg_color = Color(0, 0, 0, 0.376471)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
-corner_detail = 5
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6v3t7"]
 
-[sub_resource type="Theme" id="Theme_341qq"]
+[sub_resource type="Theme" id="Theme_td12p"]
 resource_local_to_scene = true
 Button/colors/font_color = Color(0.875, 0.875, 0.875, 1)
 Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
 Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/styles/hover = SubResource("StyleBoxFlat_y4xe3")
-Button/styles/normal = SubResource("StyleBoxFlat_0knp3")
-Button/styles/pressed = SubResource("StyleBoxFlat_m7roh")
-Panel/styles/panel = SubResource("StyleBoxFlat_41qf5")
+Button/styles/hover = SubResource("StyleBoxFlat_ath5f")
+Button/styles/normal = SubResource("StyleBoxFlat_25peb")
+Button/styles/pressed = SubResource("StyleBoxFlat_lpyox")
+Panel/styles/panel = SubResource("StyleBoxFlat_t5krn")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("5_bbyt4")
 RichTextLabel/fonts/bold_italics_font = ExtResource("6_grtul")
@@ -202,7 +201,7 @@ underline = 2
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
-theme = SubResource("Theme_341qq")
+theme = SubResource("Theme_td12p")
 
 [node name="Window" type="CanvasLayer" parent="."]
 

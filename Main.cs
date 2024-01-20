@@ -48,7 +48,7 @@ public sealed partial class Main : Control {
 		if (!DirAccess.DirExistsAbsolute(Utils.TsGenPath)) {
 			DirAccess.MakeDirRecursiveAbsolute(Utils.TsGenPath);
 		}
-		
+
 		ProjectSettings.LoadResourcePack(Utils.TemplateZipPath);
 
 		Log("启动游戏",
@@ -101,8 +101,8 @@ public sealed partial class Main : Control {
 			if (_home.Visible) {
 				GetTree().Root.PropagateNotification((int)NotificationWMCloseRequest);
 			} else if (_chooseWorld.Visible) {
-				_home.Visible = true;
-				_chooseWorld.Visible = false;
+				_home.Show();
+				_chooseWorld.Hide();
 			} else if (_game.Visible) {
 				ExitWorld();
 			}
@@ -139,8 +139,8 @@ public sealed partial class Main : Control {
 		ClearCache();
 		LoadWorldInfos(Utils.UserWorldsPath, true);
 		LoadWorldInfos(Utils.ResWorldsPath);
-		_home.Visible = false;
-		_chooseWorld.Visible = true;
+		_home.Hide();
+		_chooseWorld.Show();
 		var list = GetNode<VBoxContainer>("%WorldList");
 		foreach (var child in list.GetChildren()) {
 			child.QueueFree();
@@ -159,10 +159,10 @@ public sealed partial class Main : Control {
 
 			worldItem.GetNode<Button>("%Choose").Pressed += () => {
 				CurrentWorldInfo = worldInfo;
-				Log("进入世界:", CurrentWorldInfo.JsonString);
-				_chooseWorld.Visible = false;
+				Log("选择世界:", CurrentWorldInfo.JsonString);
+				_chooseWorld.Hide();
 				_background.Modulate = Color.FromHtml("#ffffff00");
-				_game.Visible = true;
+				_game.Show();
 				_game.GetNode<RichTextLabel>("%Title").Text = $"{worldInfo.Name}-{worldInfo.Version}";
 				_game.GetNode<Button>("%Encrypt").Disabled = worldInfo.IsEncrypt;
 				worldInfo.Config.LoadEncryptedPass($"{Utils.SavesPath}/{worldInfo.Author}:{worldInfo.Name}.save",
@@ -184,8 +184,8 @@ public sealed partial class Main : Control {
 		Log("加载模版列表");
 		ClearCache();
 		LoadWorldInfos(Utils.ResTemplatesPath);
-		_home.Visible = false;
-		_chooseWorld.Visible = true;
+		_home.Hide();
+		_chooseWorld.Show();
 		var list = GetNode<VBoxContainer>("%WorldList");
 		foreach (var child in list.GetChildren()) {
 			child.QueueFree();
@@ -223,12 +223,10 @@ public sealed partial class Main : Control {
 			CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
 			using var tween = _game.CreateTween();
 			tween.SetEase(Tween.EaseType.Out);
-			tween.Parallel().TweenProperty(_game, "modulate:a", 1.5, 1.5);
-
-			tween.Parallel().TweenProperty(_background, "modulate:a", 1.5, 1.5);
-
+			tween.TweenProperty(_background, "modulate:a", 1.5, 1.5);
 			tween.TweenCallback(Callable.From(() => {
-				_game.GetNode<Control>("Main").Visible = true;
+				Log("进入世界:", CurrentWorldInfo.JsonString);
+				_game.GetNode<Control>("Main").Show();
 				_currentWorldEvent = CurrentEngine.GetValue("World").Get("event").As<JsObject>()!;
 				EmitEvent(WorldEventType.Ready);
 				_currentWorld = (JsObject)CurrentEngine.GetValue("World");
@@ -242,7 +240,7 @@ public sealed partial class Main : Control {
 	private void InitGame() {
 		var oldGame = _game;
 		_game = _gameScene.Instantiate<Control>();
-		_game.GetNode<Control>("Main").Visible = false;
+		_game.GetNode<Control>("Main").Hide();
 		oldGame.AddSibling(_game);
 		oldGame.GetParent().RemoveChild(oldGame);
 		oldGame.QueueFree();
@@ -569,6 +567,7 @@ public sealed partial class Main : Control {
 		foreach (var audioPlayer in Utils.AudioPlayerCache) {
 			audioPlayer.Dispose();
 		}
+
 		Utils.AudioPlayerCache.Clear();
 
 		foreach (var (_, worldInfo) in Utils.WorldInfos) {
@@ -601,8 +600,8 @@ public sealed partial class Main : Control {
 
 		ClearCache();
 
-		_home.Visible = true;
-		_game.Visible = false;
+		_home.Show();
+		_game.Hide();
 	}
 
 	static private CanvasTexture? LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
