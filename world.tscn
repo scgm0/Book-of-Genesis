@@ -1,9 +1,9 @@
 [gd_scene load_steps=14 format=3 uid="uid://k2w3hc0p1xm3"]
 
-[ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_lwsvx"]
-[ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_xq01r"]
-[ext_resource type="FontVariation" uid="uid://dcqk6d3is3us1" path="res://Assets/Font/ItalicsFont.tres" id="3_c25ul"]
-[ext_resource type="Script" path="res://SmoothScroll.cs" id="4_ifeic"]
+[ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_8qxpl"]
+[ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_ju2b4"]
+[ext_resource type="FontVariation" uid="uid://dcqk6d3is3us1" path="res://Assets/Font/ItalicsFont.tres" id="3_p1ibc"]
+[ext_resource type="Script" path="res://SmoothScroll.cs" id="4_d05cd"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vemab"]
 resource_local_to_scene = true
@@ -70,9 +70,9 @@ Button/styles/normal = SubResource("StyleBoxFlat_o7vny")
 Button/styles/pressed = SubResource("StyleBoxFlat_nbjmj")
 Panel/styles/panel = SubResource("StyleBoxFlat_l2bod")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
-RichTextLabel/fonts/bold_font = ExtResource("1_lwsvx")
-RichTextLabel/fonts/bold_italics_font = ExtResource("2_xq01r")
-RichTextLabel/fonts/italics_font = ExtResource("3_c25ul")
+RichTextLabel/fonts/bold_font = ExtResource("1_8qxpl")
+RichTextLabel/fonts/bold_italics_font = ExtResource("2_ju2b4")
+RichTextLabel/fonts/italics_font = ExtResource("3_p1ibc")
 RichTextLabel/styles/focus = SubResource("StyleBoxEmpty_6v3t7")
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pie2p"]
@@ -93,7 +93,7 @@ Button/font_sizes/font_size = 25
 LineEdit/colors/font_placeholder_color = Color(0.87451, 0.87451, 0.87451, 0.333333)
 LineEdit/font_sizes/font_size = 25
 
-[node name="Game" type="Control"]
+[node name="World" type="Control"]
 custom_minimum_size = Vector2(1152, 648)
 layout_mode = 3
 anchors_preset = 8
@@ -268,7 +268,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 0
-script = ExtResource("4_ifeic")
+script = ExtResource("4_d05cd")
 
 [node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer"]
 layout_mode = 2
@@ -298,7 +298,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 0
-script = ExtResource("4_ifeic")
+script = ExtResource("4_d05cd")
 
 [node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer2"]
 layout_mode = 2

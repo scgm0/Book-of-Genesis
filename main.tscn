@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Main.cs" id="1_u5y2y"]
 [ext_resource type="PackedScene" uid="uid://kbkbbjhef0jq" path="res://world_item.tscn" id="3_51by6"]
-[ext_resource type="PackedScene" uid="uid://k2w3hc0p1xm3" path="res://game.tscn" id="4_8ufyh"]
+[ext_resource type="PackedScene" uid="uid://k2w3hc0p1xm3" path="res://world.tscn" id="4_8ufyh"]
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="5_bbyt4"]
 [ext_resource type="Script" path="res://SmoothScroll.cs" id="5_cs16n"]
 [ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="6_grtul"]
@@ -35,7 +35,7 @@ font_color = Color(1, 1, 1, 0.623529)
 font_size = 12
 font_color = Color(1, 1, 1, 0.623529)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ct62q"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r1j8y"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -48,7 +48,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0ghb2"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0fja"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -61,7 +61,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sv2v5"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_51qrg"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -74,7 +74,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nx44a"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vve1r"]
 resource_local_to_scene = true
 content_margin_left = 0.0
 content_margin_top = 0.0
@@ -88,17 +88,17 @@ corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6v3t7"]
 
-[sub_resource type="Theme" id="Theme_td12p"]
+[sub_resource type="Theme" id="Theme_l7wo8"]
 resource_local_to_scene = true
 Button/colors/font_color = Color(0.875, 0.875, 0.875, 1)
 Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
 Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/styles/hover = SubResource("StyleBoxFlat_ct62q")
-Button/styles/normal = SubResource("StyleBoxFlat_0ghb2")
-Button/styles/pressed = SubResource("StyleBoxFlat_sv2v5")
-Panel/styles/panel = SubResource("StyleBoxFlat_nx44a")
+Button/styles/hover = SubResource("StyleBoxFlat_r1j8y")
+Button/styles/normal = SubResource("StyleBoxFlat_q0fja")
+Button/styles/pressed = SubResource("StyleBoxFlat_51qrg")
+Panel/styles/panel = SubResource("StyleBoxFlat_vve1r")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("5_bbyt4")
 RichTextLabel/fonts/bold_italics_font = ExtResource("6_grtul")
@@ -113,7 +113,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_u5y2y")
-_gameScene = ExtResource("4_8ufyh")
+_worldScene = ExtResource("4_8ufyh")
 _worldItem = ExtResource("3_51by6")
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -267,14 +267,11 @@ label_settings = SubResource("LabelSettings_10wbn")
 horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="Game" parent="." instance=ExtResource("4_8ufyh")]
+[node name="World" parent="." instance=ExtResource("4_8ufyh")]
 unique_name_in_owner = true
 visible = false
-layout_mode = 2
-anchors_preset = 0
-size_flags_horizontal = 4
-size_flags_vertical = 4
-theme = SubResource("Theme_td12p")
+layout_mode = 1
+theme = SubResource("Theme_l7wo8")
 
 [node name="Window" type="CanvasLayer" parent="."]
 

@@ -26,16 +26,16 @@ public sealed partial class Main : Control {
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
 	[GetNode("%WorldsPathHint")] private LinkButton _worldsPathHint;
 	[GetNode("%Background")] private Control _background;
-	[GetNode("%Game")] private Control _game;
-	[GetNode("%Game/%LeftButtonList")] private Control _leftButtonList;
-	[GetNode("%Game/%RightButtonList")] private Control _rightButtonList;
-	[GetNode("%Game/%LeftText")] private RichTextLabel _leftText;
-	[GetNode("%Game/%CenterText")] private RichTextLabel _centerText;
-	[GetNode("%Game/%RightText")] private RichTextLabel _rightText;
-	[GetNode("%Game/%CommandEdit")] private LineEdit _commandEdit;
+	[GetNode("%World")] private Control _world;
+	[GetNode("%World/%LeftButtonList")] private Control _leftButtonList;
+	[GetNode("%World/%RightButtonList")] private Control _rightButtonList;
+	[GetNode("%World/%LeftText")] private RichTextLabel _leftText;
+	[GetNode("%World/%CenterText")] private RichTextLabel _centerText;
+	[GetNode("%World/%RightText")] private RichTextLabel _rightText;
+	[GetNode("%World/%CommandEdit")] private LineEdit _commandEdit;
 	[GetNode("%Back")] private Button _back;
 
-	[Export] private PackedScene _gameScene;
+	[Export] private PackedScene _worldScene;
 	[Export] private PackedScene _worldItem;
 
 	static private JsonParser? _jsonParser;
@@ -97,7 +97,7 @@ public sealed partial class Main : Control {
 				ExitWorld();
 			}
 
-			_gameScene.Dispose();
+			_worldScene.Dispose();
 			_worldItem.Dispose();
 			Utils.GlobalConfig.Dispose();
 			GC.Collect();
@@ -109,7 +109,7 @@ public sealed partial class Main : Control {
 			} else if (_chooseWorld.Visible) {
 				_home.Show();
 				_chooseWorld.Hide();
-			} else if (_game.Visible) {
+			} else if (_world.Visible) {
 				ExitWorld();
 			}
 		}
@@ -168,9 +168,9 @@ public sealed partial class Main : Control {
 				Log("选择世界:", CurrentWorldInfo.JsonString);
 				_chooseWorld.Hide();
 				_background.Modulate = Color.FromHtml("#ffffff00");
-				_game.Show();
-				_game.GetNode<RichTextLabel>("%Title").Text = $"{worldInfo.Name}-{worldInfo.Version}";
-				_game.GetNode<Button>("%Encrypt").Disabled = worldInfo.IsEncrypt;
+				_world.Show();
+				_world.GetNode<RichTextLabel>("%Title").Text = $"{worldInfo.Name}-{worldInfo.Version}";
+				_world.GetNode<Button>("%Encrypt").Disabled = worldInfo.IsEncrypt;
 				worldInfo.Config.LoadEncryptedPass($"{Utils.SavesPath}/{worldInfo.Author}:{worldInfo.Name}.save",
 					$"{worldInfo.Author}:{worldInfo.Name}");
 				worldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{worldInfo.Author}:{worldInfo.Name}.save",
@@ -224,15 +224,15 @@ public sealed partial class Main : Control {
 
 	private void RunWorld() {
 		try {
-			InitGame();
+			InitWorld();
 			InitEngine();
 			CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
-			using var tween = _game.CreateTween();
+			using var tween = _world.CreateTween();
 			tween.SetEase(Tween.EaseType.Out);
 			tween.TweenProperty(_background, "modulate:a", 1.5, 1.5);
 			tween.TweenCallback(Callable.From(() => {
 				Log("进入世界:", CurrentWorldInfo.JsonString);
-				_game.GetNode<Control>("Main").Show();
+				_world.GetNode<Control>("Main").Show();
 				_currentWorldEvent = CurrentEngine.GetValue("World").Get("event").As<JsObject>()!;
 				EmitEvent(WorldEventType.Ready);
 				_currentWorld = (JsObject)CurrentEngine.GetValue("World");
@@ -243,23 +243,23 @@ public sealed partial class Main : Control {
 		}
 	}
 
-	private void InitGame() {
-		var oldGame = _game;
-		_game = _gameScene.Instantiate<Control>();
-		_game.GetNode<Control>("Main").Hide();
-		oldGame.AddSibling(_game);
-		oldGame.GetParent().RemoveChild(oldGame);
-		oldGame.QueueFree();
-		_game.Name = "Game";
-		_leftButtonList = _game.GetNode<Control>("%LeftButtonList");
-		_rightButtonList = _game.GetNode<Control>("%RightButtonList");
-		_leftText = _game.GetNode<RichTextLabel>("%LeftText");
-		_centerText = _game.GetNode<RichTextLabel>("%CenterText");
-		_rightText = _game.GetNode<RichTextLabel>("%RightText");
-		_commandEdit = _game.GetNode<LineEdit>("%CommandEdit");
+	private void InitWorld() {
+		var oldWorld = _world;
+		_world = _worldScene.Instantiate<Control>();
+		_world.GetNode<Control>("Main").Hide();
+		oldWorld.AddSibling(_world);
+		oldWorld.GetParent().RemoveChild(oldWorld);
+		oldWorld.QueueFree();
+		_world.Name = "World";
+		_leftButtonList = _world.GetNode<Control>("%LeftButtonList");
+		_rightButtonList = _world.GetNode<Control>("%RightButtonList");
+		_leftText = _world.GetNode<RichTextLabel>("%LeftText");
+		_centerText = _world.GetNode<RichTextLabel>("%CenterText");
+		_rightText = _world.GetNode<RichTextLabel>("%RightText");
+		_commandEdit = _world.GetNode<LineEdit>("%CommandEdit");
 
-		_game.GetNode<Button>("%Exit").Pressed += () => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
-		_game.GetNode<Button>("%Encrypt").Pressed += () => {
+		_world.GetNode<Button>("%Exit").Pressed += () => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
+		_world.GetNode<Button>("%Encrypt").Pressed += () => {
 			Utils.ExportEncryptionWorldPck(CurrentWorldInfo!);
 			ExitWorld();
 		};
@@ -353,7 +353,7 @@ public sealed partial class Main : Control {
 					}));
 			currentWorld.Set("setTitle",
 				new DelegateWrapper(CurrentEngine,
-					(string title) => SetRichText(_game.GetNode<RichTextLabel>("%Title"), title)));
+					(string title) => SetRichText(_world.GetNode<RichTextLabel>("%Title"), title)));
 
 			currentWorld.Set("addLeftButton",
 				new DelegateWrapper(CurrentEngine, AddLeftButton));
@@ -607,7 +607,7 @@ public sealed partial class Main : Control {
 		ClearCache();
 
 		_home.Show();
-		_game.Hide();
+		_world.Hide();
 	}
 
 	static private CanvasTexture? LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
