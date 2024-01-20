@@ -1,12 +1,86 @@
-[gd_scene load_steps=7 format=3 uid="uid://diqreobfnlwp4"]
+[gd_scene load_steps=16 format=3 uid="uid://diqreobfnlwp4"]
 
 [ext_resource type="Script" path="res://Main.cs" id="1_u5y2y"]
 [ext_resource type="PackedScene" uid="uid://kbkbbjhef0jq" path="res://world_item.tscn" id="3_51by6"]
 [ext_resource type="Texture2D" uid="uid://e36v3vq5a0bb" path="res://Assets/icon.png" id="3_funt1"]
 [ext_resource type="PackedScene" uid="uid://k2w3hc0p1xm3" path="res://game.tscn" id="4_8ufyh"]
+[ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="5_bbyt4"]
 [ext_resource type="Script" path="res://SmoothScroll.cs" id="5_cs16n"]
+[ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="6_grtul"]
+[ext_resource type="FontVariation" uid="uid://dcqk6d3is3us1" path="res://Assets/Font/ItalicsFont.tres" id="7_t33cc"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_x1xvs"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y4xe3"]
+resource_local_to_scene = true
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.225, 0.225, 0.225, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0knp3"]
+resource_local_to_scene = true
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m7roh"]
+resource_local_to_scene = true
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_41qf5"]
+resource_local_to_scene = true
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6v3t7"]
+
+[sub_resource type="Theme" id="Theme_341qq"]
+resource_local_to_scene = true
+Button/colors/font_color = Color(0.875, 0.875, 0.875, 1)
+Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
+Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
+Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(1, 1, 1, 1)
+Button/styles/hover = SubResource("StyleBoxFlat_y4xe3")
+Button/styles/normal = SubResource("StyleBoxFlat_0knp3")
+Button/styles/pressed = SubResource("StyleBoxFlat_m7roh")
+Panel/styles/panel = SubResource("StyleBoxFlat_41qf5")
+RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
+RichTextLabel/fonts/bold_font = ExtResource("5_bbyt4")
+RichTextLabel/fonts/bold_italics_font = ExtResource("6_grtul")
+RichTextLabel/fonts/italics_font = ExtResource("7_t33cc")
+RichTextLabel/styles/focus = SubResource("StyleBoxEmpty_6v3t7")
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -18,6 +92,15 @@ grow_vertical = 2
 script = ExtResource("1_u5y2y")
 _gameScene = ExtResource("4_8ufyh")
 _worldItem = ExtResource("3_51by6")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -119,6 +202,7 @@ underline = 2
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
+theme = SubResource("Theme_341qq")
 
 [node name="Window" type="CanvasLayer" parent="."]
 
