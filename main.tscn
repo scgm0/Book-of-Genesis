@@ -35,7 +35,7 @@ font_color = Color(1, 1, 1, 0.623529)
 font_size = 12
 font_color = Color(1, 1, 1, 0.623529)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r1j8y"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j0mc8"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -48,7 +48,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0fja"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tq3v0"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -61,7 +61,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_51qrg"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_io0vf"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -74,7 +74,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vve1r"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kxtlc"]
 resource_local_to_scene = true
 content_margin_left = 0.0
 content_margin_top = 0.0
@@ -88,17 +88,17 @@ corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6v3t7"]
 
-[sub_resource type="Theme" id="Theme_l7wo8"]
+[sub_resource type="Theme" id="Theme_hj37p"]
 resource_local_to_scene = true
 Button/colors/font_color = Color(0.875, 0.875, 0.875, 1)
 Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
 Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/styles/hover = SubResource("StyleBoxFlat_r1j8y")
-Button/styles/normal = SubResource("StyleBoxFlat_q0fja")
-Button/styles/pressed = SubResource("StyleBoxFlat_51qrg")
-Panel/styles/panel = SubResource("StyleBoxFlat_vve1r")
+Button/styles/hover = SubResource("StyleBoxFlat_j0mc8")
+Button/styles/normal = SubResource("StyleBoxFlat_tq3v0")
+Button/styles/pressed = SubResource("StyleBoxFlat_io0vf")
+Panel/styles/panel = SubResource("StyleBoxFlat_kxtlc")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("5_bbyt4")
 RichTextLabel/fonts/bold_italics_font = ExtResource("6_grtul")
@@ -271,7 +271,7 @@ vertical_alignment = 1
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
-theme = SubResource("Theme_l7wo8")
+theme = SubResource("Theme_hj37p")
 
 [node name="Window" type="CanvasLayer" parent="."]
 

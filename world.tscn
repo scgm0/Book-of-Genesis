@@ -1,8 +1,9 @@
-[gd_scene load_steps=14 format=3 uid="uid://k2w3hc0p1xm3"]
+[gd_scene load_steps=15 format=3 uid="uid://k2w3hc0p1xm3"]
 
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_8qxpl"]
 [ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_ju2b4"]
 [ext_resource type="FontVariation" uid="uid://dcqk6d3is3us1" path="res://Assets/Font/ItalicsFont.tres" id="3_p1ibc"]
+[ext_resource type="Script" path="res://World.cs" id="4_2mjxf"]
 [ext_resource type="Script" path="res://SmoothScroll.cs" id="4_d05cd"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vemab"]
@@ -108,6 +109,7 @@ offset_bottom = 324.0
 grow_horizontal = 2
 grow_vertical = 2
 theme = SubResource("Theme_382wn")
+script = ExtResource("4_2mjxf")
 
 [node name="Main" type="MarginContainer" parent="."]
 layout_mode = 1

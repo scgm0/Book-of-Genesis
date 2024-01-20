@@ -26,13 +26,7 @@ public sealed partial class Main : Control {
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
 	[GetNode("%WorldsPathHint")] private LinkButton _worldsPathHint;
 	[GetNode("%Background")] private Control _background;
-	[GetNode("%World")] private Control _world;
-	[GetNode("%World/%LeftButtonList")] private Control _leftButtonList;
-	[GetNode("%World/%RightButtonList")] private Control _rightButtonList;
-	[GetNode("%World/%LeftText")] private RichTextLabel _leftText;
-	[GetNode("%World/%CenterText")] private RichTextLabel _centerText;
-	[GetNode("%World/%RightText")] private RichTextLabel _rightText;
-	[GetNode("%World/%CommandEdit")] private LineEdit _commandEdit;
+	[GetNode("%World")] private World _world;
 	[GetNode("%Back")] private Button _back;
 
 	[Export] private PackedScene _worldScene;
@@ -245,18 +239,12 @@ public sealed partial class Main : Control {
 
 	private void InitWorld() {
 		var oldWorld = _world;
-		_world = _worldScene.Instantiate<Control>();
+		_world = _worldScene.Instantiate<World>();
 		_world.GetNode<Control>("Main").Hide();
 		oldWorld.AddSibling(_world);
 		oldWorld.GetParent().RemoveChild(oldWorld);
 		oldWorld.QueueFree();
 		_world.Name = "World";
-		_leftButtonList = _world.GetNode<Control>("%LeftButtonList");
-		_rightButtonList = _world.GetNode<Control>("%RightButtonList");
-		_leftText = _world.GetNode<RichTextLabel>("%LeftText");
-		_centerText = _world.GetNode<RichTextLabel>("%CenterText");
-		_rightText = _world.GetNode<RichTextLabel>("%RightText");
-		_commandEdit = _world.GetNode<LineEdit>("%CommandEdit");
 
 		_world.GetNode<Button>("%Exit").Pressed += () => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_world.GetNode<Button>("%Encrypt").Pressed += () => {
@@ -264,34 +252,34 @@ public sealed partial class Main : Control {
 			ExitWorld();
 		};
 
-		_commandEdit.TextSubmitted += text => {
-			_commandEdit.Text = "";
+		_world.CommandEdit.TextSubmitted += text => {
+			_world.CommandEdit.Text = "";
 			EmitEvent(WorldEventType.Command, text);
 		};
 
-		_leftText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 0);
-		_centerText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 1);
-		_rightText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 2);
+		_world.LeftText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 0);
+		_world.CenterText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 1);
+		_world.RightText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 2);
 
-		_leftText.Resized += async () => {
-			if (_leftText.GetChildCount() <= 0) return;
+		_world.LeftText.Resized += async () => {
+			if (_world.LeftText.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_leftText.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
+			_world.LeftText.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
 		};
-		_leftText.VisibilityChanged += async () => {
-			if (_leftText.GetChildCount() <= 0) return;
+		_world.LeftText.VisibilityChanged += async () => {
+			if (_world.LeftText.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_leftText.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
+			_world.LeftText.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
 		};
-		_rightButtonList.Resized += async () => {
-			if (_rightButtonList.GetChildCount() <= 0) return;
+		_world.RightButtonList.Resized += async () => {
+			if (_world.RightButtonList.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_rightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
+			_world.RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
-		_rightButtonList.VisibilityChanged += async () => {
-			if (_rightButtonList.GetChildCount() <= 0) return;
+		_world.RightButtonList.VisibilityChanged += async () => {
+			if (_world.RightButtonList.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_rightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
+			_world.RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
 	}
 
@@ -371,45 +359,45 @@ public sealed partial class Main : Control {
 			currentWorld.Set("setLeftText",
 				new DelegateWrapper(CurrentEngine,
 					(string text) => {
-						SetRichText(_leftText, text);
-						_leftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+						SetRichText(_world.LeftText, text);
+						_world.LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 					}));
 			currentWorld.Set("setCenterText",
 				new DelegateWrapper(CurrentEngine,
 					(string text) => {
-						SetRichText(_centerText, text);
-						_centerText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+						SetRichText(_world.CenterText, text);
+						_world.CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 					}));
 			currentWorld.Set("setRightText",
 				new DelegateWrapper(CurrentEngine,
 					(string text) => {
-						SetRichText(_rightText, text);
-						_rightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+						SetRichText(_world.RightText, text);
+						_world.RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 					}));
 			currentWorld.Set("addLeftText",
 				new DelegateWrapper(CurrentEngine,
 					(string text) => {
-						AddRichText(_leftText, text);
-						_leftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+						AddRichText(_world.LeftText, text);
+						_world.LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 					}));
 			currentWorld.Set("addCenterText",
 				new DelegateWrapper(CurrentEngine,
 					(string text) => {
-						AddRichText(_centerText, text);
-						_centerText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+						AddRichText(_world.CenterText, text);
+						_world.CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 					}));
 			currentWorld.Set("addRightText",
 				new DelegateWrapper(CurrentEngine,
 					(string text) => {
-						AddRichText(_rightText, text);
-						_rightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+						AddRichText(_world.RightText, text);
+						_world.RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 					}));
 			currentWorld.Set("setLeftStretchRatio",
-				new DelegateWrapper(CurrentEngine, (float ratio) => _leftText.SizeFlagsStretchRatio = ratio));
+				new DelegateWrapper(CurrentEngine, (float ratio) => _world.LeftText.SizeFlagsStretchRatio = ratio));
 			currentWorld.Set("setCenterStretchRatio",
-				new DelegateWrapper(CurrentEngine, (float ratio) => _centerText.SizeFlagsStretchRatio = ratio));
+				new DelegateWrapper(CurrentEngine, (float ratio) => _world.CenterText.SizeFlagsStretchRatio = ratio));
 			currentWorld.Set("setRightStretchRatio",
-				new DelegateWrapper(CurrentEngine, (float ratio) => _rightText.SizeFlagsStretchRatio = ratio));
+				new DelegateWrapper(CurrentEngine, (float ratio) => _world.RightText.SizeFlagsStretchRatio = ratio));
 
 			currentWorld.Set("getSaveValue",
 				new DelegateWrapper(CurrentEngine,
@@ -436,7 +424,7 @@ public sealed partial class Main : Control {
 					}));
 
 			currentWorld.Set("setCommandPlaceholderText",
-				new DelegateWrapper(CurrentEngine, (string text) => _commandEdit.PlaceholderText = text));
+				new DelegateWrapper(CurrentEngine, (string text) => _world.CommandEdit.PlaceholderText = text));
 
 			currentWorld.Set("exit",
 				new DelegateWrapper(CurrentEngine, ExitWorld));
@@ -457,12 +445,12 @@ public sealed partial class Main : Control {
 	}
 
 	private int[] SetLeftButtons(string[] names) {
-		if (_leftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return _leftButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
+		if (_world.LeftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
+			return _world.LeftButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
 		}
 
-		foreach (var node in _leftButtonList.GetChildren()) {
-			_leftButtonList.RemoveChild(node);
+		foreach (var node in _world.LeftButtonList.GetChildren()) {
+			_world.LeftButtonList.RemoveChild(node);
 			node.QueueFree();
 		}
 
@@ -471,7 +459,7 @@ public sealed partial class Main : Control {
 
 	private int AddLeftButton(string str) {
 		var button = new Button();
-		_leftButtonList.AddChild(button);
+		_world.LeftButtonList.AddChild(button);
 		button.MouseFilter = MouseFilterEnum.Pass;
 		button.Text = str;
 		button.Pressed += () =>
@@ -480,19 +468,19 @@ public sealed partial class Main : Control {
 	}
 
 	private void RemoveLeftButton(int index) {
-		if (index >= 0 ? index > _leftButtonList.GetChildCount() - 1 : index < -_leftButtonList.GetChildCount()) return;
-		var node = _leftButtonList.GetChild(index);
-		_leftButtonList.RemoveChild(node);
+		if (index >= 0 ? index > _world.LeftButtonList.GetChildCount() - 1 : index < -_world.LeftButtonList.GetChildCount()) return;
+		var node = _world.LeftButtonList.GetChild(index);
+		_world.LeftButtonList.RemoveChild(node);
 		node.QueueFree();
 	}
 
 	private int[] SetRightButtons(string[] names) {
-		if (_rightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return _rightButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
+		if (_world.RightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
+			return _world.RightButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
 		}
 
-		foreach (var node in _rightButtonList.GetChildren()) {
-			_rightButtonList.RemoveChild(node);
+		foreach (var node in _world.RightButtonList.GetChildren()) {
+			_world.RightButtonList.RemoveChild(node);
 			node.QueueFree();
 		}
 
@@ -501,7 +489,7 @@ public sealed partial class Main : Control {
 
 	private int AddRightButton(string str) {
 		var button = new Button();
-		_rightButtonList.AddChild(button);
+		_world.RightButtonList.AddChild(button);
 		button.MouseFilter = MouseFilterEnum.Pass;
 		button.Text = str;
 		button.Pressed += () =>
@@ -510,9 +498,9 @@ public sealed partial class Main : Control {
 	}
 
 	private void RemoveRightButton(int index) {
-		if (index >= 0 ? index > _rightButtonList.GetChildCount() - 1 : index < -_rightButtonList.GetChildCount()) return;
-		var node = _rightButtonList.GetChild(index);
-		_rightButtonList.RemoveChild(node);
+		if (index >= 0 ? index > _world.RightButtonList.GetChildCount() - 1 : index < -_world.RightButtonList.GetChildCount()) return;
+		var node = _world.RightButtonList.GetChild(index);
+		_world.RightButtonList.RemoveChild(node);
 		node.QueueFree();
 	}
 
