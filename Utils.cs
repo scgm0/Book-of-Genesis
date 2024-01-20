@@ -7,6 +7,7 @@ using Godot;
 namespace 创世记;
 
 public static partial class Utils {
+	public const string EncryptionWorldExtension = "worldpack";
 
 	public const string ResWorldsPath = "res://Worlds";
 	public const string ResTemplatesPath = "res://Templates";
@@ -32,7 +33,7 @@ public static partial class Utils {
 	public static void ExportEncryptionWorldPck(WorldInfo worldInfo) {
 		Main.Log("加密开始:", worldInfo.JsonString);
 		var packer = new PckPacker();
-		packer.PckStart($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.modpack",
+		packer.PckStart($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}",
 			32,
 			ScriptAes256EncryptionKey,
 			true);
@@ -41,7 +42,7 @@ public static partial class Utils {
 			$"{ResWorldsPath}{worldInfo.Path}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt",
 			"res://Assets/.Encrypt");
 		packer.Flush(true);
-		Main.Log("加密结束:", ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.modpack"));
+		Main.Log("加密结束:", ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}"));
 	}
 
 	public static string ParseExpressionsForValues(string bbcode) {

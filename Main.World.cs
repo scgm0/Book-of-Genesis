@@ -40,7 +40,7 @@ public sealed partial class Main {
 						}
 					}
 				}
-			} else if (loadPackage && (fileName.GetExtension() == "modpack" || fileName.GetExtension() == "zip")) {
+			} else if (loadPackage && (fileName.GetExtension() == Utils.EncryptionWorldExtension || fileName.GetExtension() == "zip")) {
 				Log(fileName, ProjectSettings.LoadResourcePack(filePath));
 			}
 
