@@ -1,8 +1,7 @@
-[gd_scene load_steps=16 format=3 uid="uid://diqreobfnlwp4"]
+[gd_scene load_steps=20 format=3 uid="uid://diqreobfnlwp4"]
 
 [ext_resource type="Script" path="res://Main.cs" id="1_u5y2y"]
 [ext_resource type="PackedScene" uid="uid://kbkbbjhef0jq" path="res://world_item.tscn" id="3_51by6"]
-[ext_resource type="Texture2D" uid="uid://e36v3vq5a0bb" path="res://Assets/icon.png" id="3_funt1"]
 [ext_resource type="PackedScene" uid="uid://k2w3hc0p1xm3" path="res://game.tscn" id="4_8ufyh"]
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="5_bbyt4"]
 [ext_resource type="Script" path="res://SmoothScroll.cs" id="5_cs16n"]
@@ -11,7 +10,32 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_x1xvs"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ath5f"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bqhrw"]
+bg_color = Color(0.101961, 0.101961, 0.101961, 0.6)
+
+[sub_resource type="FontVariation" id="FontVariation_pipg7"]
+base_font = ExtResource("5_bbyt4")
+variation_embolden = -0.1
+spacing_glyph = 15
+
+[sub_resource type="LabelSettings" id="LabelSettings_arman"]
+font = SubResource("FontVariation_pipg7")
+font_size = 66
+outline_size = 5
+outline_color = Color(0, 0, 0, 1)
+shadow_color = Color(0, 0, 0, 0.411765)
+shadow_offset = Vector2(6, 6)
+
+[sub_resource type="LabelSettings" id="LabelSettings_todv6"]
+font = ExtResource("7_t33cc")
+font_size = 12
+font_color = Color(1, 1, 1, 0.623529)
+
+[sub_resource type="LabelSettings" id="LabelSettings_10wbn"]
+font_size = 12
+font_color = Color(1, 1, 1, 0.623529)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ct62q"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -24,7 +48,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_25peb"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0ghb2"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -37,7 +61,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lpyox"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sv2v5"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -50,7 +74,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t5krn"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nx44a"]
 resource_local_to_scene = true
 content_margin_left = 0.0
 content_margin_top = 0.0
@@ -71,10 +95,10 @@ Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
 Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/styles/hover = SubResource("StyleBoxFlat_ath5f")
-Button/styles/normal = SubResource("StyleBoxFlat_25peb")
-Button/styles/pressed = SubResource("StyleBoxFlat_lpyox")
-Panel/styles/panel = SubResource("StyleBoxFlat_t5krn")
+Button/styles/hover = SubResource("StyleBoxFlat_ct62q")
+Button/styles/normal = SubResource("StyleBoxFlat_0ghb2")
+Button/styles/pressed = SubResource("StyleBoxFlat_sv2v5")
+Panel/styles/panel = SubResource("StyleBoxFlat_nx44a")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("5_bbyt4")
 RichTextLabel/fonts/bold_italics_font = ExtResource("6_grtul")
@@ -136,17 +160,43 @@ stretch_mode = 6
 [node name="Home" type="Panel" parent="PanelContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bqhrw")
 
-[node name="TextureRect" type="TextureRect" parent="PanelContainer/Home"]
-visible = false
+[node name="GameName" type="Label" parent="PanelContainer/Home"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -114.0
+offset_top = -174.0
+offset_right = 114.0
+offset_bottom = -77.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("3_funt1")
-stretch_mode = 6
+text = "创世记"
+label_settings = SubResource("LabelSettings_arman")
+horizontal_alignment = 1
+vertical_alignment = 1
+justification_flags = 162
+
+[node name="GameVersion" type="Label" parent="PanelContainer/Home/GameName"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.172
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -12.0
+offset_right = -0.056015
+offset_bottom = 12.0
+grow_vertical = 0
+text = "游戏版本"
+label_settings = SubResource("LabelSettings_todv6")
+vertical_alignment = 1
 
 [node name="ChooseWorldButton" type="Button" parent="PanelContainer/Home"]
 unique_name_in_owner = true
@@ -182,7 +232,8 @@ grow_vertical = 0
 theme_override_font_sizes/font_size = 35
 text = "模版世界"
 
-[node name="ModsPathHint" type="LinkButton" parent="PanelContainer/Home"]
+[node name="WorldsPathHint" type="LinkButton" parent="PanelContainer/Home"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -197,10 +248,32 @@ grow_vertical = 0
 theme_override_font_sizes/font_size = 25
 underline = 2
 
+[node name="DotNetVersion" type="Label" parent="PanelContainer/Home"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -92.0
+offset_top = -23.333
+offset_right = -4.0
+offset_bottom = 0.000305176
+grow_horizontal = 0
+grow_vertical = 0
+text = "dotnet: version"
+label_settings = SubResource("LabelSettings_10wbn")
+horizontal_alignment = 2
+vertical_alignment = 1
+
 [node name="Game" parent="." instance=ExtResource("4_8ufyh")]
 unique_name_in_owner = true
 visible = false
-layout_mode = 1
+layout_mode = 2
+anchors_preset = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
 theme = SubResource("Theme_td12p")
 
 [node name="Window" type="CanvasLayer" parent="."]

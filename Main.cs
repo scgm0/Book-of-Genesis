@@ -20,8 +20,11 @@ namespace 创世记;
 public sealed partial class Main : Control {
 	[GetNode("%ChooseWorldButton")] private Button _chooseWorldButton;
 	[GetNode("%Home")] private Control _home;
+	[GetNode("%GameVersion")] private Label _gameVersion;
+	[GetNode("%DotNetVersion")] private Label _dotNetVersion;
 	[GetNode("%ChooseWorld")] private Control _chooseWorld;
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
+	[GetNode("%WorldsPathHint")] private LinkButton _worldsPathHint;
 	[GetNode("%Background")] private Control _background;
 	[GetNode("%Game")] private Control _game;
 	[GetNode("%Game/%LeftButtonList")] private Control _leftButtonList;
@@ -30,6 +33,7 @@ public sealed partial class Main : Control {
 	[GetNode("%Game/%CenterText")] private RichTextLabel _centerText;
 	[GetNode("%Game/%RightText")] private RichTextLabel _rightText;
 	[GetNode("%Game/%CommandEdit")] private LineEdit _commandEdit;
+	[GetNode("%Back")] private Button _back;
 
 	[Export] private PackedScene _gameScene;
 	[Export] private PackedScene _worldItem;
@@ -51,23 +55,25 @@ public sealed partial class Main : Control {
 
 		ProjectSettings.LoadResourcePack(Utils.TemplateZipPath);
 
+		GetTree().AutoAcceptQuit = false;
+
 		Log("启动游戏",
 			"\nPlatform:",
 			OS.GetName(),
 			"\nGameVersion:",
 			Utils.GameVersion,
 			"\nDotNetVersion:",
-			Environment.Version.ToString());
+			Environment.Version);
 
-		GetTree().AutoAcceptQuit = false;
-
-		_home.GetNode<LinkButton>("ModsPathHint").Text =
+		_gameVersion.Text = $"version: {Utils.GameVersion}";
+		_dotNetVersion.Text = $"dotnet: {Environment.Version}";
+		_worldsPathHint.Text =
 			$"世界存放位置：{ProjectSettings.GlobalizePath(Utils.UserWorldsPath.SimplifyPath())}";
-		_home.GetNode<LinkButton>("ModsPathHint").Uri =
+		_worldsPathHint.Uri =
 			$"{ProjectSettings.GlobalizePath(Utils.UserWorldsPath.SimplifyPath())}";
 		_chooseWorldButton.Pressed += ChooseWorld;
 		_templateWorldButton.Pressed += ChooseTemplate;
-		GetNode<Button>("Window/ChooseWorld/Back").Pressed +=
+		_back.Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
 		TsTransform.Prepare();
