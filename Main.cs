@@ -294,6 +294,7 @@ public sealed partial class Main : Control {
 			_jsonParser = new JsonParser(CurrentEngine);
 			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
 			constraint?.Reset(Utils.Tcs.Token);
+
 			CurrentEngine.SetValue("print", new Action<string[]>(Log))
 				.SetValue("setTimeout", SetTimeout)
 				.SetValue("setInterval", SetInterval)
@@ -316,18 +317,18 @@ public sealed partial class Main : Control {
 			CurrentEngine.Modules.Add("audio", builder => builder.ExportType<AudioPlayer>().ExportType<AudioPlayer>("default"));
 
 			var currentWorld = new JsObject(CurrentEngine);
-			currentWorld.FastSetProperty("print",
-				new PropertyDescriptor(new DelegateWrapper(CurrentEngine, new Action<string[]>(Log)), true, false, true));
 			var worldEvent = CurrentEngine.Construct(CurrentEngine.Modules.Import("events").Get("default"));
-			currentWorld.DefineOwnProperty("event",
-				new GetSetPropertyDescriptor(
-					new DelegateWrapper(CurrentEngine, () => worldEvent),
-					null));
+
 			currentWorld.DefineOwnProperty("info",
 				new GetSetPropertyDescriptor(
 					new DelegateWrapper(CurrentEngine,
 						() => _jsonParser.Parse(CurrentWorldInfo!.JsonString)),
 					null));
+			currentWorld.DefineOwnProperty("event",
+				new GetSetPropertyDescriptor(
+					new DelegateWrapper(CurrentEngine, () => worldEvent),
+					null));
+
 			currentWorld.Set("setBackgroundColor",
 				new DelegateWrapper(CurrentEngine,
 					(string color) => {
@@ -339,66 +340,48 @@ public sealed partial class Main : Control {
 					(string path, TextureFilterEnum filter = TextureFilterEnum.Nearest) => {
 						_background.GetNode<TextureRect>("TextureRect").Texture = LoadImageFile(path, filter);
 					}));
-			currentWorld.Set("setTitle",
-				new DelegateWrapper(CurrentEngine,
-					(string title) => SetRichText(_world.GetNode<RichTextLabel>("%Title"), title)));
 
-			currentWorld.Set("addLeftButton",
-				new DelegateWrapper(CurrentEngine, AddLeftButton));
-			currentWorld.Set("removeLeftButton",
-				new DelegateWrapper(CurrentEngine, RemoveLeftButton));
-			currentWorld.Set("setLeftButtons",
-				new DelegateWrapper(CurrentEngine, SetLeftButtons));
-			currentWorld.Set("addRightButton",
-				new DelegateWrapper(CurrentEngine, AddRightButton));
-			currentWorld.Set("removeRightButton",
-				new DelegateWrapper(CurrentEngine, RemoveRightButton));
-			currentWorld.Set("setm<RightButtons",
-				new DelegateWrapper(CurrentEngine, SetRightButtons));
+			currentWorld.Set("setTitle",
+				new DelegateWrapper(CurrentEngine, _world.SetTitle));
 
 			currentWorld.Set("setLeftText",
-				new DelegateWrapper(CurrentEngine,
-					(string text) => {
-						SetRichText(_world.LeftText, text);
-						_world.LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-					}));
+				new DelegateWrapper(CurrentEngine, _world.SetLeftText));
 			currentWorld.Set("setCenterText",
-				new DelegateWrapper(CurrentEngine,
-					(string text) => {
-						SetRichText(_world.CenterText, text);
-						_world.CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-					}));
+				new DelegateWrapper(CurrentEngine, _world.SetCenterText));
 			currentWorld.Set("setRightText",
-				new DelegateWrapper(CurrentEngine,
-					(string text) => {
-						SetRichText(_world.RightText, text);
-						_world.RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-					}));
+				new DelegateWrapper(CurrentEngine, _world.SetRightText));
 			currentWorld.Set("addLeftText",
-				new DelegateWrapper(CurrentEngine,
-					(string text) => {
-						AddRichText(_world.LeftText, text);
-						_world.LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-					}));
+				new DelegateWrapper(CurrentEngine, _world.AddLeftText));
 			currentWorld.Set("addCenterText",
-				new DelegateWrapper(CurrentEngine,
-					(string text) => {
-						AddRichText(_world.CenterText, text);
-						_world.CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-					}));
+				new DelegateWrapper(CurrentEngine, _world.AddCenterText));
 			currentWorld.Set("addRightText",
-				new DelegateWrapper(CurrentEngine,
-					(string text) => {
-						AddRichText(_world.RightText, text);
-						_world.RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-					}));
-			currentWorld.Set("setLeftStretchRatio",
-				new DelegateWrapper(CurrentEngine, (float ratio) => _world.LeftText.SizeFlagsStretchRatio = ratio));
-			currentWorld.Set("setCenterStretchRatio",
-				new DelegateWrapper(CurrentEngine, (float ratio) => _world.CenterText.SizeFlagsStretchRatio = ratio));
-			currentWorld.Set("setRightStretchRatio",
-				new DelegateWrapper(CurrentEngine, (float ratio) => _world.RightText.SizeFlagsStretchRatio = ratio));
+				new DelegateWrapper(CurrentEngine, _world.AddRightText));
 
+			currentWorld.Set("setLeftStretchRatio",
+				new DelegateWrapper(CurrentEngine, _world.SetLeftStretchRatio));
+			currentWorld.Set("setCenterStretchRatio",
+				new DelegateWrapper(CurrentEngine, _world.SetCenterStretchRatio));
+			currentWorld.Set("setRightStretchRatio",
+				new DelegateWrapper(CurrentEngine, _world.SetRightStretchRatio));
+
+			currentWorld.Set("addLeftButton",
+				new DelegateWrapper(CurrentEngine, _world.AddLeftButton));
+			currentWorld.Set("removeLeftButton",
+				new DelegateWrapper(CurrentEngine, _world.RemoveLeftButton));
+			currentWorld.Set("setLeftButtons",
+				new DelegateWrapper(CurrentEngine, _world.SetLeftButtons));
+			currentWorld.Set("addRightButton",
+				new DelegateWrapper(CurrentEngine, _world.AddRightButton));
+			currentWorld.Set("removeRightButton",
+				new DelegateWrapper(CurrentEngine, _world.RemoveRightButton));
+			currentWorld.Set("setm<RightButtons",
+				new DelegateWrapper(CurrentEngine, _world.SetRightButtons));
+
+			currentWorld.Set("setCommandPlaceholderText",
+				new DelegateWrapper(CurrentEngine, _world.SetCommandPlaceholderText));
+
+			currentWorld.FastSetProperty("print",
+				new PropertyDescriptor(new DelegateWrapper(CurrentEngine, new Action<string[]>(Log)), true, false, true));
 			currentWorld.Set("getSaveValue",
 				new DelegateWrapper(CurrentEngine,
 					(string section, string key, JsValue? defaultValue = null) => {
@@ -423,11 +406,9 @@ public sealed partial class Main : Control {
 						Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 					}));
 
-			currentWorld.Set("setCommandPlaceholderText",
-				new DelegateWrapper(CurrentEngine, (string text) => _world.CommandEdit.PlaceholderText = text));
-
 			currentWorld.Set("exit",
 				new DelegateWrapper(CurrentEngine, ExitWorld));
+
 			CurrentEngine.SetValue("World", currentWorld);
 		} catch (Exception e) {
 			Log(e.ToString());
@@ -435,73 +416,8 @@ public sealed partial class Main : Control {
 		}
 	}
 
-	private void EmitEvent(WorldEventType name, params JsValue[] values) {
-		try {
-			_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [name.ToString("G").ToSnakeCase(), ..values]);
-		} catch (JavaScriptException e) {
-			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
-			ExitWorld(1);
-		}
-	}
-
-	private int[] SetLeftButtons(string[] names) {
-		if (_world.LeftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return _world.LeftButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
-		}
-
-		foreach (var node in _world.LeftButtonList.GetChildren()) {
-			_world.LeftButtonList.RemoveChild(node);
-			node.QueueFree();
-		}
-
-		return names.Select(AddLeftButton).ToArray();
-	}
-
-	private int AddLeftButton(string str) {
-		var button = new Button();
-		_world.LeftButtonList.AddChild(button);
-		button.MouseFilter = MouseFilterEnum.Pass;
-		button.Text = str;
-		button.Pressed += () =>
-			EmitEvent(WorldEventType.LeftButtonClick, str, button.GetIndex());
-		return button.GetIndex();
-	}
-
-	private void RemoveLeftButton(int index) {
-		if (index >= 0 ? index > _world.LeftButtonList.GetChildCount() - 1 : index < -_world.LeftButtonList.GetChildCount()) return;
-		var node = _world.LeftButtonList.GetChild(index);
-		_world.LeftButtonList.RemoveChild(node);
-		node.QueueFree();
-	}
-
-	private int[] SetRightButtons(string[] names) {
-		if (_world.RightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return _world.RightButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
-		}
-
-		foreach (var node in _world.RightButtonList.GetChildren()) {
-			_world.RightButtonList.RemoveChild(node);
-			node.QueueFree();
-		}
-
-		return names.Select(AddRightButton).ToArray();
-	}
-
-	private int AddRightButton(string str) {
-		var button = new Button();
-		_world.RightButtonList.AddChild(button);
-		button.MouseFilter = MouseFilterEnum.Pass;
-		button.Text = str;
-		button.Pressed += () =>
-			EmitEvent(WorldEventType.RightButtonClick, str, button.GetIndex());
-		return button.GetIndex();
-	}
-
-	private void RemoveRightButton(int index) {
-		if (index >= 0 ? index > _world.RightButtonList.GetChildCount() - 1 : index < -_world.RightButtonList.GetChildCount()) return;
-		var node = _world.RightButtonList.GetChild(index);
-		_world.RightButtonList.RemoveChild(node);
-		node.QueueFree();
+	public static void EmitEvent(WorldEventType name, params JsValue[] values) {
+		_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [name.ToString("G").ToSnakeCase(), ..values]);
 	}
 
 	private int SetTimeout(JsValue callback, int delay, params JsValue[]? values) {
@@ -664,12 +580,12 @@ public sealed partial class Main : Control {
 			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
 	}
 
-	static private void SetRichText(RichTextLabel label, string text) {
-		LoadRichTextImg(ref text);
-		label.Text = text;
+	public static void SetRichText(RichTextLabel label, string text) {
+		label.Clear();
+		AddRichText(label, text);
 	}
 
-	static private void AddRichText(RichTextLabel label, string text) {
+	public static void AddRichText(RichTextLabel label, string text) {
 		LoadRichTextImg(ref text);
 		label.AppendText(text);
 	}
