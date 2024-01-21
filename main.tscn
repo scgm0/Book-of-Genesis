@@ -21,10 +21,10 @@ spacing_glyph = 15
 [sub_resource type="LabelSettings" id="LabelSettings_arman"]
 font = SubResource("FontVariation_pipg7")
 font_size = 66
-outline_size = 5
+outline_size = 12
 outline_color = Color(0, 0, 0, 1)
 shadow_color = Color(0, 0, 0, 0.411765)
-shadow_offset = Vector2(6, 6)
+shadow_offset = Vector2(12, 10)
 
 [sub_resource type="LabelSettings" id="LabelSettings_todv6"]
 font = ExtResource("7_t33cc")
@@ -35,7 +35,7 @@ font_color = Color(1, 1, 1, 0.623529)
 font_size = 12
 font_color = Color(1, 1, 1, 0.623529)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8r1st"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t5yed"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -48,7 +48,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uw16x"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_40gcu"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -61,7 +61,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tmp50"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fv8go"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -74,7 +74,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t4oa8"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xxnu7"]
 resource_local_to_scene = true
 content_margin_left = 0.0
 content_margin_top = 0.0
@@ -95,10 +95,10 @@ Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
 Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/styles/hover = SubResource("StyleBoxFlat_8r1st")
-Button/styles/normal = SubResource("StyleBoxFlat_uw16x")
-Button/styles/pressed = SubResource("StyleBoxFlat_tmp50")
-Panel/styles/panel = SubResource("StyleBoxFlat_t4oa8")
+Button/styles/hover = SubResource("StyleBoxFlat_t5yed")
+Button/styles/normal = SubResource("StyleBoxFlat_40gcu")
+Button/styles/pressed = SubResource("StyleBoxFlat_fv8go")
+Panel/styles/panel = SubResource("StyleBoxFlat_xxnu7")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("5_bbyt4")
 RichTextLabel/fonts/bold_italics_font = ExtResource("6_grtul")

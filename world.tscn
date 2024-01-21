@@ -161,6 +161,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_cwa3d")
 bbcode_enabled = true
 text = "标题"
 fit_content = true
+scroll_active = false
 autowrap_mode = 0
 
 [node name="Exit" type="Button" parent="Main/Control/VBoxContainer/HBoxContainer"]
