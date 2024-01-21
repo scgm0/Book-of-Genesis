@@ -333,7 +333,7 @@ public sealed partial class Main : Control {
 				new DelegateWrapper(CurrentEngine,
 					(string color) => {
 						_background.GetNode<ColorRect>("ColorRect").Color =
-							Color.FromString(color, Color.Color8(74, 74, 74)) with { A = 1 };
+							Color.FromString(color, Color.Color8(74, 74, 74));
 					}));
 			currentWorld.Set("setBackgroundTexture",
 				new DelegateWrapper(CurrentEngine,
@@ -414,10 +414,6 @@ public sealed partial class Main : Control {
 			Log(e.ToString());
 			ExitWorld(1);
 		}
-	}
-
-	public static void EmitEvent(WorldEventType name, params JsValue[] values) {
-		_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [name.ToString("G").ToSnakeCase(), ..values]);
 	}
 
 	private int SetTimeout(JsValue callback, int delay, params JsValue[]? values) {
@@ -512,6 +508,10 @@ public sealed partial class Main : Control {
 
 		_home.Show();
 		_world.Hide();
+	}
+
+	public static void EmitEvent(WorldEventType name, params JsValue[] values) {
+		_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [name.ToString("G").ToSnakeCase(), ..values]);
 	}
 
 	static private CanvasTexture? LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
