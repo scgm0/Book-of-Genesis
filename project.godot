@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.3", "C#", "GL Compatibility")
 run/flush_stdout_on_print=true
 run/low_processor_mode=true
 config/icon="res://Assets/icon.png"
+boot_splash/minimum_display_time=500
 run/disable_stderr.release=true
 
 [debug]

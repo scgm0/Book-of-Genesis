@@ -163,6 +163,7 @@ text = "标题"
 fit_content = true
 scroll_active = false
 autowrap_mode = 0
+meta_underlined = false
 
 [node name="Exit" type="Button" parent="Main/Control/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
@@ -202,6 +203,7 @@ focus_mode = 2
 bbcode_enabled = true
 scroll_following = true
 autowrap_mode = 1
+meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
 [node name="CenterPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
@@ -229,6 +231,7 @@ focus_mode = 2
 bbcode_enabled = true
 scroll_following = true
 autowrap_mode = 1
+meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
 [node name="RightPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
@@ -256,6 +259,7 @@ focus_mode = 2
 bbcode_enabled = true
 scroll_following = true
 autowrap_mode = 1
+meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="Main/Control/VBoxContainer"]

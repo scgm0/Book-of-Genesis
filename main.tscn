@@ -13,18 +13,20 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bqhrw"]
 bg_color = Color(0.101961, 0.101961, 0.101961, 0.6)
 
-[sub_resource type="FontVariation" id="FontVariation_pipg7"]
+[sub_resource type="FontVariation" id="FontVariation_0obq8"]
 base_font = ExtResource("5_bbyt4")
-variation_embolden = -0.1
-spacing_glyph = 15
+spacing_glyph = 40
+spacing_top = 5
+spacing_bottom = 5
 
 [sub_resource type="LabelSettings" id="LabelSettings_arman"]
-font = SubResource("FontVariation_pipg7")
-font_size = 66
-outline_size = 12
-outline_color = Color(0, 0, 0, 1)
-shadow_color = Color(0, 0, 0, 0.411765)
-shadow_offset = Vector2(12, 10)
+font = SubResource("FontVariation_0obq8")
+font_size = 120
+font_color = Color(0, 0, 0, 1)
+outline_size = 15
+shadow_size = 4
+shadow_color = Color(0, 0, 0, 0.6)
+shadow_offset = Vector2(15, 15)
 
 [sub_resource type="LabelSettings" id="LabelSettings_todv6"]
 font = ExtResource("7_t33cc")
@@ -35,7 +37,7 @@ font_color = Color(1, 1, 1, 0.623529)
 font_size = 12
 font_color = Color(1, 1, 1, 0.623529)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t5yed"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ip20d"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -48,7 +50,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_40gcu"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fi6y0"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -61,7 +63,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fv8go"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6ovtc"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -74,7 +76,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xxnu7"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vm03r"]
 resource_local_to_scene = true
 content_margin_left = 0.0
 content_margin_top = 0.0
@@ -88,17 +90,17 @@ corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6v3t7"]
 
-[sub_resource type="Theme" id="Theme_hj37p"]
+[sub_resource type="Theme" id="Theme_pjvsn"]
 resource_local_to_scene = true
 Button/colors/font_color = Color(0.875, 0.875, 0.875, 1)
 Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
 Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/styles/hover = SubResource("StyleBoxFlat_t5yed")
-Button/styles/normal = SubResource("StyleBoxFlat_40gcu")
-Button/styles/pressed = SubResource("StyleBoxFlat_fv8go")
-Panel/styles/panel = SubResource("StyleBoxFlat_xxnu7")
+Button/styles/hover = SubResource("StyleBoxFlat_ip20d")
+Button/styles/normal = SubResource("StyleBoxFlat_fi6y0")
+Button/styles/pressed = SubResource("StyleBoxFlat_6ovtc")
+Panel/styles/panel = SubResource("StyleBoxFlat_vm03r")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("5_bbyt4")
 RichTextLabel/fonts/bold_italics_font = ExtResource("6_grtul")
@@ -169,10 +171,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -114.0
-offset_top = -174.0
-offset_right = 114.0
-offset_bottom = -77.0
+offset_left = -220.0
+offset_top = -254.0
+offset_right = 220.0
+offset_bottom = -58.9994
 grow_horizontal = 2
 grow_vertical = 2
 text = "创世记"
@@ -271,7 +273,7 @@ vertical_alignment = 1
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
-theme = SubResource("Theme_hj37p")
+theme = SubResource("Theme_pjvsn")
 
 [node name="Window" type="CanvasLayer" parent="."]
 
