@@ -366,16 +366,18 @@ public sealed partial class Main : Control {
 
 			currentWorld.Set("addLeftButton",
 				new DelegateWrapper(CurrentEngine, _world.AddLeftButton));
-			currentWorld.Set("removeLeftButton",
-				new DelegateWrapper(CurrentEngine, _world.RemoveLeftButton));
-			currentWorld.Set("setLeftButtons",
-				new DelegateWrapper(CurrentEngine, _world.SetLeftButtons));
 			currentWorld.Set("addRightButton",
 				new DelegateWrapper(CurrentEngine, _world.AddRightButton));
-			currentWorld.Set("removeRightButton",
-				new DelegateWrapper(CurrentEngine, _world.RemoveRightButton));
-			currentWorld.Set("setm<RightButtons",
+			currentWorld.Set("setLeftButtons",
+				new DelegateWrapper(CurrentEngine, _world.SetLeftButtons));
+			currentWorld.Set("setRightButtons",
 				new DelegateWrapper(CurrentEngine, _world.SetRightButtons));
+			currentWorld.Set("removeLeftButtonByIndex",
+				new DelegateWrapper(CurrentEngine, _world.RemoveLeftButtonByIndex));
+			currentWorld.Set("removeRightButtonByIndex",
+				new DelegateWrapper(CurrentEngine, _world.RemoveRightButtonByIndex));
+			currentWorld.Set("removeButtonById",
+				new DelegateWrapper(CurrentEngine, World.RemoveButtonById));
 
 			currentWorld.Set("setCommandPlaceholderText",
 				new DelegateWrapper(CurrentEngine, _world.SetCommandPlaceholderText));

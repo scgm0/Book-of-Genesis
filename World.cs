@@ -48,9 +48,9 @@ public partial class World : Control {
 		RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
-	public int[] SetLeftButtons(string[] names) {
+	public ulong[] SetLeftButtons(string[] names) {
 		if (LeftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return LeftButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
+			return LeftButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
 		}
 
 		foreach (var node in LeftButtonList.GetChildren()) {
@@ -61,26 +61,26 @@ public partial class World : Control {
 		return names.Select(AddLeftButton).ToArray();
 	}
 
-	public int AddLeftButton(string str) {
+	public ulong AddLeftButton(string str) {
 		var button = new Button();
 		LeftButtonList.AddChild(button);
 		button.MouseFilter = MouseFilterEnum.Pass;
 		button.Text = str;
 		button.Pressed += () =>
-			Main.EmitEvent(WorldEventType.LeftButtonClick, str, button.GetIndex());
-		return button.GetIndex();
+			Main.EmitEvent(WorldEventType.LeftButtonClick, str, button.GetIndex(), button.GetInstanceId());
+		return button.GetInstanceId();
 	}
 
-	public void RemoveLeftButton(int index) {
+	public void RemoveLeftButtonByIndex(int index) {
+		GD.Print(LeftButtonList.GetChild(index));
 		if (index >= 0 ? index > LeftButtonList.GetChildCount() - 1 : index < -LeftButtonList.GetChildCount()) return;
 		var node = LeftButtonList.GetChild(index);
-		LeftButtonList.RemoveChild(node);
 		node.QueueFree();
 	}
 
-	public int[] SetRightButtons(string[] names) {
+	public ulong[] SetRightButtons(string[] names) {
 		if (RightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return RightButtonList.GetChildren().Select(node => ((Button)node).GetIndex()).ToArray();
+			return RightButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
 		}
 
 		foreach (var node in RightButtonList.GetChildren()) {
@@ -91,20 +91,25 @@ public partial class World : Control {
 		return names.Select(AddRightButton).ToArray();
 	}
 
-	public int AddRightButton(string str) {
+	public ulong AddRightButton(string str) {
 		var button = new Button();
 		RightButtonList.AddChild(button);
 		button.MouseFilter = MouseFilterEnum.Pass;
 		button.Text = str;
 		button.Pressed += () =>
-			Main.EmitEvent(WorldEventType.RightButtonClick, str, button.GetIndex());
-		return button.GetIndex();
+			Main.EmitEvent(WorldEventType.RightButtonClick, str, button.GetIndex(), button.GetInstanceId());
+		return button.GetInstanceId();
 	}
 
-	public void RemoveRightButton(int index) {
+	public void RemoveRightButtonByIndex(int index) {
 		if (index >= 0 ? index > RightButtonList.GetChildCount() - 1 : index < -RightButtonList.GetChildCount()) return;
 		var node = RightButtonList.GetChild(index);
-		RightButtonList.RemoveChild(node);
 		node.QueueFree();
 	}
+
+	public static void RemoveButtonById(ulong id) {
+		var button = InstanceFromId(id) as Button;
+		button?.QueueFree();
+	}
+
 }
