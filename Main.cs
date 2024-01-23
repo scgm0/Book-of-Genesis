@@ -59,7 +59,7 @@ public sealed partial class Main : Control {
 			"\nDotNetVersion:",
 			Environment.Version);
 
-		_gameVersion.Text = $"version: {Utils.GameVersion}";
+		_gameVersion.Text = $"v{Utils.GameVersion}";
 		_dotNetVersion.Text = $"dotnet: {Environment.Version}";
 		_worldsPathHint.Text =
 			$"世界存放位置：{ProjectSettings.GlobalizePath(Utils.UserWorldsPath.SimplifyPath())}";
@@ -493,6 +493,7 @@ public sealed partial class Main : Control {
 
 		Utils.TextureCache.Clear();
 
+		_background.Modulate = Colors.White;
 		_background.GetNode<ColorRect>("ColorRect").Color = Color.Color8(74, 74, 74);
 		_background.GetNode<TextureRect>("TextureRect").Texture = null;
 	}

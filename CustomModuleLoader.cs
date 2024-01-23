@@ -164,15 +164,32 @@ sealed class CustomModuleLoader : IModuleLoader {
 		if (fileName.GetExtension() == "ts") {
 			var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo.Path, $"/{_worldInfo.WorldKey}/"))
 				.SimplifyPath();
-			if (FileAccess.FileExists($"{cachePath}.meta") &&
-				FileAccess.FileExists($"{cachePath}.js")) {
+			var jsPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.js";
+			var metaPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
+			if (FileAccess.FileExists(jsPath) &&
+				FileAccess.FileExists(metaPath)) {
 				var tsSha256 = FileAccess.GetSha256(fileName);
+				string tsMetaJson;
+				if (_worldInfo.IsEncrypt) {
+					using var metaFile =
+						FileAccess.OpenEncryptedWithPass(metaPath, FileAccess.ModeFlags.Read, $"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}");
+					tsMetaJson = metaFile.GetAsText();
+				} else {
+					tsMetaJson = FileAccess.GetFileAsString(metaPath);
+				}
+
 				var tsMeta = JsonSerializer.Deserialize(
-					FileAccess.GetFileAsString($"{cachePath}.meta"),
+					tsMetaJson,
 					SourceGenerationContext.Default.TsMeta);
-				var jsSha256 = FileAccess.GetSha256($"{cachePath}.js");
+				var jsSha256 = FileAccess.GetSha256(jsPath);
 				if (tsSha256 == tsMeta.TsSha256 && jsSha256 == tsMeta.JsSha256) {
-					code = FileAccess.GetFileAsString($"{cachePath}.js");
+					if (_worldInfo.IsEncrypt) {
+						using var jsFile =
+							FileAccess.OpenEncryptedWithPass(jsPath, FileAccess.ModeFlags.Read, $"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}");
+						code = jsFile.GetAsText();
+					} else {
+						code = FileAccess.GetFileAsString(jsPath);
+					}
 				} else {
 					TsGen(ref code, fileName, resolved);
 				}
@@ -188,19 +205,25 @@ sealed class CustomModuleLoader : IModuleLoader {
 		if (string.IsNullOrEmpty(code)) return;
 		var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo.Path, $"/{_worldInfo.WorldKey}/"))
 			.SimplifyPath();
+		var jsPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.js";
+		var metaPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
 		DirAccess.MakeDirRecursiveAbsolute($"{cachePath}".GetBaseDir());
 		var tsSha256 = FileAccess.GetSha256(fileName);
 		var res = TsTransform.Compile(FileAccess.GetFileAsString(fileName), resolved.Key);
 		code = res["outputText"].AsString();
-		using var jsFile =
-			FileAccess.Open($"{cachePath}.js", FileAccess.ModeFlags.Write);
+		var jsFile =
+			_worldInfo.IsEncrypt
+				? FileAccess.OpenEncryptedWithPass(jsPath, FileAccess.ModeFlags.Write, $"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}")
+				: FileAccess.Open(jsPath, FileAccess.ModeFlags.Write);
 		jsFile.StoreString(code);
-		jsFile.Flush();
-		var jsSha256 = FileAccess.GetSha256($"{cachePath}.js");
-		using var tsMetaFile = FileAccess.Open($"{cachePath}.meta",
-			FileAccess.ModeFlags.Write);
+		jsFile.Dispose();
+		var jsSha256 = FileAccess.GetSha256(jsPath);
+		var tsMetaFile =
+			_worldInfo.IsEncrypt  
+				? FileAccess.OpenEncryptedWithPass(metaPath, FileAccess.ModeFlags.Write, $"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}")
+				: FileAccess.Open(metaPath, FileAccess.ModeFlags.Write);
 		tsMetaFile.StoreString($"{{\"ts_sha256\":\"{tsSha256}\",\"js_sha256\":\"{jsSha256}\"}}");
-		tsMetaFile.Flush();
+		tsMetaFile.Dispose();
 	}
 
 	private void RegisterSourceMap(ref string code, ResolvedSpecifier resolved) {

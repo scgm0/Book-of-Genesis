@@ -12,8 +12,8 @@ public static partial class Utils {
 	public const string ResWorldsPath = "res://Worlds";
 	public const string ResTemplatesPath = "res://Templates";
 	public const string TemplateZipPath = "res://Templates.zip";
-	
-	static private readonly string ScriptAes256EncryptionKey = SCRIPT_AES256_ENCRYPTION_KEY();
+
+	public static readonly string ScriptAes256EncryptionKey = SCRIPT_AES256_ENCRYPTION_KEY();
 
 	public static readonly bool IsAndroid = OS.GetName() == "Android";
 
