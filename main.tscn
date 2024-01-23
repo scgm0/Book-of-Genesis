@@ -36,7 +36,7 @@ font_color = Color(1, 1, 1, 0.623529)
 font_size = 12
 font_color = Color(1, 1, 1, 0.623529)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ik43s"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fkbxp"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -49,7 +49,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ivmug"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_44hpv"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -62,7 +62,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8sxh5"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hvghf"]
 resource_local_to_scene = true
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -75,7 +75,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_af44y"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qick1"]
 resource_local_to_scene = true
 content_margin_left = 0.0
 content_margin_top = 0.0
@@ -96,10 +96,10 @@ Button/colors/font_focus_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_color = Color(0.95, 0.95, 0.95, 1)
 Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
 Button/colors/font_pressed_color = Color(1, 1, 1, 1)
-Button/styles/hover = SubResource("StyleBoxFlat_ik43s")
-Button/styles/normal = SubResource("StyleBoxFlat_ivmug")
-Button/styles/pressed = SubResource("StyleBoxFlat_8sxh5")
-Panel/styles/panel = SubResource("StyleBoxFlat_af44y")
+Button/styles/hover = SubResource("StyleBoxFlat_fkbxp")
+Button/styles/normal = SubResource("StyleBoxFlat_44hpv")
+Button/styles/pressed = SubResource("StyleBoxFlat_hvghf")
+Panel/styles/panel = SubResource("StyleBoxFlat_qick1")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("5_bbyt4")
 RichTextLabel/fonts/bold_italics_font = ExtResource("6_grtul")
