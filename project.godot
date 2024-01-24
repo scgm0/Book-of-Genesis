@@ -30,6 +30,7 @@ file_logging/log_path.android="/storage/emulated/0/创世记/Logs/app.log"
 
 [display]
 
+window/size/mode=2
 window/energy_saving/keep_screen_on.editor=true
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
@@ -64,6 +65,4 @@ pointing/emulate_touch_from_mouse=true
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
-textures/lossless_compression/force_png=true
-2d/sdf/scale=0
 limits/global_shader_variables/buffer_size.android=16384
