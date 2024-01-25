@@ -26,6 +26,8 @@ public sealed partial class Main : Control {
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
 	[GetNode("%WorldsPathHint")] private LinkButton _worldsPathHint;
 	[GetNode("%Background")] private Control _background;
+	[GetNode("%Background/ColorRect")] private ColorRect _backgroundColorRect;
+	[GetNode("%Background/TextureRect")] private TextureRect _backgroundTextureRect;
 	[GetNode("%World")] private World _world;
 	[GetNode("%Back")] private Button _back;
 
@@ -296,6 +298,7 @@ public sealed partial class Main : Control {
 			constraint?.Reset(Utils.Tcs.Token);
 
 			CurrentEngine.SetValue("print", new Action<string[]>(Log))
+				.SetValue("WorldEventType", TypeReference.CreateTypeReference(CurrentEngine, typeof(WorldEventType)))
 				.SetValue("setTimeout", SetTimeout)
 				.SetValue("setInterval", SetInterval)
 				.SetValue("clearTimeout",
@@ -331,14 +334,17 @@ public sealed partial class Main : Control {
 
 			currentWorld.Set("setBackgroundColor",
 				new DelegateWrapper(CurrentEngine,
-					(string color) => {
-						_background.GetNode<ColorRect>("ColorRect").Color =
-							Color.FromString(color, Color.Color8(74, 74, 74));
+					(string colorHex) => {
+						var color = Color.FromString(colorHex, Color.Color8(74, 74, 74));
+						if (_backgroundColorRect.Color == color) return;
+						_backgroundColorRect.Color = color;
 					}));
 			currentWorld.Set("setBackgroundTexture",
 				new DelegateWrapper(CurrentEngine,
 					(string path, TextureFilterEnum filter = TextureFilterEnum.Nearest) => {
-						_background.GetNode<TextureRect>("TextureRect").Texture = LoadImageFile(path, filter);
+						var texture = LoadImageFile(path, filter);
+						if (_backgroundTextureRect.Texture == texture) return;
+						_backgroundTextureRect.Texture = texture;
 					}));
 
 			currentWorld.Set("setTitle",
@@ -514,7 +520,7 @@ public sealed partial class Main : Control {
 	}
 
 	public static void EmitEvent(WorldEventType name, params JsValue[] values) {
-		_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [name.ToString("G").ToSnakeCase(), ..values]);
+		_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]);
 	}
 
 	static private CanvasTexture? LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
