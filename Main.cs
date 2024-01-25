@@ -298,7 +298,7 @@ public sealed partial class Main : Control {
 			constraint?.Reset(Utils.Tcs.Token);
 
 			CurrentEngine.SetValue("print", new Action<string[]>(Log))
-				.SetValue("WorldEventType", TypeReference.CreateTypeReference(CurrentEngine, typeof(WorldEventType)))
+				.SetValue("WorldEventType", typeof(WorldEventType))
 				.SetValue("setTimeout", SetTimeout)
 				.SetValue("setInterval", SetInterval)
 				.SetValue("clearTimeout",
