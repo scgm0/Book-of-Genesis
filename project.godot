@@ -18,7 +18,6 @@ config/quit_on_go_back=false
 config/features=PackedStringArray("4.3", "C#", "GL Compatibility")
 run/flush_stdout_on_print=true
 run/low_processor_mode=true
-boot_splash/bg_color=Color(0.176471, 0.176471, 0.176471, 1)
 boot_splash/show_image=false
 config/icon="res://Assets/icon.png"
 run/disable_stderr.release=true

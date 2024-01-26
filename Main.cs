@@ -30,12 +30,12 @@ public sealed partial class Main : Control {
 	[GetNode("%Background")] private Control _background;
 	[GetNode("%Background/ColorRect")] private ColorRect _backgroundColorRect;
 	[GetNode("%Background/TextureRect")] private TextureRect _backgroundTextureRect;
-	[GetNode("%World")] private World _world;
 	[GetNode("%Back")] private Button _back;
 
 	[Export] private PackedScene _worldScene;
 	[Export] private PackedScene _worldItem;
-
+	
+	private World _world;
 	static private JsonParser? _jsonParser;
 	static private readonly DateTime StartTime = DateTime.Now;
 
@@ -171,13 +171,10 @@ public sealed partial class Main : Control {
 				Log("选择世界:", CurrentWorldInfo.JsonString);
 				_chooseWorld.Hide();
 				_background.Modulate = Color.FromHtml("#ffffff00");
-				_world.Show();
-				_world.GetNode<RichTextLabel>("%Title").Text = $"{worldInfo.Name}-{worldInfo.Version}";
-				_world.GetNode<Button>("%Encrypt").Disabled = worldInfo.IsEncrypt;
-				worldInfo.Config.LoadEncryptedPass($"{Utils.SavesPath}/{worldInfo.Author}:{worldInfo.Name}.save",
-					$"{worldInfo.Author}:{worldInfo.Name}");
-				worldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{worldInfo.Author}:{worldInfo.Name}.save",
-					$"{worldInfo.Author}:{worldInfo.Name}");
+				CurrentWorldInfo.Config.LoadEncryptedPass($"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
+					$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
+				CurrentWorldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
+					$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
 				Utils.GlobalConfig.LoadEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 				Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 				RunWorld();
@@ -248,14 +245,15 @@ public sealed partial class Main : Control {
 	}
 
 	private void InitWorld() {
-		var oldWorld = _world;
+		var oldWorld = _world ?? GetNode("%World");
 		_world = _worldScene.Instantiate<World>();
 		_world.GetNode<Control>("Main").Hide();
 		oldWorld.AddSibling(_world);
 		oldWorld.GetParent().RemoveChild(oldWorld);
 		oldWorld.QueueFree();
-		_world.Name = "World";
 
+		_world.SetTitle($"{CurrentWorldInfo!.Name}-{CurrentWorldInfo.Version}");
+		_world.GetNode<Button>("%Encrypt").Disabled = CurrentWorldInfo.IsEncrypt;
 		_world.GetNode<Button>("%Exit").Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_world.GetNode<Button>("%Encrypt").Pressed += () => {

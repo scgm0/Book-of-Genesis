@@ -13,7 +13,7 @@ public partial class BootSplash : Control {
 		ResourceLoader.LoadThreadedRequest(_scenePath);
 		var tween = CreateTween();
 		tween.SetTrans(Tween.TransitionType.Cubic);
-		tween.TweenProperty(_logo, "modulate:a", 1.0, 1.5);
+		tween.TweenProperty(_logo, "modulate:a", 1.0, 1.2);
 		tween.TweenCallback(Callable.From(() => {
 			var packedScene = ResourceLoader.LoadThreadedGet(_scenePath) as PackedScene;
 			instancedScene = packedScene?.Instantiate<Control>();
@@ -23,7 +23,7 @@ public partial class BootSplash : Control {
 			Utils.Tree.Root.MoveChild(instancedScene, -2);
 		}));
 		tween.TweenCallback(Callable.From(() => { instancedScene!.Visible = true; })).SetDelay(0.05);
-		tween.Parallel().TweenProperty(this, "modulate:a", 0, 1);
+		tween.Parallel().TweenProperty(this, "modulate:a", 0, 0.8);
 		tween.TweenCallback(Callable.From(QueueFree));
 	}
 }
