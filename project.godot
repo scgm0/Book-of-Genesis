@@ -11,15 +11,16 @@ config_version=5
 [application]
 
 config/name="创世记"
-config/version="0.1.3.100"
-run/main_scene="res://main.tscn"
+config/version="0.1.3.150"
+run/main_scene="res://boot_splash.tscn"
 config/use_custom_user_dir=true
 config/quit_on_go_back=false
 config/features=PackedStringArray("4.3", "C#", "GL Compatibility")
 run/flush_stdout_on_print=true
 run/low_processor_mode=true
+boot_splash/bg_color=Color(0.176471, 0.176471, 0.176471, 1)
+boot_splash/show_image=false
 config/icon="res://Assets/icon.png"
-boot_splash/minimum_display_time=500
 run/disable_stderr.release=true
 
 [debug]
