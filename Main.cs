@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using Godot;
 using Jint;
 using Jint.Constraints;
@@ -36,6 +37,7 @@ public sealed partial class Main : Control {
 	[Export] private PackedScene _worldItem;
 
 	static private JsonParser? _jsonParser;
+	static private readonly DateTime StartTime = DateTime.Now;
 
 	public override void _Ready() {
 		if (!DirAccess.DirExistsAbsolute(Utils.UserWorldsPath)) {
@@ -72,8 +74,11 @@ public sealed partial class Main : Control {
 		_templateWorldButton.Pressed += ChooseTemplate;
 		_back.Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
-
-		TsTransform.Prepare();
+		
+		Task.Run(() => {
+			TsTransform.Prepare();
+			Log("初始化完成，耗时:", DateTime.Now - StartTime);
+		});
 	}
 
 	public override void _Input(InputEvent @event) {
@@ -98,7 +103,7 @@ public sealed partial class Main : Control {
 			_worldItem.Dispose();
 			Utils.GlobalConfig.Dispose();
 			GC.Collect();
-			Log("退出游戏");
+			Log("退出游戏，运行时长:", DateTime.Now - StartTime);
 			GetTree().Quit();
 		} else if (what == NotificationWMGoBackRequest) {
 			if (_home.Visible) {
