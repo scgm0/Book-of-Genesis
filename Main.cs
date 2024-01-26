@@ -11,6 +11,7 @@ using Jint.Runtime;
 using Jint.Runtime.Descriptors;
 using Jint.Runtime.Interop;
 using SourceMaps;
+using World;
 using Engine = Jint.Engine;
 using Environment = System.Environment;
 using Timer = System.Timers.Timer;
@@ -114,9 +115,10 @@ public sealed partial class Main : Control {
 	public override void _PhysicsProcess(double delta) {
 		if (_currentWorld == null) return;
 		try {
-			EmitEvent(WorldEventType.Tick);
+			EmitEvent(EventType.Tick);
 		} catch (JavaScriptException e) {
-			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
+			Log(
+				$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 			ExitWorld(1);
 		} catch (Exception e) {
 			if (e is ExecutionCanceledException) {
@@ -130,9 +132,9 @@ public sealed partial class Main : Control {
 
 	private void OnMetaClickedEventHandler(Variant meta, int index) {
 		try {
-			EmitEvent(WorldEventType.TextUrlClick, _jsonParser!.Parse(meta.ToString()), index);
+			EmitEvent(EventType.TextUrlClick, _jsonParser!.Parse(meta.ToString()), index);
 		} catch (Exception) {
-			EmitEvent(WorldEventType.TextUrlClick, meta.ToString(), index);
+			EmitEvent(EventType.TextUrlClick, meta.ToString(), index);
 		}
 	}
 
@@ -230,11 +232,12 @@ public sealed partial class Main : Control {
 				Log("进入世界:", CurrentWorldInfo.JsonString);
 				_world.GetNode<Control>("Main").Show();
 				_currentWorldEvent = CurrentEngine.GetValue("World").Get("event").As<JsObject>()!;
-				EmitEvent(WorldEventType.Ready);
+				EmitEvent(EventType.Ready);
 				_currentWorld = (JsObject)CurrentEngine.GetValue("World");
 			}));
 		} catch (JavaScriptException e) {
-			Log($"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
+			Log(
+				$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 			ExitWorld(1);
 		}
 	}
@@ -248,7 +251,8 @@ public sealed partial class Main : Control {
 		oldWorld.QueueFree();
 		_world.Name = "World";
 
-		_world.GetNode<Button>("%Exit").Pressed += () => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
+		_world.GetNode<Button>("%Exit").Pressed +=
+			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_world.GetNode<Button>("%Encrypt").Pressed += () => {
 			Utils.ExportEncryptionWorldPck(CurrentWorldInfo!);
 			ExitWorld();
@@ -256,7 +260,7 @@ public sealed partial class Main : Control {
 
 		_world.CommandEdit.TextSubmitted += text => {
 			_world.CommandEdit.Text = "";
-			EmitEvent(WorldEventType.Command, text);
+			EmitEvent(EventType.Command, text);
 		};
 
 		_world.LeftText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 0);
@@ -298,7 +302,6 @@ public sealed partial class Main : Control {
 			constraint?.Reset(Utils.Tcs.Token);
 
 			CurrentEngine.SetValue("print", new Action<string[]>(Log))
-				.SetValue("WorldEventType", typeof(WorldEventType))
 				.SetValue("setTimeout", SetTimeout)
 				.SetValue("setInterval", SetInterval)
 				.SetValue("clearTimeout",
@@ -317,10 +320,14 @@ public sealed partial class Main : Control {
 					});
 
 			CurrentEngine.Modules.Add("events", Utils.Polyfill.Events);
-			CurrentEngine.Modules.Add("audio", builder => builder.ExportType<AudioPlayer>().ExportType<AudioPlayer>("default"));
+			CurrentEngine.Modules.Add("audio",
+				builder => builder.ExportType<AudioPlayer>().ExportType<AudioPlayer>("default"));
 
 			var currentWorld = new JsObject(CurrentEngine);
 			var worldEvent = CurrentEngine.Construct(CurrentEngine.Modules.Import("events").Get("default"));
+
+			currentWorld.Set("EventType", TypeReference.CreateTypeReference(CurrentEngine, typeof(EventType)));
+			currentWorld.Set("TextType", TypeReference.CreateTypeReference(CurrentEngine, typeof(TextType)));
 
 			currentWorld.DefineOwnProperty("info",
 				new GetSetPropertyDescriptor(
@@ -388,6 +395,10 @@ public sealed partial class Main : Control {
 			currentWorld.Set("setCommandPlaceholderText",
 				new DelegateWrapper(CurrentEngine, _world.SetCommandPlaceholderText));
 
+			currentWorld.Set("setTextBackgroundColor",
+				new DelegateWrapper(CurrentEngine,
+					(TextType type, string colorHex) => _world.SetTextBackgroundColor(type, colorHex)));
+
 			currentWorld.FastSetProperty("print",
 				new PropertyDescriptor(new DelegateWrapper(CurrentEngine, new Action<string[]>(Log)), true, false, true));
 			currentWorld.Set("getSaveValue",
@@ -449,16 +460,17 @@ public sealed partial class Main : Control {
 				return;
 			}
 
-			Callable.From(() => {
-				try {
-					callback.Call(thisObj: JsValue.Undefined, values ?? []);
-					CurrentEngine?.Advanced.ProcessTasks();
-				} catch (JavaScriptException e) {
-					Log(
-						$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
-					ExitWorld(1);
-				} catch (ExecutionCanceledException) { }
-			}).CallDeferred();
+			Dispatcher.SynchronizationContext.Post(_ => {
+					try {
+						callback.Call(thisObj: JsValue.Undefined, values ?? []);
+						CurrentEngine?.Advanced.ProcessTasks();
+					} catch (JavaScriptException e) {
+						Log(
+							$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
+						ExitWorld(1);
+					} catch (ExecutionCanceledException) { }
+				},
+				null);
 			if (autoReset) return;
 			Utils.Timers.Remove(id);
 			timer.Dispose();
@@ -506,7 +518,7 @@ public sealed partial class Main : Control {
 
 	private void ExitWorld(int exitCode = 0) {
 		Log("退出世界:", exitCode, CurrentWorldInfo?.JsonString ?? string.Empty);
-		EmitEvent(WorldEventType.Exit, exitCode);
+		EmitEvent(EventType.Exit, exitCode);
 		CurrentEngine?.Dispose();
 		CurrentEngine = null;
 		_currentWorldEvent = null;
@@ -519,7 +531,7 @@ public sealed partial class Main : Control {
 		_world.Hide();
 	}
 
-	public static void EmitEvent(WorldEventType name, params JsValue[] values) {
+	public static void EmitEvent(EventType name, params JsValue[] values) {
 		_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]);
 	}
 
@@ -585,7 +597,8 @@ public sealed partial class Main : Control {
 
 	static private void SetSaveValue(string section, string key, JsValue value) {
 		CurrentWorldInfo!.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine!));
-		CurrentWorldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
+		CurrentWorldInfo.Config.SaveEncryptedPass(
+			$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
 			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
 	}
 

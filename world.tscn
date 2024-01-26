@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://k2w3hc0p1xm3"]
+[gd_scene load_steps=16 format=3 uid="uid://k2w3hc0p1xm3"]
 
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_8qxpl"]
 [ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_ju2b4"]
@@ -45,20 +45,6 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l2bod"]
-resource_local_to_scene = true
-bg_color = Color(0, 0, 0, 0.376471)
-border_width_left = 5
-border_width_top = 5
-border_width_right = 5
-border_width_bottom = 5
-border_color = Color(0, 0, 0, 0.6)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-anti_aliasing = false
-
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6v3t7"]
 
 [sub_resource type="Theme" id="Theme_382wn"]
@@ -73,7 +59,6 @@ Button/styles/hover = SubResource("StyleBoxFlat_vemab")
 Button/styles/normal = SubResource("StyleBoxFlat_o7vny")
 Button/styles/pressed = SubResource("StyleBoxFlat_nbjmj")
 LineEdit/font_sizes/font_size = 20
-Panel/styles/panel = SubResource("StyleBoxFlat_l2bod")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("1_8qxpl")
 RichTextLabel/fonts/bold_italics_font = ExtResource("2_ju2b4")
@@ -83,10 +68,53 @@ RichTextLabel/styles/focus = SubResource("StyleBoxEmpty_6v3t7")
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_pie2p"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cwa3d"]
+resource_local_to_scene = true
 content_margin_left = 8.0
 content_margin_top = 6.0
 content_margin_right = 8.0
 content_margin_bottom = 6.0
+bg_color = Color(0, 0, 0, 0.376471)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l2bod"]
+resource_local_to_scene = true
+bg_color = Color(0, 0, 0, 0.376471)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t8wjd"]
+resource_local_to_scene = true
+bg_color = Color(0, 0, 0, 0.376471)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+anti_aliasing = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tg0ev"]
+resource_local_to_scene = true
 bg_color = Color(0, 0, 0, 0.376471)
 border_width_left = 5
 border_width_top = 5
@@ -183,9 +211,9 @@ size_flags_vertical = 3
 theme_override_constants/separation = 10
 
 [node name="LeftPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_l2bod")
 
 [node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer2/LeftPanel"]
 layout_mode = 1
@@ -211,9 +239,9 @@ meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
 [node name="CenterPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_t8wjd")
 
 [node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer2/CenterPanel"]
 layout_mode = 1
@@ -239,9 +267,9 @@ meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
 [node name="RightPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_tg0ev")
 
 [node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer2/RightPanel"]
 layout_mode = 1

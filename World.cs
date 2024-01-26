@@ -1,5 +1,7 @@
+using System;
 using System.Linq;
 using Godot;
+using World;
 
 namespace 创世记;
 
@@ -12,9 +14,24 @@ public partial class World : Control {
 	[GetNode("%RightText")] public RichTextLabel RightText;
 	[GetNode("%CommandEdit")] public LineEdit CommandEdit;
 
+	private StyleBoxFlat _titleStyle;
+	private StyleBoxFlat _leftTextStyle;
+	private StyleBoxFlat _centerTextStyle;
+	private StyleBoxFlat _rightTextStyle;
+
+
+	public override void _Ready() {
+		_titleStyle = (StyleBoxFlat)Title.GetThemeStylebox("normal");
+		_leftTextStyle = (StyleBoxFlat)LeftText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
+		_centerTextStyle = (StyleBoxFlat)CenterText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
+		_rightTextStyle = (StyleBoxFlat)RightText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
+	}
+
 	public void SetTitle(string title) => Main.SetRichText(Title, title);
 	public void SetLeftStretchRatio(float ratio) => LeftText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
+
 	public void SetCenterStretchRatio(float ratio) => CenterText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
+
 	public void SetRightStretchRatio(float ratio) => RightText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
 	public void SetCommandPlaceholderText(string text) => CommandEdit.PlaceholderText = text;
 
@@ -67,7 +84,7 @@ public partial class World : Control {
 		button.MouseFilter = MouseFilterEnum.Pass;
 		button.Text = str;
 		button.Pressed += () =>
-			Main.EmitEvent(WorldEventType.LeftButtonClick, str, button.GetIndex(), button.GetInstanceId());
+			Main.EmitEvent(EventType.LeftButtonClick, str, button.GetIndex(), button.GetInstanceId());
 		return button.GetInstanceId();
 	}
 
@@ -97,7 +114,7 @@ public partial class World : Control {
 		button.MouseFilter = MouseFilterEnum.Pass;
 		button.Text = str;
 		button.Pressed += () =>
-			Main.EmitEvent(WorldEventType.RightButtonClick, str, button.GetIndex(), button.GetInstanceId());
+			Main.EmitEvent(EventType.RightButtonClick, str, button.GetIndex(), button.GetInstanceId());
 		return button.GetInstanceId();
 	}
 
@@ -110,6 +127,36 @@ public partial class World : Control {
 	public static void RemoveButtonById(ulong id) {
 		var button = InstanceFromId(id) as Button;
 		button?.QueueFree();
+	}
+
+	public void SetTextBackgroundColor(TextType type, string colorHex) {
+		var color = Color.FromString(colorHex, Color.Color8(0, 0, 0, 96));
+		SetTextBackgroundColor(type, color);
+	}
+
+	private void SetTextBackgroundColor(TextType type, Color color) {
+		switch (type) {
+			case TextType.All:
+				foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
+					if (t == TextType.All) continue;
+					SetTextBackgroundColor(t, color);
+				}
+
+				break;
+			case TextType.Title:
+				_titleStyle.BgColor = color;
+				break;
+			case TextType.LeftText:
+				_leftTextStyle.BgColor = color;
+				break;
+			case TextType.CenterText:
+				_centerTextStyle.BgColor = color;
+				break;
+			case TextType.RightText:
+				_rightTextStyle.BgColor = color;
+				break;
+			default: return;
+		}
 	}
 
 }
