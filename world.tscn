@@ -118,6 +118,7 @@ text = "加密"
 
 [node name="Title" type="RichTextLabel" parent="Main/Control/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(600, 75)
 layout_mode = 2
 size_flags_horizontal = 6
 size_flags_vertical = 4
@@ -129,7 +130,6 @@ theme_override_font_sizes/mono_font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_cwa3d")
 bbcode_enabled = true
 text = "标题"
-fit_content = true
 scroll_active = false
 autowrap_mode = 0
 meta_underlined = false
@@ -147,6 +147,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 10
 
 [node name="LeftPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_l2bod")
@@ -175,6 +176,7 @@ meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
 [node name="CenterPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_t8wjd")
@@ -203,6 +205,7 @@ meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
 [node name="RightPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_tg0ev")
