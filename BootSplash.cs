@@ -9,10 +9,10 @@ public partial class BootSplash : Control {
 
 	public override void _Ready() {
 		Control? instancedScene = null;
-		_logo.Modulate = _logo.Modulate with { A = 0 };
+		Modulate = Modulate with { A = 0 };
 		var tween = CreateTween();
 		tween.SetTrans(Tween.TransitionType.Cubic);
-		tween.TweenProperty(_logo, "modulate:a", 1, 1);
+		tween.TweenProperty(this, "modulate:a", 1, 1);
 		tween.TweenCallback(Callable.From(() => {
 			using var packedScene = ResourceLoader.Load<PackedScene>(_scenePath);
 			instancedScene = packedScene?.Instantiate<Control>();
