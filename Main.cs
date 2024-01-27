@@ -16,6 +16,7 @@ using World;
 using Engine = Jint.Engine;
 using Environment = System.Environment;
 using Timer = System.Timers.Timer;
+#pragma warning disable CS8974 // 将方法组转换为非委托类型
 
 namespace 创世记;
 
@@ -304,6 +305,8 @@ public sealed partial class Main : Control {
 			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
 			constraint?.Reset(Utils.Tcs.Token);
 
+#pragma warning disable IL2111
+#pragma warning disable IL2026
 			CurrentEngine.SetValue("print", new Action<string[]>(Log))
 				.SetValue("setTimeout", SetTimeout)
 				.SetValue("setInterval", SetInterval)
@@ -321,6 +324,8 @@ public sealed partial class Main : Control {
 						Utils.Timers.Remove(id);
 						value.Dispose();
 					});
+#pragma warning restore IL2026
+#pragma warning restore IL2111
 
 			CurrentEngine.Modules.Add("events", Utils.Polyfill.Events);
 			CurrentEngine.Modules.Add("audio",
@@ -334,23 +339,23 @@ public sealed partial class Main : Control {
 
 			currentWorld.DefineOwnProperty("info",
 				new GetSetPropertyDescriptor(
-					new DelegateWrapper(CurrentEngine,
+					JsValue.FromObject(CurrentEngine,
 						() => _jsonParser.Parse(CurrentWorldInfo!.JsonString)),
 					null));
 			currentWorld.DefineOwnProperty("event",
 				new GetSetPropertyDescriptor(
-					new DelegateWrapper(CurrentEngine, () => worldEvent),
+					JsValue.FromObject(CurrentEngine, () => worldEvent),
 					null));
 
 			currentWorld.Set("setBackgroundColor",
-				new DelegateWrapper(CurrentEngine,
+				JsValue.FromObject(CurrentEngine,
 					(string colorHex) => {
 						var color = Color.FromString(colorHex, Color.Color8(74, 74, 74));
 						if (_backgroundColorRect.Color == color) return;
 						_backgroundColorRect.Color = color;
 					}));
 			currentWorld.Set("setBackgroundTexture",
-				new DelegateWrapper(CurrentEngine,
+				JsValue.FromObject(CurrentEngine,
 					(string path, TextureFilterEnum filter = TextureFilterEnum.Nearest) => {
 						var texture = LoadImageFile(path, filter);
 						if (_backgroundTextureRect.Texture == texture) return;
@@ -358,62 +363,62 @@ public sealed partial class Main : Control {
 					}));
 
 			currentWorld.Set("setTitle",
-				new DelegateWrapper(CurrentEngine, _world.SetTitle));
+				JsValue.FromObject(CurrentEngine, _world.SetTitle));
 
 			currentWorld.Set("setLeftText",
-				new DelegateWrapper(CurrentEngine, _world.SetLeftText));
+				JsValue.FromObject(CurrentEngine, _world.SetLeftText));
 			currentWorld.Set("setCenterText",
-				new DelegateWrapper(CurrentEngine, _world.SetCenterText));
+				JsValue.FromObject(CurrentEngine, _world.SetCenterText));
 			currentWorld.Set("setRightText",
-				new DelegateWrapper(CurrentEngine, _world.SetRightText));
+				JsValue.FromObject(CurrentEngine, _world.SetRightText));
 			currentWorld.Set("addLeftText",
-				new DelegateWrapper(CurrentEngine, _world.AddLeftText));
+				JsValue.FromObject(CurrentEngine, _world.AddLeftText));
 			currentWorld.Set("addCenterText",
-				new DelegateWrapper(CurrentEngine, _world.AddCenterText));
+				JsValue.FromObject(CurrentEngine, _world.AddCenterText));
 			currentWorld.Set("addRightText",
-				new DelegateWrapper(CurrentEngine, _world.AddRightText));
+				JsValue.FromObject(CurrentEngine, _world.AddRightText));
 
 			currentWorld.Set("setLeftStretchRatio",
-				new DelegateWrapper(CurrentEngine, _world.SetLeftStretchRatio));
+				JsValue.FromObject(CurrentEngine, _world.SetLeftStretchRatio));
 			currentWorld.Set("setCenterStretchRatio",
-				new DelegateWrapper(CurrentEngine, _world.SetCenterStretchRatio));
+				JsValue.FromObject(CurrentEngine, _world.SetCenterStretchRatio));
 			currentWorld.Set("setRightStretchRatio",
-				new DelegateWrapper(CurrentEngine, _world.SetRightStretchRatio));
+				JsValue.FromObject(CurrentEngine, _world.SetRightStretchRatio));
 
 			currentWorld.Set("addLeftButton",
-				new DelegateWrapper(CurrentEngine, _world.AddLeftButton));
+				JsValue.FromObject(CurrentEngine, _world.AddLeftButton));
 			currentWorld.Set("addRightButton",
-				new DelegateWrapper(CurrentEngine, _world.AddRightButton));
+				JsValue.FromObject(CurrentEngine, _world.AddRightButton));
 			currentWorld.Set("setLeftButtons",
-				new DelegateWrapper(CurrentEngine, _world.SetLeftButtons));
+				JsValue.FromObject(CurrentEngine, _world.SetLeftButtons));
 			currentWorld.Set("setRightButtons",
-				new DelegateWrapper(CurrentEngine, _world.SetRightButtons));
+				JsValue.FromObject(CurrentEngine, _world.SetRightButtons));
 			currentWorld.Set("removeLeftButtonByIndex",
-				new DelegateWrapper(CurrentEngine, _world.RemoveLeftButtonByIndex));
+				JsValue.FromObject(CurrentEngine, _world.RemoveLeftButtonByIndex));
 			currentWorld.Set("removeRightButtonByIndex",
-				new DelegateWrapper(CurrentEngine, _world.RemoveRightButtonByIndex));
+				JsValue.FromObject(CurrentEngine, _world.RemoveRightButtonByIndex));
 			currentWorld.Set("removeButtonById",
-				new DelegateWrapper(CurrentEngine, World.RemoveButtonById));
+				JsValue.FromObject(CurrentEngine, World.RemoveButtonById));
 
 			currentWorld.Set("setCommandPlaceholderText",
-				new DelegateWrapper(CurrentEngine, _world.SetCommandPlaceholderText));
+				JsValue.FromObject(CurrentEngine, _world.SetCommandPlaceholderText));
 
 			currentWorld.Set("setTextBackgroundColor",
-				new DelegateWrapper(CurrentEngine,
+				JsValue.FromObject(CurrentEngine,
 					(TextType type, string colorHex) => _world.SetTextBackgroundColor(type, colorHex)));
 
 			currentWorld.FastSetProperty("print",
-				new PropertyDescriptor(new DelegateWrapper(CurrentEngine, new Action<string[]>(Log)), true, false, true));
+				new PropertyDescriptor(JsValue.FromObject(CurrentEngine, new Action<string[]>(Log)), true, false, true));
 			currentWorld.Set("getSaveValue",
-				new DelegateWrapper(CurrentEngine,
+				JsValue.FromObject(CurrentEngine,
 					(string section, string key, JsValue? defaultValue = null) => {
 						var value = GetSaveValue(section, key).VariantToJsValue(CurrentEngine);
 						return value == JsValue.Undefined ? defaultValue ?? JsValue.Undefined : value;
 					}));
 			currentWorld.Set("setSaveValue",
-				new DelegateWrapper(CurrentEngine, SetSaveValue));
+				JsValue.FromObject(CurrentEngine, SetSaveValue));
 			currentWorld.Set("getGlobalSaveValue",
-				new DelegateWrapper(CurrentEngine,
+				JsValue.FromObject(CurrentEngine,
 					(string section, string key, JsValue? defaultValue = null) => {
 						using var defaultGodotObject = new GodotObject();
 						var variant = Utils.GlobalConfig.GetValue(section, key, defaultGodotObject);
@@ -422,14 +427,14 @@ public sealed partial class Main : Control {
 						return value == JsValue.Undefined ? defaultValue ?? JsValue.Undefined : value;
 					}));
 			currentWorld.Set("setGlobalSaveValue",
-				new DelegateWrapper(CurrentEngine,
+				JsValue.FromObject(CurrentEngine,
 					(string section, string key, JsValue value) => {
 						Utils.GlobalConfig.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
 						Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 					}));
 
 			currentWorld.Set("exit",
-				new DelegateWrapper(CurrentEngine, ExitWorld));
+				JsValue.FromObject(CurrentEngine, ExitWorld));
 
 			CurrentEngine.SetValue("World", currentWorld);
 		} catch (Exception e) {

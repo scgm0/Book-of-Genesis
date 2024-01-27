@@ -49,6 +49,7 @@ public static partial class Utils {
 				// 返回浮点数
 				return variant.AsDouble();
 			case Variant.Type.String:
+			case Variant.Type.StringName:
 				// 获取字符串
 				var str = variant.ToString();
 				// 释放Variant
@@ -78,7 +79,6 @@ public static partial class Utils {
 			case Variant.Type.Transform3D:
 			case Variant.Type.Projection:
 			case Variant.Type.Color:
-			case Variant.Type.StringName:
 			case Variant.Type.NodePath:
 			case Variant.Type.Rid:
 			case Variant.Type.Callable:
