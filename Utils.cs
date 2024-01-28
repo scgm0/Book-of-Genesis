@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Godot;
@@ -42,7 +43,8 @@ public static partial class Utils {
 			$"{ResWorldsPath}{worldInfo.Path}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt",
 			"res://Assets/.Encrypt");
 		packer.Flush(true);
-		Main.Log("加密结束:", ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}"));
+		Main.Log("加密结束:",
+			ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}"));
 	}
 
 	public static string ParseExpressionsForValues(string bbcode) {
@@ -95,6 +97,14 @@ public static partial class Utils {
 		}
 
 		dir.Remove("./");
+	}
+
+	public static int VersionCompare(string version1, string version2) {
+		var v1 = new Version(version1);
+		var v2 = new Version(version2);
+		if (v1 > v2) return 1;
+		if (v1 == v2) return 0;
+		return -1;
 	}
 
 	static private partial string SCRIPT_AES256_ENCRYPTION_KEY();

@@ -338,6 +338,11 @@ public sealed partial class Main : Control {
 			currentWorld.Set("EventType", TypeReference.CreateTypeReference(CurrentEngine, typeof(EventType)));
 			currentWorld.Set("TextType", TypeReference.CreateTypeReference(CurrentEngine, typeof(TextType)));
 
+			currentWorld.DefineOwnProperty("gameVersion",
+				new GetSetPropertyDescriptor(
+					JsValue.FromObject(CurrentEngine, () => Utils.GameVersion),
+					null));
+
 			currentWorld.DefineOwnProperty("info",
 				new GetSetPropertyDescriptor(
 					JsValue.FromObject(CurrentEngine,
@@ -433,6 +438,9 @@ public sealed partial class Main : Control {
 						Utils.GlobalConfig.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
 						Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 					}));
+
+			currentWorld.Set("versionCompare",
+				JsValue.FromObject(CurrentEngine, Utils.VersionCompare));
 
 			currentWorld.Set("exit",
 				JsValue.FromObject(CurrentEngine, ExitWorld));
