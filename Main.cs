@@ -16,7 +16,10 @@ using World;
 using Engine = Jint.Engine;
 using Environment = System.Environment;
 using Timer = System.Timers.Timer;
+
 #pragma warning disable CS8974 // 将方法组转换为非委托类型
+#pragma warning disable IL2026
+#pragma warning disable IL2111
 
 namespace 创世记;
 
@@ -35,7 +38,7 @@ public sealed partial class Main : Control {
 
 	[Export] private PackedScene _worldScene;
 	[Export] private PackedScene _worldItem;
-	
+
 	private World _world;
 	static private JsonParser? _jsonParser;
 	static private readonly DateTime StartTime = DateTime.Now;
@@ -75,7 +78,7 @@ public sealed partial class Main : Control {
 		_templateWorldButton.Pressed += ChooseTemplate;
 		_back.Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
-		
+
 		Task.Run(() => {
 			TsTransform.Prepare();
 			Log("初始化完成，耗时:", DateTime.Now - StartTime);
@@ -172,9 +175,11 @@ public sealed partial class Main : Control {
 				Log("选择世界:", CurrentWorldInfo.JsonString);
 				_chooseWorld.Hide();
 				_background.Modulate = Color.FromHtml("#ffffff00");
-				CurrentWorldInfo.Config.LoadEncryptedPass($"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
+				CurrentWorldInfo.Config.LoadEncryptedPass(
+					$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
 					$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
-				CurrentWorldInfo.Config.SaveEncryptedPass($"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
+				CurrentWorldInfo.Config.SaveEncryptedPass(
+					$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
 					$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
 				Utils.GlobalConfig.LoadEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 				Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
@@ -305,8 +310,6 @@ public sealed partial class Main : Control {
 			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
 			constraint?.Reset(Utils.Tcs.Token);
 
-#pragma warning disable IL2111
-#pragma warning disable IL2026
 			CurrentEngine.SetValue("print", new Action<string[]>(Log))
 				.SetValue("setTimeout", SetTimeout)
 				.SetValue("setInterval", SetInterval)
@@ -324,8 +327,6 @@ public sealed partial class Main : Control {
 						Utils.Timers.Remove(id);
 						value.Dispose();
 					});
-#pragma warning restore IL2026
-#pragma warning restore IL2111
 
 			CurrentEngine.Modules.Add("events", Utils.Polyfill.Events);
 			CurrentEngine.Modules.Add("audio",
