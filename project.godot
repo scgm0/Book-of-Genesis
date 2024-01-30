@@ -31,7 +31,6 @@ file_logging/log_path.android="/storage/emulated/0/创世记/Logs/app.log"
 
 [display]
 
-window/size/mode=2
 window/energy_saving/keep_screen_on.editor=true
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
