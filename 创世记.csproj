@@ -21,6 +21,8 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'ExportRelease' ">
     <DefineConstants>GODOT;GODOT_LINUXBSD;GODOT_PC;GODOT4;GODOT4_3;GODOT4_3_0;GODOT4_OR_GREATER;GODOT4_0_OR_GREATER;GODOT4_1_OR_GREATER;GODOT4_2_OR_GREATER;GODOT4_3_OR_GREATER;GODOT4_3_0_OR_GREATER;TRACE;PUERTS_GENERAL</DefineConstants>
     <NativeDebugSymbols>false</NativeDebugSymbols>
+    <OptimizationPreference>Size</OptimizationPreference>
+    <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(GodotTargetPlatform)' == 'android'">
