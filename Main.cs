@@ -106,7 +106,6 @@ public sealed partial class Main : Control {
 			_worldScene.Dispose();
 			_worldItem.Dispose();
 			Utils.GlobalConfig.Dispose();
-			GC.Collect();
 			Log("退出游戏，运行时长:", DateTime.Now - StartTime);
 			GetTree().Quit();
 		} else if (what == NotificationWMGoBackRequest) {
