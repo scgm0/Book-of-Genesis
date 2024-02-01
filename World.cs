@@ -25,6 +25,32 @@ public partial class World : Control {
 		_leftTextStyle = (StyleBoxFlat)LeftText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
 		_centerTextStyle = (StyleBoxFlat)CenterText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
 		_rightTextStyle = (StyleBoxFlat)RightText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
+		
+		LeftText.MetaClicked += meta => Main.OnMetaClickedEventHandler(meta, 0);
+		CenterText.MetaClicked += meta => Main.OnMetaClickedEventHandler(meta, 1);
+		RightText.MetaClicked += meta => Main.OnMetaClickedEventHandler(meta, 2);
+
+		LeftButtonList.Resized += async () => {
+			if (LeftButtonList.GetChildCount() <= 0) return;
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			LeftButtonList.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
+		};
+		LeftButtonList.VisibilityChanged += async () => {
+			if (LeftButtonList.GetChildCount() <= 0) return;
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			LeftButtonList.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
+		};
+
+		RightButtonList.Resized += async () => {
+			if (RightButtonList.GetChildCount() <= 0) return;
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
+		};
+		RightButtonList.VisibilityChanged += async () => {
+			if (RightButtonList.GetChildCount() <= 0) return;
+			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
+		};
 	}
 
 	public void SetTitle(string title) => Main.SetRichText(Title, title);
@@ -159,4 +185,33 @@ public partial class World : Control {
 		}
 	}
 
+	public void SetTextFontColor(TextType type, string colorHex) {
+		var color = Color.FromString(colorHex, Colors.White);
+		SetTextFontColor(type, color);
+	}
+
+	private void SetTextFontColor(TextType type, Color color) {
+		switch (type) {
+			case TextType.All:
+				foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
+					if (t == TextType.All) continue;
+					SetTextFontColor(t, color);
+				}
+
+				break;
+			case TextType.Title:
+				Title.AddThemeColorOverride("default_color", color);
+				break;
+			case TextType.LeftText:
+				LeftText.AddThemeColorOverride("default_color", color);
+				break;
+			case TextType.CenterText:
+				CenterText.AddThemeColorOverride("default_color", color);
+				break;
+			case TextType.RightText:
+				RightText.AddThemeColorOverride("default_color", color);
+				break;
+			default: return;
+		}
+	}
 }

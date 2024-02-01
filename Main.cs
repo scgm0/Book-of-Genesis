@@ -139,13 +139,6 @@ public sealed partial class Main : Control {
 		}
 	}
 
-	private void OnMetaClickedEventHandler(Variant meta, int index) {
-		try {
-			EmitEvent(EventType.TextUrlClick, _jsonParser!.Parse(meta.ToString()), index);
-		} catch (Exception) {
-			EmitEvent(EventType.TextUrlClick, meta.ToString(), index);
-		}
-	}
 
 	private void ChooseWorld() {
 		Log("加载世界列表");
@@ -255,13 +248,12 @@ public sealed partial class Main : Control {
 		_world = _worldScene.Instantiate<World>();
 		_world.GetNode<Control>("Main").Hide();
 		oldWorld.AddSibling(_world);
-		oldWorld.GetParent().RemoveChild(oldWorld);
 		oldWorld.QueueFree();
 
 		_world.SetTitle($"{CurrentWorldInfo!.Name}-{CurrentWorldInfo.Version}");
 		_world.GetNode<Button>("%Encrypt").Disabled = CurrentWorldInfo.IsEncrypt;
 		_world.GetNode<Button>("%Exit").Pressed +=
-			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
+			() => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_world.GetNode<Button>("%Encrypt").Pressed += () => {
 			Utils.ExportEncryptionWorldPck(CurrentWorldInfo!);
 			ExitWorld();
@@ -270,31 +262,6 @@ public sealed partial class Main : Control {
 		_world.CommandEdit.TextSubmitted += text => {
 			_world.CommandEdit.Text = "";
 			EmitEvent(EventType.Command, text);
-		};
-
-		_world.LeftText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 0);
-		_world.CenterText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 1);
-		_world.RightText.MetaClicked += meta => OnMetaClickedEventHandler(meta, 2);
-
-		_world.LeftText.Resized += async () => {
-			if (_world.LeftText.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_world.LeftText.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
-		};
-		_world.LeftText.VisibilityChanged += async () => {
-			if (_world.LeftText.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_world.LeftText.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
-		};
-		_world.RightButtonList.Resized += async () => {
-			if (_world.RightButtonList.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_world.RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
-		};
-		_world.RightButtonList.VisibilityChanged += async () => {
-			if (_world.RightButtonList.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-			_world.RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
 	}
 
@@ -412,6 +379,9 @@ public sealed partial class Main : Control {
 			currentWorld.Set("setTextBackgroundColor",
 				JsValue.FromObject(CurrentEngine,
 					(TextType type, string colorHex) => _world.SetTextBackgroundColor(type, colorHex)));
+			currentWorld.Set("setTextFontColor",
+				JsValue.FromObject(CurrentEngine,
+					(TextType type, string colorHex) => _world.SetTextFontColor(type, colorHex)));
 
 			currentWorld.FastSetProperty("print",
 				new PropertyDescriptor(JsValue.FromObject(CurrentEngine, new Action<string[]>(Log)), true, false, true));
@@ -546,6 +516,14 @@ public sealed partial class Main : Control {
 
 		_home.Show();
 		_world.Hide();
+	}
+
+	public static void OnMetaClickedEventHandler(Variant meta, int index) {
+		try {
+			EmitEvent(EventType.TextUrlClick, _jsonParser!.Parse(meta.ToString()), index);
+		} catch (Exception) {
+			EmitEvent(EventType.TextUrlClick, meta.ToString(), index);
+		}
 	}
 
 	public static void EmitEvent(EventType name, params JsValue[] values) {

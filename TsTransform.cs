@@ -3,6 +3,9 @@ using Jint;
 using Jint.Native;
 using Engine = Jint.Engine;
 
+#pragma warning disable IL2026
+#pragma warning disable IL2111
+
 namespace 创世记;
 
 public static class TsTransform {
