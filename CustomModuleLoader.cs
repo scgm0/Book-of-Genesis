@@ -245,13 +245,12 @@ sealed class CustomModuleLoader : IModuleLoader {
 				SourceMapParser.Parse(sourceMappingUrl.Replace("data:application/json;base64,", "").UnEnBase64()));
 		} else {
 			var sourceFile =
-				$"{(_isRes ? Utils.ResWorldsPath : Utils.UserWorldsPath)}{new Uri(resolved.Uri!, sourceMappingUrl).AbsolutePath.ReplaceOnce("Z:/", "/")}";
+				$"{(_isRes ? Utils.ResWorldsPath : Utils.UserWorldsPath)}{Utils.DriveLetterRegex().Replace(new Uri(resolved.Uri!, sourceMappingUrl).AbsolutePath, "/", 1)}";
 			if (!FileAccess.FileExists(sourceFile)) return;
 			var sourceMap = SourceMapParser.Parse(FileAccess.GetFileAsString(sourceFile));
 			Utils.SourceMapCollection?.Register(resolved.Key, sourceMap);
 		}
 	}
-
 
 	static private bool IsRelative(in string specifier) { return specifier.StartsWith('.') || specifier.StartsWith('/'); }
 
