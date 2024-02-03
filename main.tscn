@@ -13,6 +13,12 @@ bg_color = Color(0.101961, 0.101961, 0.101961, 0.6)
 
 [sub_resource type="FontVariation" id="FontVariation_0obq8"]
 base_font = ExtResource("5_bbyt4")
+opentype_features = {
+1718772067: 1,
+1719101796: 1,
+1818847073: 1,
+1986359924: 8
+}
 spacing_glyph = 40
 spacing_top = 5
 spacing_bottom = 5
