@@ -17,6 +17,8 @@ public static partial class Utils {
 	public static readonly string ScriptAes256EncryptionKey = SCRIPT_AES256_ENCRYPTION_KEY();
 
 	public static readonly bool IsAndroid = OS.GetName() == "Android";
+	public static readonly bool IsWindows = OS.GetName() == "Windows";
+	public static readonly bool IsLinux = OS.GetName() == "Linux";
 
 	public static readonly StringName GameVersion = ProjectSettings.GetSetting("application/config/version").AsStringName();
 
@@ -114,5 +116,8 @@ public static partial class Utils {
 
 	[GeneratedRegex(@"\[img.*\](?<path>.*?)\[\/img\]")]
 	public static partial Regex ImgPathRegex();
+
+	[GeneratedRegex(@"^\w:[\\\/]")]
+	public static partial Regex DriveLetterRegex();
 
 }

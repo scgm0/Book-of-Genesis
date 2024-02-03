@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using Esprima;
 using Godot;
 using Jint;
@@ -91,7 +92,9 @@ sealed class CustomModuleLoader : IModuleLoader {
 		if (_basePath.IsBaseOf(resolved))
 			return new ResolvedSpecifier(
 				moduleRequest,
-				Uri.UnescapeDataString(resolved.AbsolutePath.ReplaceOnce("Z:/", "/")),
+				Uri.UnescapeDataString(Utils.IsWindows
+					? Utils.DriveLetterRegex().Replace(resolved.AbsolutePath, "/", 1)
+					: resolved.AbsolutePath),
 				resolved,
 				SpecifierType.RelativeOrAbsolute
 			);
@@ -172,7 +175,9 @@ sealed class CustomModuleLoader : IModuleLoader {
 				string tsMetaJson;
 				if (_worldInfo.IsEncrypt) {
 					using var metaFile =
-						FileAccess.OpenEncryptedWithPass(metaPath, FileAccess.ModeFlags.Read, $"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}");
+						FileAccess.OpenEncryptedWithPass(metaPath,
+							FileAccess.ModeFlags.Read,
+							$"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}");
 					tsMetaJson = metaFile.GetAsText();
 				} else {
 					tsMetaJson = FileAccess.GetFileAsString(metaPath);
@@ -185,7 +190,9 @@ sealed class CustomModuleLoader : IModuleLoader {
 				if (tsSha256 == tsMeta.TsSha256 && jsSha256 == tsMeta.JsSha256) {
 					if (_worldInfo.IsEncrypt) {
 						using var jsFile =
-							FileAccess.OpenEncryptedWithPass(jsPath, FileAccess.ModeFlags.Read, $"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}");
+							FileAccess.OpenEncryptedWithPass(jsPath,
+								FileAccess.ModeFlags.Read,
+								$"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}");
 						code = jsFile.GetAsText();
 					} else {
 						code = FileAccess.GetFileAsString(jsPath);
@@ -213,14 +220,18 @@ sealed class CustomModuleLoader : IModuleLoader {
 		code = res["outputText"].AsString();
 		var jsFile =
 			_worldInfo.IsEncrypt
-				? FileAccess.OpenEncryptedWithPass(jsPath, FileAccess.ModeFlags.Write, $"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}")
+				? FileAccess.OpenEncryptedWithPass(jsPath,
+					FileAccess.ModeFlags.Write,
+					$"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}")
 				: FileAccess.Open(jsPath, FileAccess.ModeFlags.Write);
 		jsFile.StoreString(code);
 		jsFile.Dispose();
 		var jsSha256 = FileAccess.GetSha256(jsPath);
 		var tsMetaFile =
-			_worldInfo.IsEncrypt  
-				? FileAccess.OpenEncryptedWithPass(metaPath, FileAccess.ModeFlags.Write, $"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}")
+			_worldInfo.IsEncrypt
+				? FileAccess.OpenEncryptedWithPass(metaPath,
+					FileAccess.ModeFlags.Write,
+					$"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}")
 				: FileAccess.Open(metaPath, FileAccess.ModeFlags.Write);
 		tsMetaFile.StoreString($"{{\"ts_sha256\":\"{tsSha256}\",\"js_sha256\":\"{jsSha256}\"}}");
 		tsMetaFile.Dispose();
