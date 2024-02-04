@@ -243,6 +243,7 @@ public sealed partial class Main : Control {
 	}
 
 	private void InitWorld() {
+		// ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 		var oldWorld = _world ?? GetNode("%World");
 		_world = _worldScene.Instantiate<World>();
 		_world.GetNode<Control>("Main").Hide();
@@ -254,7 +255,7 @@ public sealed partial class Main : Control {
 		_world.GetNode<Button>("%Exit").Pressed +=
 			() => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_world.GetNode<Button>("%Encrypt").Pressed += () => {
-			Utils.ExportEncryptionWorldPck(CurrentWorldInfo!);
+			Utils.ExportEncryptionWorldPck(CurrentWorldInfo);
 			ExitWorld();
 		};
 
@@ -323,7 +324,6 @@ public sealed partial class Main : Control {
 				JsValue.FromObject(CurrentEngine,
 					(string colorHex) => {
 						var color = Color.FromString(colorHex, Color.Color8(74, 74, 74));
-						if (_backgroundColorRect.Color == color) return;
 						_backgroundColorRect.Color = color;
 					}));
 			currentWorld.Set("setBackgroundTexture",
@@ -431,7 +431,7 @@ public sealed partial class Main : Control {
 
 	private int AddTimer(bool autoReset, JsValue callback, int delay, params JsValue[]? values) {
 		if (delay <= 0) {
-			callback.Call(thisObj: JsValue.Undefined, values ?? Array.Empty<JsValue>());
+			callback.Call(thisObj: JsValue.Undefined, values ?? []);
 			CurrentEngine!.Advanced.ProcessTasks();
 			return 0;
 		}
@@ -454,7 +454,7 @@ public sealed partial class Main : Control {
 						Log(
 							$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 						ExitWorld(1);
-					} catch (ExecutionCanceledException) { }
+					}
 				},
 				null);
 			if (autoReset) return;
@@ -541,12 +541,12 @@ public sealed partial class Main : Control {
 		if (!FileAccess.FileExists(filePath)) return null;
 		ImageTexture? imageTexture = null;
 		if (ResourceLoader.Exists(filePath)) {
-			var canvasTexture = GD.Load<CanvasTexture?>(filePath);
-			if (canvasTexture != null && canvasTexture.TextureFilter == filter) {
+			var canvasTexture = GD.Load<CanvasTexture>(filePath);
+			if (canvasTexture.TextureFilter == filter) {
 				return GD.Load<CanvasTexture>(filePath);
 			}
 
-			imageTexture = canvasTexture?.DiffuseTexture as ImageTexture;
+			imageTexture = canvasTexture.DiffuseTexture as ImageTexture;
 		}
 
 		var texture = new CanvasTexture();
@@ -555,31 +555,36 @@ public sealed partial class Main : Control {
 		Utils.TextureCache.Add(texture);
 		if (imageTexture == null) {
 			var data = FileAccess.GetFileAsBytes(filePath);
-			using var img = new Image();
-			switch (ImageFileFormatFinder.GetImageFormat(data)) {
-				case ImageFormat.Png:
-					img.LoadPngFromBuffer(data);
-					break;
-				case ImageFormat.Jpg:
-					img.LoadJpgFromBuffer(data);
-					break;
-				case ImageFormat.Bmp:
-					img.LoadBmpFromBuffer(data);
-					break;
-				case ImageFormat.Webp:
-					img.LoadWebpFromBuffer(data);
-					break;
-				case ImageFormat.Unknown:
-				default:
-					throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
-			}
-
+			using var img = ImageFromBuffer(data);
 			imageTexture = ImageTexture.CreateFromImage(img);
 		}
 
 		texture.DiffuseTexture = imageTexture;
 
 		return texture;
+	}
+
+	static private Image ImageFromBuffer(byte[] data) {
+		var img = new Image();
+		switch (ImageFileFormatFinder.GetImageFormat(data)) {
+			case ImageFormat.Png:
+				img.LoadPngFromBuffer(data);
+				break;
+			case ImageFormat.Jpg:
+				img.LoadJpgFromBuffer(data);
+				break;
+			case ImageFormat.Bmp:
+				img.LoadBmpFromBuffer(data);
+				break;
+			case ImageFormat.Webp:
+				img.LoadWebpFromBuffer(data);
+				break;
+			case ImageFormat.Unknown:
+			default:
+				throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
+		}
+
+		return img;
 	}
 
 	static private Variant GetSaveValue(string section, string key) {

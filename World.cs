@@ -25,7 +25,7 @@ public partial class World : Control {
 		_leftTextStyle = (StyleBoxFlat)LeftText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
 		_centerTextStyle = (StyleBoxFlat)CenterText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
 		_rightTextStyle = (StyleBoxFlat)RightText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
-		
+
 		LeftText.MetaClicked += meta => Main.OnMetaClickedEventHandler(meta, 0);
 		CenterText.MetaClicked += meta => Main.OnMetaClickedEventHandler(meta, 1);
 		RightText.MetaClicked += meta => Main.OnMetaClickedEventHandler(meta, 2);
@@ -157,18 +157,17 @@ public partial class World : Control {
 
 	public void SetTextBackgroundColor(TextType type, string colorHex) {
 		var color = Color.FromString(colorHex, Color.Color8(0, 0, 0, 96));
-		SetTextBackgroundColor(type, color);
+		if (type != TextType.All) {
+			SetTextBackgroundColor(type, color);
+		} else {
+			foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
+				SetTextBackgroundColor(t, color);
+			}
+		}
 	}
 
 	private void SetTextBackgroundColor(TextType type, Color color) {
 		switch (type) {
-			case TextType.All:
-				foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
-					if (t == TextType.All) continue;
-					SetTextBackgroundColor(t, color);
-				}
-
-				break;
 			case TextType.Title:
 				_titleStyle.BgColor = color;
 				break;
@@ -181,24 +180,24 @@ public partial class World : Control {
 			case TextType.RightText:
 				_rightTextStyle.BgColor = color;
 				break;
+			case TextType.All:
 			default: return;
 		}
 	}
 
 	public void SetTextFontColor(TextType type, string colorHex) {
 		var color = Color.FromString(colorHex, Colors.White);
-		SetTextFontColor(type, color);
+		if (type != TextType.All) {
+			SetTextFontColor(type, color);
+		} else {
+			foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
+				SetTextFontColor(t, color);
+			}
+		}
 	}
 
 	private void SetTextFontColor(TextType type, Color color) {
 		switch (type) {
-			case TextType.All:
-				foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
-					if (t == TextType.All) continue;
-					SetTextFontColor(t, color);
-				}
-
-				break;
 			case TextType.Title:
 				Title.AddThemeColorOverride("default_color", color);
 				break;
@@ -211,6 +210,7 @@ public partial class World : Control {
 			case TextType.RightText:
 				RightText.AddThemeColorOverride("default_color", color);
 				break;
+			case TextType.All:
 			default: return;
 		}
 	}

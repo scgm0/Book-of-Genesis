@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text.RegularExpressions;
 using Esprima;
 using Godot;
 using Jint;
@@ -59,7 +58,9 @@ sealed class CustomModuleLoader : IModuleLoader {
 		if (Uri.TryCreate(specifier, UriKind.Absolute, out var uri)) {
 			resolved = uri;
 		} else if (IsRelative(specifier)) {
-			resolved = new Uri(referencingModuleLocation != null ? new Uri(_basePath, referencingModuleLocation) : _basePath,
+			resolved = new Uri(referencingModuleLocation != null
+					? new Uri(_basePath, referencingModuleLocation)
+					: _basePath,
 				specifier);
 		} else if (specifier[0] == '#') {
 			Main.Log($"不支持 PACKAGE_IMPORTS_RESOLVE: '{specifier}'");
@@ -153,7 +154,6 @@ sealed class CustomModuleLoader : IModuleLoader {
 				$"“{resolved.Type}”类型的模块“{specifier}”没有解析的 URI。");
 		}
 
-		Debug.Assert(resolved.Uri != null, "resolved.Uri != null");
 		var fileName =
 			$"{(_isRes ? Utils.ResWorldsPath : Utils.UserWorldsPath)}{resolved.Key}";
 
@@ -162,50 +162,45 @@ sealed class CustomModuleLoader : IModuleLoader {
 			return;
 		}
 
-		code = FileAccess.GetFileAsString(fileName);
+		code = fileName.GetExtension() == "ts" ? ReadTs2Js(fileName, resolved) : FileAccess.GetFileAsString(fileName);
+		RegisterSourceMap(ref code, resolved);
+	}
 
-		if (fileName.GetExtension() == "ts") {
-			var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo.Path, $"/{_worldInfo.WorldKey}/"))
-				.SimplifyPath();
-			var jsPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.js";
-			var metaPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
-			if (FileAccess.FileExists(jsPath) &&
-				FileAccess.FileExists(metaPath)) {
-				var tsSha256 = FileAccess.GetSha256(fileName);
-				string tsMetaJson;
-				if (_worldInfo.IsEncrypt) {
-					using var metaFile =
-						FileAccess.OpenEncryptedWithPass(metaPath,
-							FileAccess.ModeFlags.Read,
-							$"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}");
-					tsMetaJson = metaFile.GetAsText();
-				} else {
-					tsMetaJson = FileAccess.GetFileAsString(metaPath);
-				}
+	private string ReadTs2Js(string fileName, ResolvedSpecifier resolved) {
+		var code = "";
+		var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo.Path, $"/{_worldInfo.WorldKey}/"))
+			.SimplifyPath();
+		var jsPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.js";
+		var metaPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
+		if (FileAccess.FileExists(jsPath) &&
+			FileAccess.FileExists(metaPath)) {
+			var tsSha256 = FileAccess.GetSha256(fileName);
+			using var metaFile = _worldInfo.IsEncrypt
+				? FileAccess.OpenEncryptedWithPass(metaPath,
+					FileAccess.ModeFlags.Read,
+					$"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}")
+				: FileAccess.Open(metaPath, FileAccess.ModeFlags.Read);
+			var tsMetaJson = metaFile.GetAsText();
 
-				var tsMeta = JsonSerializer.Deserialize(
-					tsMetaJson,
-					SourceGenerationContext.Default.TsMeta);
-				var jsSha256 = FileAccess.GetSha256(jsPath);
-				if (tsSha256 == tsMeta.TsSha256 && jsSha256 == tsMeta.JsSha256) {
-					if (_worldInfo.IsEncrypt) {
-						using var jsFile =
-							FileAccess.OpenEncryptedWithPass(jsPath,
-								FileAccess.ModeFlags.Read,
-								$"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}");
-						code = jsFile.GetAsText();
-					} else {
-						code = FileAccess.GetFileAsString(jsPath);
-					}
-				} else {
-					TsGen(ref code, fileName, resolved);
-				}
+			var tsMeta = JsonSerializer.Deserialize(
+				tsMetaJson,
+				SourceGenerationContext.Default.TsMeta);
+			var jsSha256 = FileAccess.GetSha256(jsPath);
+			if (jsSha256 == tsMeta.JsSha256 && tsSha256 == tsMeta.TsSha256) {
+				using var jsFile = _worldInfo.IsEncrypt
+					? FileAccess.OpenEncryptedWithPass(jsPath,
+						FileAccess.ModeFlags.Read,
+						$"{Utils.ScriptAes256EncryptionKey}_{_worldInfo.WorldKey}")
+					: FileAccess.Open(jsPath, FileAccess.ModeFlags.Read);
+				code = jsFile.GetAsText();
 			} else {
 				TsGen(ref code, fileName, resolved);
 			}
+		} else {
+			TsGen(ref code, fileName, resolved);
 		}
 
-		RegisterSourceMap(ref code, resolved);
+		return code;
 	}
 
 	private void TsGen(ref string code, string fileName, ResolvedSpecifier resolved) {
