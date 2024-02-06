@@ -602,8 +602,8 @@ public sealed partial class Main : Control {
 	}
 
 	public static void SetRichText(RichTextLabel label, string text) {
-		label.Clear();
-		AddRichText(label, text);
+		LoadRichTextImg(ref text);
+		label.ParseBbcode(text);
 	}
 
 	public static void AddRichText(RichTextLabel label, string text) {
@@ -617,17 +617,12 @@ public sealed partial class Main : Control {
 			var path = match.Groups["path"].Value;
 			var oldText = text.Substring(match.Index, match.Length);
 			var filter = Utils.ParseExpressionsForValues(oldText);
-			CanvasTexture? texture;
 
-			if (!string.IsNullOrEmpty(filter)) {
-				texture = filter switch {
-					"linear" => LoadImageFile(path),
-					"nearest" => LoadImageFile(path, TextureFilterEnum.Nearest),
-					_ => LoadImageFile(path)
-				};
-			} else {
-				texture = LoadImageFile(path);
-			}
+			var texture = filter switch {
+				"linear" => LoadImageFile(path),
+				"nearest" => LoadImageFile(path, TextureFilterEnum.Nearest),
+				_ => LoadImageFile(path)
+			};
 
 			if (texture != null) {
 				text = text.Replace(oldText, oldText.Replace(path, texture.ResourcePath));
