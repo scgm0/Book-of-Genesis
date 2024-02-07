@@ -16,22 +16,30 @@ public static partial class Utils {
 
 	public static readonly string ScriptAes256EncryptionKey = SCRIPT_AES256_ENCRYPTION_KEY();
 
-	public static readonly bool IsAndroid = OS.GetName() == "Android";
-	public static readonly bool IsWindows = OS.GetName() == "Windows";
-	public static readonly bool IsLinux = OS.GetName() == "Linux";
-
 	public static readonly StringName GameVersion = ProjectSettings.GetSetting("application/config/version").AsStringName();
 
 	public static readonly StringName AppName = ProjectSettings.GetSetting("application/config/name").AsStringName();
 
 	public static readonly string SavesPath =
-		IsAndroid ? $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/Saves" : "user://Saves";
+#if GODOT_ANDROID
+		$"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/Saves";
+#else
+		"user://Saves";
+#endif
 
 	public static readonly string UserWorldsPath =
-		IsAndroid ? $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/Worlds" : "user://Worlds";
+#if GODOT_ANDROID
+		$"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/Worlds";
+#else
+		"user://Worlds";
+#endif
 
 	public static readonly string TsGenPath =
-		IsAndroid ? $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/TsGen" : "user://TsGen";
+#if GODOT_ANDROID
+		$"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/TsGen";
+#else
+		"user://TsGen";
+#endif
 
 	public static void ExportEncryptionWorldPck(WorldInfo worldInfo) {
 		Main.Log("加密开始:", worldInfo.JsonString);

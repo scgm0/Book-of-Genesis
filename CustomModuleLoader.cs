@@ -93,9 +93,13 @@ sealed class CustomModuleLoader : IModuleLoader {
 		if (_basePath.IsBaseOf(resolved))
 			return new ResolvedSpecifier(
 				moduleRequest,
-				Uri.UnescapeDataString(Utils.IsWindows
-					? Utils.DriveLetterRegex().Replace(resolved.AbsolutePath, "/", 1)
-					: resolved.AbsolutePath),
+				Uri.UnescapeDataString(
+#if GODOT_WINDOWS
+					Utils.DriveLetterRegex().Replace(resolved.AbsolutePath, "/", 1)
+#else
+					resolved.AbsolutePath
+#endif
+				),
 				resolved,
 				SpecifierType.RelativeOrAbsolute
 			);
