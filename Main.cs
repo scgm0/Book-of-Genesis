@@ -24,11 +24,13 @@ using Timer = System.Timers.Timer;
 namespace 创世记;
 
 public sealed partial class Main : Control {
+	[GetNode("../BootSplash")] private BootSplash _bootSplash;
 	[GetNode("%ChooseWorldButton")] private Button _chooseWorldButton;
 	[GetNode("%Home")] private Control _home;
 	[GetNode("%GameVersion")] private Label _gameVersion;
 	[GetNode("%DotNetVersion")] private Label _dotNetVersion;
 	[GetNode("%ChooseWorld")] private Control _chooseWorld;
+	[GetNode("%ReadyBar")] private Control _readyBar;
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
 	[GetNode("%WorldsPathHint")] private LinkButton _worldsPathHint;
 	[GetNode("%Background")] private Control _background;
@@ -58,8 +60,6 @@ public sealed partial class Main : Control {
 
 		ProjectSettings.LoadResourcePack(Utils.TemplateZipPath);
 
-		GetTree().AutoAcceptQuit = false;
-
 		Log("启动游戏",
 			"\nPlatform:",
 			OS.GetName(),
@@ -70,18 +70,20 @@ public sealed partial class Main : Control {
 
 		_gameVersion.Text = $"v{Utils.GameVersion}";
 		_dotNetVersion.Text = $"dotnet: {Environment.Version}";
-		_worldsPathHint.Text =
-			$"世界存放位置：{ProjectSettings.GlobalizePath(Utils.UserWorldsPath.SimplifyPath())}";
-		_worldsPathHint.Uri =
-			$"{ProjectSettings.GlobalizePath(Utils.UserWorldsPath.SimplifyPath())}";
+		_worldsPathHint.Text += ProjectSettings.GlobalizePath(Utils.UserWorldsPath);
+		_worldsPathHint.Uri = ProjectSettings.GlobalizePath(Utils.UserWorldsPath);
+
 		_chooseWorldButton.Pressed += ChooseWorld;
 		_templateWorldButton.Pressed += ChooseTemplate;
 		_back.Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
+		_bootSplash.TreeExited += _readyBar.Show;
 		Task.Run(() => {
 			TsTransform.Prepare();
 			Log("初始化完成，耗时:", DateTime.Now - StartTime);
+			_readyBar.CallDeferred(CanvasItem.MethodName.Hide);
+			Utils.Tree.AutoAcceptQuit = false;
 		});
 	}
 

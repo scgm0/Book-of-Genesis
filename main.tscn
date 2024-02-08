@@ -1,6 +1,6 @@
-[gd_scene load_steps=12 format=3 uid="uid://diqreobfnlwp4"]
+[gd_scene load_steps=13 format=3 uid="uid://diqreobfnlwp4"]
 
-[ext_resource type="Script" path="res://Main.cs" id="1_u5y2y"]
+[ext_resource type="Script" path="res://Main.cs" id="1_2evw0"]
 [ext_resource type="PackedScene" uid="uid://kbkbbjhef0jq" path="res://world_item.tscn" id="3_51by6"]
 [ext_resource type="PackedScene" uid="uid://k2w3hc0p1xm3" path="res://world.tscn" id="4_8ufyh"]
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="5_bbyt4"]
@@ -24,7 +24,7 @@ spacing_bottom = 5
 font = SubResource("FontVariation_0obq8")
 font_size = 120
 font_color = Color(0, 0, 0, 1)
-outline_size = 15
+outline_size = 14
 shadow_size = 4
 shadow_color = Color(0, 0, 0, 0.6)
 shadow_offset = Vector2(15, 15)
@@ -37,6 +37,13 @@ font_color = Color(1, 1, 1, 0.623529)
 font_size = 12
 font_color = Color(1, 1, 1, 0.623529)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7wo5i"]
+bg_color = Color(0.376471, 0.376471, 0.376471, 0.376471)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="Main" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -44,7 +51,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_u5y2y")
+script = ExtResource("1_2evw0")
 _worldScene = ExtResource("4_8ufyh")
 _worldItem = ExtResource("3_51by6")
 
@@ -102,9 +109,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -220.0
-offset_top = -254.0
+offset_top = -259.0
 offset_right = 220.0
-offset_bottom = -58.9994
+offset_bottom = -64.0
 grow_horizontal = 2
 grow_vertical = 2
 text = "创世记"
@@ -138,9 +145,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -74.0
-offset_top = -22.0
+offset_top = -14.0
 offset_right = 74.0
-offset_bottom = 38.0
+offset_bottom = 46.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 35
@@ -177,7 +184,8 @@ offset_right = 53.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_font_sizes/font_size = 25
-underline = 2
+text = "世界存放位置："
+underline = 1
 
 [node name="DotNetVersion" type="Label" parent="PanelContainer/Home"]
 unique_name_in_owner = true
@@ -261,3 +269,31 @@ grow_horizontal = 0
 theme_override_font_sizes/font_size = 20
 text = "返回"
 flat = true
+
+[node name="ReadyBar" type="ColorRect" parent="Window"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="ProgressBar" type="ProgressBar" parent="Window/ReadyBar"]
+custom_minimum_size = Vector2(600, 40)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -20.0
+offset_right = 300.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_7wo5i")
+indeterminate = true
+editor_preview_indeterminate = true

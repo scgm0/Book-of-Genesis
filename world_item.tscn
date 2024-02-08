@@ -46,15 +46,15 @@ stretch_mode = 5
 
 [node name="Encrypt" type="TextureRect" parent="MarginContainer/HBoxContainer/Icon"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 20)
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -20.0
+offset_left = -18.5
 offset_top = -20.0
+offset_right = 1.5
 grow_horizontal = 0
 grow_vertical = 0
 tooltip_text = "世界已加密"
