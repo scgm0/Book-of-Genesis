@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="创世记"
-config/version="0.1.3.200"
+config/version="0.1.4.100"
 run/main_scene="res://boot_splash.tscn"
 config/use_custom_user_dir=true
 config/quit_on_go_back=false
