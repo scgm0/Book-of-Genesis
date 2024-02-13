@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Threading;
 using Godot;
 using Jint;
 using Jint.Native;
@@ -9,6 +10,11 @@ using Engine = Jint.Engine;
 namespace 创世记;
 
 public static partial class Utils {
+
+	public static void SyncSend(this Node node, SendOrPostCallback action) => Dispatcher.SynchronizationContext.Send(action, node);
+
+	public static void SyncPost(this Node node, SendOrPostCallback action) => Dispatcher.SynchronizationContext.Post(action, node);
+
 	public static uint Peek(this FileAccess file) {
 		var pos = file.GetPosition();
 		var @char = file.Get8();
@@ -19,7 +25,7 @@ public static partial class Utils {
 	public static void Skip(this FileAccess file, ulong length) {
 		file.Seek(file.GetPosition() + length);
 	}
-	
+
 	public static string ReplaceOnce(this string str, string oldValue, string newValue) {
 		//获取字符串中oldValue的索引
 		var index = str.IndexOf(oldValue, StringComparison.Ordinal);

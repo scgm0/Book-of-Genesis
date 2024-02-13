@@ -448,17 +448,16 @@ public sealed partial class Main : Control {
 				return;
 			}
 
-			Dispatcher.SynchronizationContext.Post(_ => {
-					try {
-						callback.Call(thisObj: JsValue.Undefined, values ?? []);
-						CurrentEngine?.Advanced.ProcessTasks();
-					} catch (JavaScriptException e) {
-						Log(
-							$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
-						ExitWorld(1);
-					}
-				},
-				null);
+			this.SyncPost(_ => {
+				try {
+					callback.Call(thisObj: JsValue.Undefined, values ?? []);
+					CurrentEngine?.Advanced.ProcessTasks();
+				} catch (JavaScriptException e) {
+					Log(
+						$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
+					ExitWorld(1);
+				}
+			});
 			if (autoReset) return;
 			Utils.Timers.Remove(id);
 			timer.Dispose();
