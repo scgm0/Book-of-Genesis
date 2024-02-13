@@ -30,54 +30,58 @@ public sealed class AudioPlayer {
 	public bool Loop { set => _player.Set("parameters/looping", value); get => _player.Get("parameters/looping").AsBool(); }
 
 	public AudioPlayer() {
-		Utils.Tree.Root.AddChild(_player); 
-		_player.Finished += () => {
-			if (FinishedCallback is Function function) {
-				function.Call(thisObj: JsValue.FromObject(Main.CurrentEngine!, this), []);
-			}
-		};
-		Utils.AudioPlayerCache.Add(this);
+		_player.SyncSend(_ => {
+			Utils.Tree.Root.AddChild(_player);
+			_player.Finished += () => {
+				if (FinishedCallback is Function function) {
+					function.Call(thisObj: JsValue.FromObject(Main.CurrentEngine!, this), []);
+				}
+			};
+			Utils.AudioPlayerCache.Add(this);
+		});
 	}
 
 	public AudioPlayer SetAudioPath(string path) {
-		path = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
-		_audioStream?.Dispose();
+		_player.SyncSend(_ => {
+			path = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
+			_audioStream?.Dispose();
 
-		if (!FileAccess.FileExists(path)) {
-			throw new JavaScriptException($"{path}文件不存在");
-		}
+			if (!FileAccess.FileExists(path)) {
+				throw new JavaScriptException($"{path}文件不存在");
+			}
 
-		using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+			using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 
-		switch (AudioFileFormatFinder.GetAudioFormat(file.Get32())) {
-			case AudioFormat.Ogg:
-				_audioStream = AudioStreamOggVorbis.LoadFromFile(path);
-				break;
-			case AudioFormat.Mp3:
-				_audioStream = new AudioStreamMP3();
-				((AudioStreamMP3)_audioStream).Data = FileAccess.GetFileAsBytes(path);
-				break;
-			case AudioFormat.Wav:
-				_audioStream = new AudioStreamWav();
-				var wav = (AudioStreamWav)_audioStream;
-				var header = WavFileHeader.CreateFromFileAccess(file);
-				wav.Format = header.BitsPerSample switch {
-					8 => AudioStreamWav.FormatEnum.Format8Bits, 16 => AudioStreamWav.FormatEnum.Format16Bits, _ => wav.Format
-				};
-				wav.Data = file.GetBuffer((long)(file.GetLength() - (ulong)header.HeaderSize));
-				break;
-			case AudioFormat.Unknown:
-			default:
+			switch (AudioFileFormatFinder.GetAudioFormat(file.Get32())) {
+				case AudioFormat.Ogg:
+					_audioStream = AudioStreamOggVorbis.LoadFromFile(path);
+					break;
+				case AudioFormat.Mp3:
+					_audioStream = new AudioStreamMP3();
+					((AudioStreamMP3)_audioStream).Data = FileAccess.GetFileAsBytes(path);
+					break;
+				case AudioFormat.Wav:
+					_audioStream = new AudioStreamWav();
+					var wav = (AudioStreamWav)_audioStream;
+					var header = WavFileHeader.CreateFromFileAccess(file);
+					wav.Format = header.BitsPerSample switch {
+						8 => AudioStreamWav.FormatEnum.Format8Bits, 16 => AudioStreamWav.FormatEnum.Format16Bits, _ => wav.Format
+					};
+					wav.Data = file.GetBuffer((long)(file.GetLength() - (ulong)header.HeaderSize));
+					break;
+				case AudioFormat.Unknown:
+				default:
+					throw new JavaScriptException("不支持的音频格式，仅支持ogg、mp3与wav");
+			}
+
+			if (_audioStream?.InstantiatePlayback() == null) {
+				_audioStream = null;
 				throw new JavaScriptException("不支持的音频格式，仅支持ogg、mp3与wav");
-		}
+			}
 
-		if (_audioStream?.InstantiatePlayback() == null) {
-			_audioStream = null;
-			throw new JavaScriptException("不支持的音频格式，仅支持ogg、mp3与wav");
-		}
-
-		_audioStreamPath = path;
-		_player.Stream = _audioStream;
+			_audioStreamPath = path;
+			_player.Stream = _audioStream;
+		});
 		return this;
 	}
 
@@ -105,7 +109,9 @@ public sealed class AudioPlayer {
 		}
 
 		_player.StreamPaused = false;
-		_player.Play(fromPosition ?? CurrentPosition);
+		_player.SyncSend(_ => {
+			_player.Play(fromPosition ?? CurrentPosition);
+		});
 		return this;
 	}
 
@@ -114,11 +120,14 @@ public sealed class AudioPlayer {
 			throw new JavaScriptException("未设置音频文件");
 		}
 
-		_player.Seek(pos);
+		_player.SyncSend(_ => {
+			_player.Seek(pos);
+		});
 		return this;
 	}
 
 	public AudioPlayer Stop() {
+
 		if (_audioStream == null) {
 			throw new JavaScriptException("未设置音频文件");
 		}
@@ -127,14 +136,16 @@ public sealed class AudioPlayer {
 			return this;
 		}
 
-		_player.Stop();
+		_player.SyncSend(_ => {
+			_player.Stop();
+		});
 		return this;
 	}
 
 	public void Dispose() {
 		Stop();
 		_audioStream?.Dispose();
-		_player.QueueFree(); 
+		_player.QueueFree();
 	}
 
 	public static AudioPlayer PlayFile(

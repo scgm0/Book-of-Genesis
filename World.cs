@@ -53,101 +53,136 @@ public partial class World : Control {
 		};
 	}
 
-	public void SetTitle(string title) => Main.SetRichText(Title, title);
-	public void SetLeftStretchRatio(float ratio) => LeftText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
+	public void SetTitle(string title) => this.SyncSend(_ => Main.SetRichText(Title, title));
+	public void SetLeftStretchRatio(float ratio) => this.SyncSend(_ => LeftText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
 
-	public void SetCenterStretchRatio(float ratio) => CenterText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
+	public void SetCenterStretchRatio(float ratio) => this.SyncSend(_ => CenterText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
 
-	public void SetRightStretchRatio(float ratio) => RightText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
-	public void SetCommandPlaceholderText(string text) => CommandEdit.PlaceholderText = text;
+	public void SetRightStretchRatio(float ratio) => this.SyncSend(_ => RightText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
+	public void SetCommandPlaceholderText(string text) => this.SyncSend(_ => CommandEdit.PlaceholderText = text);
 
 	public void SetLeftText(string text) {
-		Main.SetRichText(LeftText, text);
-		LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		this.SyncSend(_ => {
+			Main.SetRichText(LeftText, text);
+			LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		});
 	}
 
 	public void SetCenterText(string text) {
-		Main.SetRichText(CenterText, text);
-		CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		this.SyncSend(_ => {
+			Main.SetRichText(CenterText, text);
+			CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		});
 	}
 
 	public void SetRightText(string text) {
-		Main.SetRichText(RightText, text);
-		RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		this.SyncSend(_ => {
+			Main.SetRichText(RightText, text);
+			RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		});
 	}
 
 	public void AddLeftText(string text) {
-		Main.AddRichText(LeftText, text);
-		LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		this.SyncSend(_ => {
+			Main.AddRichText(LeftText, text);
+			LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		});
 	}
 
 	public void AddCenterText(string text) {
-		Main.AddRichText(CenterText, text);
-		CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		this.SyncSend(_ => {
+			Main.AddRichText(CenterText, text);
+			CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		});
 	}
 
 	public void AddRightText(string text) {
-		Main.AddRichText(RightText, text);
-		RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		this.SyncSend(_ => {
+			Main.AddRichText(RightText, text);
+			RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+		});
 	}
 
 	public ulong[] SetLeftButtons(string[] names) {
-		if (LeftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return LeftButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
-		}
+		ulong[] buttons = [];
+		this.SyncSend(_ => {
+			if (LeftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
+				buttons = LeftButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
+				return;
+			}
 
-		foreach (var node in LeftButtonList.GetChildren()) {
-			LeftButtonList.RemoveChild(node);
-			node.QueueFree();
-		}
+			foreach (var node in LeftButtonList.GetChildren()) {
+				LeftButtonList.RemoveChild(node);
+				node.QueueFree();
+			}
 
-		return names.Select(AddLeftButton).ToArray();
+			buttons = names.Select(AddLeftButton).ToArray();
+		});
+
+		return buttons;
 	}
 
 	public ulong AddLeftButton(string str) {
-		var button = new Button();
-		LeftButtonList.AddChild(button);
-		button.MouseFilter = MouseFilterEnum.Pass;
-		button.Text = str;
-		button.Pressed += () =>
-			Main.EmitEvent(EventType.LeftButtonClick, str, button.GetIndex(), button.GetInstanceId());
-		return button.GetInstanceId();
+		ulong id = 0;
+		this.SyncSend(_ => {
+			var button = new Button();
+			LeftButtonList.AddChild(button);
+			button.MouseFilter = MouseFilterEnum.Pass;
+			button.Text = str;
+			button.Pressed += () =>
+				Main.EmitEvent(EventType.LeftButtonClick, str, button.GetIndex(), button.GetInstanceId());
+			id = button.GetInstanceId();
+		});
+		return id;
 	}
 
 	public void RemoveLeftButtonByIndex(int index) {
-		GD.Print(LeftButtonList.GetChild(index));
-		if (index >= 0 ? index > LeftButtonList.GetChildCount() - 1 : index < -LeftButtonList.GetChildCount()) return;
-		var node = LeftButtonList.GetChild(index);
-		node.QueueFree();
+		this.SyncSend(_ => {
+			if (index >= 0 ? index > LeftButtonList.GetChildCount() - 1 : index < -LeftButtonList.GetChildCount()) return;
+			var node = LeftButtonList.GetChild(index);
+			node.QueueFree();
+		});
 	}
 
 	public ulong[] SetRightButtons(string[] names) {
-		if (RightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-			return RightButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
-		}
+		ulong[] buttons = [];
+		this.SyncSend(_ => {
+			if (RightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
+				buttons = RightButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
+				return;
+			}
 
-		foreach (var node in RightButtonList.GetChildren()) {
-			RightButtonList.RemoveChild(node);
-			node.QueueFree();
-		}
+			foreach (var node in RightButtonList.GetChildren()) {
+				RightButtonList.RemoveChild(node);
+				node.QueueFree();
+			}
 
-		return names.Select(AddRightButton).ToArray();
+			buttons = names.Select(AddRightButton).ToArray();
+		});
+
+		return buttons;
 	}
 
 	public ulong AddRightButton(string str) {
-		var button = new Button();
-		RightButtonList.AddChild(button);
-		button.MouseFilter = MouseFilterEnum.Pass;
-		button.Text = str;
-		button.Pressed += () =>
-			Main.EmitEvent(EventType.RightButtonClick, str, button.GetIndex(), button.GetInstanceId());
-		return button.GetInstanceId();
+		ulong id = 0;
+		this.SyncSend(_ => {
+			var button = new Button();
+			RightButtonList.AddChild(button);
+			button.MouseFilter = MouseFilterEnum.Pass;
+			button.Text = str;
+			button.Pressed += () =>
+				Main.EmitEvent(EventType.RightButtonClick, str, button.GetIndex(), button.GetInstanceId());
+			id = button.GetInstanceId();
+		});
+		return id;
 	}
 
 	public void RemoveRightButtonByIndex(int index) {
-		if (index >= 0 ? index > RightButtonList.GetChildCount() - 1 : index < -RightButtonList.GetChildCount()) return;
-		var node = RightButtonList.GetChild(index);
-		node.QueueFree();
+		this.SyncSend(_ => {
+			if (index >= 0 ? index > RightButtonList.GetChildCount() - 1 : index < -RightButtonList.GetChildCount()) return;
+			var node = RightButtonList.GetChild(index);
+			node.QueueFree();
+		});
 	}
 
 	public static void RemoveButtonById(ulong id) {
@@ -167,22 +202,24 @@ public partial class World : Control {
 	}
 
 	private void SetTextBackgroundColor(TextType type, Color color) {
-		switch (type) {
-			case TextType.Title:
-				_titleStyle.BgColor = color;
-				break;
-			case TextType.LeftText:
-				_leftTextStyle.BgColor = color;
-				break;
-			case TextType.CenterText:
-				_centerTextStyle.BgColor = color;
-				break;
-			case TextType.RightText:
-				_rightTextStyle.BgColor = color;
-				break;
-			case TextType.All:
-			default: return;
-		}
+		this.SyncSend(_ => {
+			switch (type) {
+				case TextType.Title:
+					_titleStyle.BgColor = color;
+					break;
+				case TextType.LeftText:
+					_leftTextStyle.BgColor = color;
+					break;
+				case TextType.CenterText:
+					_centerTextStyle.BgColor = color;
+					break;
+				case TextType.RightText:
+					_rightTextStyle.BgColor = color;
+					break;
+				case TextType.All:
+				default: return;
+			}
+		});
 	}
 
 	public void SetTextFontColor(TextType type, string colorHex) {
@@ -197,21 +234,23 @@ public partial class World : Control {
 	}
 
 	private void SetTextFontColor(TextType type, Color color) {
-		switch (type) {
-			case TextType.Title:
-				Title.AddThemeColorOverride("default_color", color);
-				break;
-			case TextType.LeftText:
-				LeftText.AddThemeColorOverride("default_color", color);
-				break;
-			case TextType.CenterText:
-				CenterText.AddThemeColorOverride("default_color", color);
-				break;
-			case TextType.RightText:
-				RightText.AddThemeColorOverride("default_color", color);
-				break;
-			case TextType.All:
-			default: return;
-		}
+		this.SyncSend(_ => {
+			switch (type) {
+				case TextType.Title:
+					Title.AddThemeColorOverride("default_color", color);
+					break;
+				case TextType.LeftText:
+					LeftText.AddThemeColorOverride("default_color", color);
+					break;
+				case TextType.CenterText:
+					CenterText.AddThemeColorOverride("default_color", color);
+					break;
+				case TextType.RightText:
+					RightText.AddThemeColorOverride("default_color", color);
+					break;
+				case TextType.All:
+				default: return;
+			}
+		});
 	}
 }

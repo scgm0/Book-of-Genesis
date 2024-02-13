@@ -222,18 +222,20 @@ public sealed partial class Main : Control {
 		Log("模版列表加载完成");
 	}
 
-	private void RunWorld() {
+	private async void RunWorld() {
 		try {
 			InitWorld();
-			InitEngine();
-			CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
+			await Task.Run(() => {
+				InitEngine();
+				CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
+			});
 			using var tween = _world.CreateTween();
 			tween.SetEase(Tween.EaseType.Out);
 			tween.TweenProperty(_background, "modulate:a", 1.5, 1.5);
 			tween.TweenCallback(Callable.From(() => {
-				Log("进入世界:", CurrentWorldInfo.JsonString);
+				Log("进入世界:", CurrentWorldInfo!.JsonString);
 				_world.GetNode<Control>("Main").Show();
-				_currentWorldEvent = CurrentEngine.GetValue("World").Get("event").As<JsObject>()!;
+				_currentWorldEvent = CurrentEngine!.GetValue("World").Get("event").As<JsObject>()!;
 				EmitEvent(EventType.Ready);
 				_currentWorld = (JsObject)CurrentEngine.GetValue("World");
 			}));
@@ -325,15 +327,19 @@ public sealed partial class Main : Control {
 			currentWorld.Set("setBackgroundColor",
 				JsValue.FromObject(CurrentEngine,
 					(string colorHex) => {
-						var color = Color.FromString(colorHex, Color.Color8(74, 74, 74));
-						_backgroundColorRect.Color = color;
+						this.SyncSend(_ => {
+							var color = Color.FromString(colorHex, Color.Color8(74, 74, 74));
+							_backgroundColorRect.Color = color;
+						});
 					}));
 			currentWorld.Set("setBackgroundTexture",
 				JsValue.FromObject(CurrentEngine,
 					(string path, TextureFilterEnum filter = TextureFilterEnum.Nearest) => {
-						var texture = LoadImageFile(path, filter);
-						if (_backgroundTextureRect.Texture == texture) return;
-						_backgroundTextureRect.Texture = texture;
+						this.SyncSend(_ => {
+							var texture = LoadImageFile(path, filter);
+							if (_backgroundTextureRect.Texture == texture) return;
+							_backgroundTextureRect.Texture = texture;
+						});
 					}));
 
 			currentWorld.Set("setTitle",
@@ -504,18 +510,20 @@ public sealed partial class Main : Control {
 	}
 
 	private void ExitWorld(int exitCode = 0) {
-		Log("退出世界:", exitCode, CurrentWorldInfo?.JsonString ?? string.Empty);
-		EmitEvent(EventType.Exit, exitCode);
-		CurrentEngine?.Dispose();
-		CurrentEngine = null;
-		_currentWorldEvent = null;
-		_currentWorld = null;
-		CurrentWorldInfo = null;
+		this.SyncSend(_ => {
+			Log("退出世界:", exitCode, CurrentWorldInfo?.JsonString ?? string.Empty);
+			EmitEvent(EventType.Exit, exitCode);
+			CurrentEngine?.Dispose();
+			CurrentEngine = null;
+			_currentWorldEvent = null;
+			_currentWorld = null;
+			CurrentWorldInfo = null;
 
-		ClearCache();
+			ClearCache();
 
-		_home.Show();
-		_world.Hide();
+			_home.Show();
+			_world.Hide();
+		});
 	}
 
 	public static void OnMetaClickedEventHandler(Variant meta, int index) {
