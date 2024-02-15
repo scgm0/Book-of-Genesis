@@ -225,23 +225,24 @@ public sealed partial class Main : Control {
 	private async void RunWorld() {
 		try {
 			InitWorld();
-			await Task.Run(() => {
-				InitEngine();
-				CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
-			});
+			await Task.Run(InitEngine);
+			CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
 			using var tween = _world.CreateTween();
 			tween.SetEase(Tween.EaseType.Out);
 			tween.TweenProperty(_background, "modulate:a", 1.5, 1.5);
 			tween.TweenCallback(Callable.From(() => {
-				Log("进入世界:", CurrentWorldInfo!.JsonString);
+				Log("进入世界:", CurrentWorldInfo.JsonString);
 				_world.GetNode<Control>("Main").Show();
-				_currentWorldEvent = CurrentEngine!.GetValue("World").Get("event").As<JsObject>()!;
+				_currentWorldEvent = CurrentEngine.GetValue("World").Get("event").As<JsObject>()!;
 				EmitEvent(EventType.Ready);
 				_currentWorld = (JsObject)CurrentEngine.GetValue("World");
 			}));
 		} catch (JavaScriptException e) {
 			Log(
 				$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
+			ExitWorld(1);
+		} catch (Exception e) {
+			Log(e);
 			ExitWorld(1);
 		}
 	}
@@ -464,6 +465,7 @@ public sealed partial class Main : Control {
 					ExitWorld(1);
 				}
 			});
+
 			if (autoReset) return;
 			Utils.Timers.Remove(id);
 			timer.Dispose();
