@@ -554,7 +554,7 @@ public sealed partial class Main : Control {
 		if (ResourceLoader.Exists(filePath)) {
 			var canvasTexture = GD.Load<CanvasTexture>(filePath);
 			if (canvasTexture.TextureFilter == filter) {
-				return GD.Load<CanvasTexture>(filePath);
+				return canvasTexture;
 			}
 
 			imageTexture = canvasTexture.DiffuseTexture as ImageTexture;
