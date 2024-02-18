@@ -307,6 +307,7 @@ public sealed partial class Main : Control {
 			var currentWorld = new JsObject(CurrentEngine);
 			var worldEvent = CurrentEngine.Construct(CurrentEngine.Modules.Import("events").Get("default"));
 
+			currentWorld.Set("FilterType", TypeReference.CreateTypeReference(CurrentEngine, typeof(FilterType)));
 			currentWorld.Set("EventType", TypeReference.CreateTypeReference(CurrentEngine, typeof(EventType)));
 			currentWorld.Set("TextType", TypeReference.CreateTypeReference(CurrentEngine, typeof(TextType)));
 
@@ -327,21 +328,10 @@ public sealed partial class Main : Control {
 
 			currentWorld.Set("setBackgroundColor",
 				JsValue.FromObject(CurrentEngine,
-					(string colorHex) => {
-						this.SyncSend(_ => {
-							var color = Color.FromString(colorHex, Color.Color8(74, 74, 74));
-							_backgroundColorRect.Color = color;
-						});
-					}));
+					(string colorHex) => this.SyncSend(_ => _backgroundColorRect.Color = Color.FromString(colorHex, Color.Color8(74, 74, 74)))));
 			currentWorld.Set("setBackgroundTexture",
 				JsValue.FromObject(CurrentEngine,
-					(string path, TextureFilterEnum filter = TextureFilterEnum.Nearest) => {
-						this.SyncSend(_ => {
-							var texture = LoadImageFile(path, filter);
-							if (_backgroundTextureRect.Texture == texture) return;
-							_backgroundTextureRect.Texture = texture;
-						});
-					}));
+					(string path, FilterType filter = FilterType.Linear) => this.SyncSend(_ => _backgroundTextureRect.Texture = LoadImageFile(path, filter))));
 
 			currentWorld.Set("setTitle",
 				JsValue.FromObject(CurrentEngine, _world.SetTitle));
@@ -540,19 +530,18 @@ public sealed partial class Main : Control {
 		_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]);
 	}
 
-	static private CanvasTexture? LoadImageFile(string path, TextureFilterEnum filter = TextureFilterEnum.Linear) {
-		return LoadImageFile(CurrentWorldInfo!, path, filter);
+	static private CanvasTexture? LoadImageFile(string path, FilterType filter = FilterType.Linear) {
+		return LoadImageFile(CurrentWorldInfo!, path, (TextureFilterEnum)filter);
 	}
 
 	static private CanvasTexture? LoadImageFile(
 		WorldInfo worldInfo,
 		string path,
-		TextureFilterEnum filter = TextureFilterEnum.Linear) {
+		TextureFilterEnum filter = TextureFilterEnum.ParentNode) {
 		var filePath = worldInfo.GlobalPath.PathJoin(path).SimplifyPath();
 		if (!FileAccess.FileExists(filePath)) return null;
 		ImageTexture? imageTexture = null;
-		if (ResourceLoader.Exists(filePath)) {
-			var canvasTexture = GD.Load<CanvasTexture>(filePath);
+		if (ResourceLoader.Exists(filePath) && GD.Load(filePath) is CanvasTexture canvasTexture) {
 			if (canvasTexture.TextureFilter == filter) {
 				return canvasTexture;
 			}
@@ -627,11 +616,11 @@ public sealed partial class Main : Control {
 		foreach (Match match in Utils.ImgPathRegex().Matches(text)) {
 			var path = match.Groups["path"].Value;
 			var oldText = text.Substring(match.Index, match.Length);
-			var filter = Utils.ParseExpressionsForValues(oldText);
+			var filter = Utils.ParseExpressionsFilter(oldText);
 
 			var texture = filter switch {
 				"linear" => LoadImageFile(path),
-				"nearest" => LoadImageFile(path, TextureFilterEnum.Nearest),
+				"nearest" => LoadImageFile(path, FilterType.Nearest),
 				_ => LoadImageFile(path)
 			};
 

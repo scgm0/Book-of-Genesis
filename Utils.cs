@@ -57,7 +57,7 @@ public static partial class Utils {
 			ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}"));
 	}
 
-	public static string ParseExpressionsForValues(string bbcode) {
+	public static string ParseExpressionsFilter(string bbcode) {
 		var startIndex = bbcode.IndexOf('[') + 1;
 		var endIndex = bbcode.IndexOf(']');
 		var tagContent = bbcode.Substring(startIndex, endIndex - startIndex);

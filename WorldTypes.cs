@@ -1,6 +1,11 @@
 // ReSharper disable once CheckNamespace
 namespace World;
 
+public enum FilterType {
+	Linear,
+	Nearest
+}
+
 public enum EventType {
 	Ready,
 	Tick,
