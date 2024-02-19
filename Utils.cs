@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Godot;
+using Jint.Runtime;
+using World;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -115,6 +117,63 @@ public static partial class Utils {
 		if (v1 > v2) return 1;
 		if (v1 == v2) return 0;
 		return -1;
+	}
+
+	public static CanvasTexture? LoadImageFile(string path, FilterType filter = FilterType.Linear) {
+		return LoadImageFile(Main.CurrentWorldInfo!, path, (CanvasItem.TextureFilterEnum)filter);
+	}
+
+	public static CanvasTexture? LoadImageFile(
+		WorldInfo worldInfo,
+		string path,
+		CanvasItem.TextureFilterEnum filter = CanvasItem.TextureFilterEnum.ParentNode) {
+		var filePath = worldInfo.GlobalPath.PathJoin(path).SimplifyPath();
+		if (!FileAccess.FileExists(filePath)) return null;
+		ImageTexture? imageTexture = null;
+		if (ResourceLoader.Exists(filePath) && GD.Load(filePath) is CanvasTexture canvasTexture) {
+			if (canvasTexture.TextureFilter == filter) {
+				return canvasTexture;
+			}
+
+			imageTexture = canvasTexture.DiffuseTexture as ImageTexture;
+		}
+
+		var texture = new CanvasTexture();
+		texture.TextureFilter = filter;
+		texture.TakeOverPath(filePath);
+		Utils.TextureCache.Add(texture);
+		if (imageTexture == null) {
+			var data = FileAccess.GetFileAsBytes(filePath);
+			using var img = ImageFromBuffer(data);
+			imageTexture = ImageTexture.CreateFromImage(img);
+		}
+
+		texture.DiffuseTexture = imageTexture;
+
+		return texture;
+	}
+
+	public static Image ImageFromBuffer(byte[] data) {
+		var img = new Image();
+		switch (ImageFileFormatFinder.GetImageFormat(data)) {
+			case ImageFormat.Png:
+				img.LoadPngFromBuffer(data);
+				break;
+			case ImageFormat.Jpg:
+				img.LoadJpgFromBuffer(data);
+				break;
+			case ImageFormat.Bmp:
+				img.LoadBmpFromBuffer(data);
+				break;
+			case ImageFormat.Webp:
+				img.LoadWebpFromBuffer(data);
+				break;
+			case ImageFormat.Unknown:
+			default:
+				throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
+		}
+
+		return img;
 	}
 
 	static private partial string SCRIPT_AES256_ENCRYPTION_KEY();

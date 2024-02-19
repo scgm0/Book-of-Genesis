@@ -2,6 +2,7 @@ using System;
 using System.Text.Json;
 using Godot;
 using Jint.Native;
+using Jint.Runtime;
 using Engine = Jint.Engine;
 
 namespace 创世记;
@@ -14,7 +15,7 @@ public sealed partial class Main {
 	public static WorldInfo? CurrentWorldInfo { get; private set; }
 
 	static private void LoadWorldInfos(string worldsPath, bool loadPackage = false) {
-		worldsPath = worldsPath.SimplifyPath(); 
+		worldsPath = worldsPath.SimplifyPath();
 		using var dir = DirAccess.Open(worldsPath);
 		if (dir == null) return;
 		dir.ListDirBegin();

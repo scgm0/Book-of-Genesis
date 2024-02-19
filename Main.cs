@@ -159,7 +159,7 @@ public sealed partial class Main : Control {
 			worldItem.GetNode<Label>("%Name").Text = $"{worldInfo.Name}-{worldInfo.Version}";
 			worldItem.GetNode<Label>("%Description").Text = $"{worldInfo.Author}\n{worldInfo.Description}";
 			worldItem.GetNode<TextureRect>("%Encrypt").Visible = worldInfo.IsEncrypt;
-			var icon = LoadImageFile(worldInfo, worldInfo.Icon);
+			var icon = Utils.LoadImageFile(worldInfo, worldInfo.Icon);
 			if (icon != null) {
 				worldItem.GetNode<TextureRect>("%Icon").Texture = icon;
 			}
@@ -203,7 +203,7 @@ public sealed partial class Main : Control {
 			worldItem.GetNode<Label>("%Name").Text = $"{worldInfo.Name}-{worldInfo.Version}";
 			worldItem.GetNode<Label>("%Description").Text = $"{worldInfo.Author}\n{worldInfo.Description}";
 			worldItem.GetNode<TextureRect>("%Encrypt").Visible = worldInfo.IsEncrypt;
-			var icon = LoadImageFile(worldInfo, worldInfo.Icon);
+			var icon = Utils.LoadImageFile(worldInfo, worldInfo.Icon);
 			if (icon != null) {
 				worldItem.GetNode<TextureRect>("%Icon").Texture = icon;
 			}
@@ -331,7 +331,7 @@ public sealed partial class Main : Control {
 					(string colorHex) => this.SyncSend(_ => _backgroundColorRect.Color = Color.FromString(colorHex, Color.Color8(74, 74, 74)))));
 			currentWorld.Set("setBackgroundTexture",
 				JsValue.FromObject(CurrentEngine,
-					(string path, FilterType filter = FilterType.Linear) => this.SyncSend(_ => _backgroundTextureRect.Texture = LoadImageFile(path, filter))));
+					(string path, FilterType filter = FilterType.Linear) => this.SyncSend(_ => _backgroundTextureRect.Texture = Utils.LoadImageFile(path, filter))));
 
 			currentWorld.Set("setTitle",
 				JsValue.FromObject(CurrentEngine, _world.SetTitle));
@@ -530,63 +530,6 @@ public sealed partial class Main : Control {
 		_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]);
 	}
 
-	static private CanvasTexture? LoadImageFile(string path, FilterType filter = FilterType.Linear) {
-		return LoadImageFile(CurrentWorldInfo!, path, (TextureFilterEnum)filter);
-	}
-
-	static private CanvasTexture? LoadImageFile(
-		WorldInfo worldInfo,
-		string path,
-		TextureFilterEnum filter = TextureFilterEnum.ParentNode) {
-		var filePath = worldInfo.GlobalPath.PathJoin(path).SimplifyPath();
-		if (!FileAccess.FileExists(filePath)) return null;
-		ImageTexture? imageTexture = null;
-		if (ResourceLoader.Exists(filePath) && GD.Load(filePath) is CanvasTexture canvasTexture) {
-			if (canvasTexture.TextureFilter == filter) {
-				return canvasTexture;
-			}
-
-			imageTexture = canvasTexture.DiffuseTexture as ImageTexture;
-		}
-
-		var texture = new CanvasTexture();
-		texture.TextureFilter = filter;
-		texture.TakeOverPath(filePath);
-		Utils.TextureCache.Add(texture);
-		if (imageTexture == null) {
-			var data = FileAccess.GetFileAsBytes(filePath);
-			using var img = ImageFromBuffer(data);
-			imageTexture = ImageTexture.CreateFromImage(img);
-		}
-
-		texture.DiffuseTexture = imageTexture;
-
-		return texture;
-	}
-
-	static private Image ImageFromBuffer(byte[] data) {
-		var img = new Image();
-		switch (ImageFileFormatFinder.GetImageFormat(data)) {
-			case ImageFormat.Png:
-				img.LoadPngFromBuffer(data);
-				break;
-			case ImageFormat.Jpg:
-				img.LoadJpgFromBuffer(data);
-				break;
-			case ImageFormat.Bmp:
-				img.LoadBmpFromBuffer(data);
-				break;
-			case ImageFormat.Webp:
-				img.LoadWebpFromBuffer(data);
-				break;
-			case ImageFormat.Unknown:
-			default:
-				throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
-		}
-
-		return img;
-	}
-
 	static private Variant GetSaveValue(string section, string key) {
 		using var defaultValue = new GodotObject();
 		var value = CurrentWorldInfo!.Config.GetValue(section, key, defaultValue);
@@ -619,9 +562,9 @@ public sealed partial class Main : Control {
 			var filter = Utils.ParseExpressionsFilter(oldText);
 
 			var texture = filter switch {
-				"linear" => LoadImageFile(path),
-				"nearest" => LoadImageFile(path, FilterType.Nearest),
-				_ => LoadImageFile(path)
+				"linear" => Utils.LoadImageFile(path),
+				"nearest" => Utils.LoadImageFile(path, FilterType.Nearest),
+				_ => Utils.LoadImageFile(path)
 			};
 
 			if (texture != null) {
