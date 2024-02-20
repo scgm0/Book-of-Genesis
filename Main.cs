@@ -544,35 +544,6 @@ public sealed partial class Main : Control {
 			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
 	}
 
-	public static void SetRichText(RichTextLabel label, string text) {
-		LoadRichTextImg(ref text);
-		label.ParseBbcode(text);
-	}
-
-	public static void AddRichText(RichTextLabel label, string text) {
-		LoadRichTextImg(ref text);
-		label.AppendText(text);
-	}
-
-	static private void LoadRichTextImg(ref string text) {
-		if (string.IsNullOrEmpty(text)) return;
-		foreach (Match match in Utils.ImgPathRegex().Matches(text)) {
-			var path = match.Groups["path"].Value;
-			var oldText = text.Substring(match.Index, match.Length);
-			var filter = Utils.ParseExpressionsFilter(oldText);
-
-			var texture = filter switch {
-				"linear" => Utils.LoadImageFile(path),
-				"nearest" => Utils.LoadImageFile(path, FilterType.Nearest),
-				_ => Utils.LoadImageFile(path)
-			};
-
-			if (texture != null) {
-				text = text.Replace(oldText, oldText.Replace(path, texture.ResourcePath));
-			}
-		}
-	}
-
 	public static void Log(params object[] objects) { Log(string.Join(" ", objects.Select(o => o.ToString()))); }
 
 	public static void Log(params string[] strings) { Log(strings.Join(" ")); }

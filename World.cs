@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Godot;
 using World;
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace 创世记;
 
@@ -53,7 +54,7 @@ public partial class World : Control {
 		};
 	}
 
-	public void SetTitle(string title) => this.SyncSend(_ => Main.SetRichText(Title, title));
+	public void SetTitle(string title) => this.SyncSend(_ => Utils.SetRichText(Title, title));
 	public void SetLeftStretchRatio(float ratio) => this.SyncSend(_ => LeftText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
 
 	public void SetCenterStretchRatio(float ratio) => this.SyncSend(_ => CenterText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
@@ -63,42 +64,42 @@ public partial class World : Control {
 
 	public void SetLeftText(string text) {
 		this.SyncSend(_ => {
-			Main.SetRichText(LeftText, text);
+			Utils.SetRichText(LeftText, text);
 			LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void SetCenterText(string text) {
 		this.SyncSend(_ => {
-			Main.SetRichText(CenterText, text);
+			Utils.SetRichText(CenterText, text);
 			CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void SetRightText(string text) {
 		this.SyncSend(_ => {
-			Main.SetRichText(RightText, text);
+			Utils.SetRichText(RightText, text);
 			RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void AddLeftText(string text) {
 		this.SyncSend(_ => {
-			Main.AddRichText(LeftText, text);
+			Utils.AddRichText(LeftText, text);
 			LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void AddCenterText(string text) {
 		this.SyncSend(_ => {
-			Main.AddRichText(CenterText, text);
+			Utils.AddRichText(CenterText, text);
 			CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void AddRightText(string text) {
 		this.SyncSend(_ => {
-			Main.AddRichText(RightText, text);
+			Utils.AddRichText(RightText, text);
 			RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}

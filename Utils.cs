@@ -118,6 +118,35 @@ public static partial class Utils {
 		if (v1 == v2) return 0;
 		return -1;
 	}
+	
+	public static void SetRichText(RichTextLabel label, string text) {
+		LoadRichTextImg(ref text);
+		label.ParseBbcode(text);
+	}
+
+	public static void AddRichText(RichTextLabel label, string text) {
+		LoadRichTextImg(ref text);
+		label.AppendText(text);
+	}
+
+	public static void LoadRichTextImg(ref string text) {
+		if (string.IsNullOrEmpty(text)) return;
+		foreach (Match match in ImgPathRegex().Matches(text)) {
+			var path = match.Groups["path"].Value;
+			var oldText = text.Substring(match.Index, match.Length);
+			var filter = ParseExpressionsFilter(oldText);
+
+			var texture = filter switch {
+				"linear" => LoadImageFile(path),
+				"nearest" => LoadImageFile(path, FilterType.Nearest),
+				_ => LoadImageFile(path)
+			};
+
+			if (texture != null) {
+				text = text.Replace(oldText, oldText.Replace(path, texture.ResourcePath));
+			}
+		}
+	}
 
 	public static CanvasTexture? LoadImageFile(string path, FilterType filter = FilterType.Linear) {
 		return LoadImageFile(Main.CurrentWorldInfo!, path, (CanvasItem.TextureFilterEnum)filter);
@@ -141,7 +170,7 @@ public static partial class Utils {
 		var texture = new CanvasTexture();
 		texture.TextureFilter = filter;
 		texture.TakeOverPath(filePath);
-		Utils.TextureCache.Add(texture);
+		TextureCache.Add(texture);
 		if (imageTexture == null) {
 			var data = FileAccess.GetFileAsBytes(filePath);
 			using var img = ImageFromBuffer(data);
