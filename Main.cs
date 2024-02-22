@@ -407,6 +407,9 @@ public sealed partial class Main : Control {
 						Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 					}));
 
+			currentWorld.Set("delay",
+				JsValue.FromObject(CurrentEngine, (int delay) => Task.Delay(delay)));
+
 			currentWorld.Set("versionCompare",
 				JsValue.FromObject(CurrentEngine, Utils.VersionCompare));
 
