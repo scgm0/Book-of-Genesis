@@ -222,21 +222,25 @@ public sealed partial class Main : Control {
 		Log("模版列表加载完成");
 	}
 
-	private async void RunWorld() {
+	private void RunWorld() {
 		try {
-			InitWorld();
-			await Task.Run(InitEngine);
-			CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
-			using var tween = _world.CreateTween();
-			tween.SetEase(Tween.EaseType.Out);
-			tween.TweenProperty(_background, "modulate:a", 1.5, 1.5);
-			tween.TweenCallback(Callable.From(() => {
-				Log("进入世界:", CurrentWorldInfo.JsonString);
-				_world.GetNode<Control>("Main").Show();
-				_currentWorldEvent = CurrentEngine.GetValue("World").Get("event").As<JsObject>()!;
-				EmitEvent(EventType.Ready);
-				_currentWorld = (JsObject)CurrentEngine.GetValue("World");
-			}));
+			InitWorld(); 
+			Task.Run(() => {
+				InitEngine();
+				this.SyncPost(_ => {
+					using var tween = _world.CreateTween();
+					tween.SetEase(Tween.EaseType.Out);
+					tween.TweenProperty(_background, "modulate:a", 1.5, 1.5).Dispose();
+					tween.TweenCallback(Callable.From(() => {
+						Log("进入世界:", CurrentWorldInfo!.JsonString);
+						_world.GetNode<Control>("Main").Show();
+						_currentWorldEvent = CurrentEngine!.GetValue("World").Get("event").As<JsObject>()!;
+						EmitEvent(EventType.Ready);
+						_currentWorld = (JsObject)CurrentEngine.GetValue("World");
+					})).Dispose();
+				});
+				CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
+			});
 		} catch (JavaScriptException e) {
 			Log(
 				$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
