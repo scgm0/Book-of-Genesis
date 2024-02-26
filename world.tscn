@@ -20,7 +20,7 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-anti_aliasing = false
+anti_aliasing_size = 0.5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l2bod"]
 resource_local_to_scene = true
@@ -34,7 +34,7 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-anti_aliasing = false
+anti_aliasing_size = 0.5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t8wjd"]
 resource_local_to_scene = true
@@ -48,7 +48,7 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-anti_aliasing = false
+anti_aliasing_size = 0.5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tg0ev"]
 resource_local_to_scene = true
@@ -62,7 +62,7 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-anti_aliasing = false
+anti_aliasing_size = 0.5
 
 [node name="World" type="Control"]
 custom_minimum_size = Vector2(1152, 648)
