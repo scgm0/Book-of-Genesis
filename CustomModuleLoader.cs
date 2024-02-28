@@ -198,17 +198,16 @@ sealed class CustomModuleLoader : IModuleLoader {
 					: FileAccess.Open(jsPath, FileAccess.ModeFlags.Read);
 				code = jsFile.GetAsText();
 			} else {
-				TsGen(ref code, fileName, resolved);
+				TsGen(out code, fileName, resolved);
 			}
 		} else {
-			TsGen(ref code, fileName, resolved);
+			TsGen(out code, fileName, resolved);
 		}
 
 		return code;
 	}
 
-	private void TsGen(ref string code, string fileName, ResolvedSpecifier resolved) {
-		if (string.IsNullOrEmpty(code)) return;
+	private void TsGen(out string code, string fileName, ResolvedSpecifier resolved) {
 		var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo.Path, $"/{_worldInfo.WorldKey}/"))
 			.SimplifyPath();
 		var jsPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.js";

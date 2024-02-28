@@ -11,7 +11,13 @@ namespace 创世记;
 public static class TsTransform {
 	static private readonly Engine Engine = new(options => options.DebugMode(false));
 	static private JsValue _compiler = null!;
-	public static JsObject Compile(string code, string fileName) => (JsObject)_compiler.Call(code, JsValue.Undefined, fileName);
+	public static JsObject Compile(string code, string fileName) {
+		JsObject? res = null;
+		Utils.Tree.Root.SyncSend(_ => {
+			res = (JsObject)_compiler.Call(code, JsValue.Undefined, fileName);
+		});
+		return res!;
+	}
 
 	public static void Prepare() {
 		Engine.SetValue("log", new Action<string[]>(Main.Log));
