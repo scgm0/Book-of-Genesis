@@ -26,12 +26,12 @@ sealed class CustomModuleLoader : IModuleLoader {
 		_isRes = worldInfo.GlobalPath.StartsWith("res://");
 		var basePath = _worldInfo.Path;
 		if (string.IsNullOrWhiteSpace(basePath)) {
-			Main.Log("值不能为空或空格", nameof(basePath));
+			Log.Error("值不能为空或空格", nameof(basePath));
 		}
 
 		if (!Uri.TryCreate(basePath, UriKind.Absolute, out var temp)) {
 			if (!Path.IsPathRooted(basePath)) {
-				Main.Log("路径必须是 root 的", nameof(basePath));
+				Log.Error("路径必须是 root 的", nameof(basePath));
 			}
 
 			Debug.Assert(basePath != null, nameof(basePath) + " != null");
@@ -50,7 +50,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 	public ResolvedSpecifier Resolve(string? referencingModuleLocation, ModuleRequest moduleRequest) {
 		var specifier = moduleRequest.Specifier;
 		if (string.IsNullOrEmpty(specifier)) {
-			Main.Log("模块说明符无效", specifier, referencingModuleLocation ?? string.Empty);
+			Log.Error("模块说明符无效", specifier, referencingModuleLocation ?? string.Empty);
 			return default!;
 		}
 
@@ -63,7 +63,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 					: _basePath,
 				specifier);
 		} else if (specifier[0] == '#') {
-			Main.Log($"不支持 PACKAGE_IMPORTS_RESOLVE: '{specifier}'");
+			Log.Error($"不支持 PACKAGE_IMPORTS_RESOLVE: '{specifier}'");
 			return default!;
 		} else {
 			return new ResolvedSpecifier(
@@ -76,14 +76,14 @@ sealed class CustomModuleLoader : IModuleLoader {
 
 		if (resolved.IsFile) {
 			if (resolved.UserEscaped) {
-				Main.Log("模块说明符无效",
+				Log.Error("模块说明符无效",
 					specifier,
 					referencingModuleLocation ?? string.Empty);
 				return default!;
 			}
 
 			if (!Path.HasExtension(resolved.LocalPath)) {
-				Main.Log("不支持的目录导入",
+				Log.Error("不支持的目录导入",
 					specifier,
 					referencingModuleLocation ?? string.Empty);
 				return default!;
@@ -103,7 +103,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 				resolved,
 				SpecifierType.RelativeOrAbsolute
 			);
-		Main.Log("未经授权的模块路径", specifier, referencingModuleLocation ?? string.Empty);
+		Log.Error("未经授权的模块路径", specifier, referencingModuleLocation ?? string.Empty);
 		return default!;
 	}
 
@@ -148,13 +148,13 @@ sealed class CustomModuleLoader : IModuleLoader {
 		code = "";
 		var specifier = resolved.ModuleRequest.Specifier;
 		if (resolved.Type != SpecifierType.RelativeOrAbsolute) {
-			Main.Log(
+			Log.Error(
 				$"默认模块加载器只能解析文件。您可以直接定义模块以允许使用 {nameof(Engine)}.{nameof(Engine.Modules.Add)}() 导入。尝试解析：“{resolved.ModuleRequest.Specifier}”。");
 			return;
 		}
 
 		if (resolved.Uri == null) {
-			Main.Log(
+			Log.Error(
 				$"“{resolved.Type}”类型的模块“{specifier}”没有解析的 URI。");
 		}
 
@@ -162,7 +162,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 			$"{(_isRes ? Utils.ResWorldsPath : Utils.UserWorldsPath)}{resolved.Key}";
 
 		if (!FileAccess.FileExists(fileName)) {
-			Main.Log("找不到模块: ", specifier);
+			Log.Error("找不到模块: ", specifier);
 			return;
 		}
 

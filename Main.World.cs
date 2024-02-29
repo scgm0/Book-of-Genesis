@@ -26,7 +26,7 @@ public sealed partial class Main {
 				DeserializeWorldInfo(filePath.PathJoin("config.json"), fileName, worldsPath, loadPackage);
 			} else if (loadPackage &&
 				(fileName.GetExtension() == Utils.EncryptionWorldExtension || fileName.GetExtension() == "zip")) {
-				Log(fileName, ProjectSettings.LoadResourcePack(filePath));
+				Log.Info(fileName, ProjectSettings.LoadResourcePack(filePath).ToString());
 			}
 
 			fileName = dir.GetNext();
