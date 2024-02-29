@@ -35,6 +35,7 @@ file_logging/log_path.android="/storage/emulated/0/创世记/Logs/app.log"
 window/energy_saving/keep_screen_on.editor=true
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/vsync/vsync_mode=0
 
 [dotnet]
 

@@ -302,7 +302,7 @@ public sealed partial class Main : Control {
 						value.Dispose();
 					});
 
-			CurrentEngine.Modules.Add("events", Utils.Polyfill.Events);
+			CurrentEngine.Modules.Add("events", builder => builder.AddModule(Utils.Polyfill.Events));
 			CurrentEngine.Modules.Add("audio",
 				builder => builder.ExportType<AudioPlayer>().ExportType<AudioPlayer>("default"));
 
