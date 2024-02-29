@@ -44,7 +44,7 @@ public static partial class Utils {
 #endif
 
 	public static void ExportEncryptionWorldPck(WorldInfo worldInfo) {
-		Log.Info("加密开始:", worldInfo.JsonString);
+		Log.Debug("加密开始:", worldInfo.JsonString);
 		var packer = new PckPacker();
 		packer.PckStart($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}",
 			32,
@@ -55,7 +55,7 @@ public static partial class Utils {
 			$"{ResWorldsPath}{worldInfo.Path}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt",
 			"res://Assets/.Encrypt");
 		packer.Flush(true);
-		Log.Info("加密结束:",
+		Log.Debug("加密结束:",
 			ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}"));
 	}
 

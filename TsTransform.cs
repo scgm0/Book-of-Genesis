@@ -20,7 +20,7 @@ public static class TsTransform {
 	}
 
 	public static void Prepare() {
-		Engine.SetValue("log", new Action<string[]>(Log.Info));
+		Engine.SetValue("log", new Action<string[]>(Log.Debug));
 		Engine.Execute("const global = this;");
 		Engine.Execute("const exports = {};");
 

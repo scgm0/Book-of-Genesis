@@ -18,7 +18,7 @@ public static class Log {
 	static private void _log(string m, Severity s = Severity.Debug) {
 		ArgumentNullException.ThrowIfNull(m);
 		if (LogSeverity > s) return;
-		var message = $"[{DateTime.Now}]{(Main.CurrentWorldInfo == null ? " " : $" [{Main.CurrentWorldInfo.Name}] ")} [{s}] {m}";
+		var message = $"[{DateTime.Now}] {(Main.CurrentWorldInfo == null ? string.Empty : $"[{Main.CurrentWorldInfo.Name}] ")}[{s}]: {m}";
 		switch (s) {
 			case Severity.Warn:
 				GD.PushWarning(message);

@@ -58,7 +58,7 @@ public sealed partial class Main : Control {
 
 		ProjectSettings.LoadResourcePack(Utils.TemplateZipPath);
 
-		Log.Info("启动游戏",
+		Log.Debug("启动游戏",
 			"\nPlatform:",
 			OS.GetName(),
 			"\nGameVersion:",
@@ -79,7 +79,7 @@ public sealed partial class Main : Control {
 		_bootSplash.TreeExited += _readyBar.Show;
 		Task.Run(() => {
 			TsTransform.Prepare();
-			Log.Info("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());
+			Log.Debug("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());
 			_readyBar.CallDeferred(CanvasItem.MethodName.Hide);
 			Utils.Tree.AutoAcceptQuit = false;
 		});
@@ -106,7 +106,7 @@ public sealed partial class Main : Control {
 			_worldScene.Dispose();
 			_worldItem.Dispose();
 			Utils.GlobalConfig.Dispose();
-			Log.Info("退出游戏，运行时长:", (DateTime.Now - StartTime).ToString());
+			Log.Debug("退出游戏，运行时长:", (DateTime.Now - StartTime).ToString());
 			GetTree().Quit();
 		} else if (what == NotificationWMGoBackRequest) {
 			if (_home.Visible) {
@@ -125,7 +125,7 @@ public sealed partial class Main : Control {
 		try {
 			EmitEvent(EventType.Tick);
 		} catch (JavaScriptException e) {
-			Log.Info(
+			Log.Debug(
 				$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 			ExitWorld(1);
 		} catch (Exception e) {
@@ -133,14 +133,14 @@ public sealed partial class Main : Control {
 				return;
 			}
 
-			Log.Info(e.ToString());
+			Log.Debug(e.ToString());
 			ExitWorld(1);
 		}
 	}
 
 
 	private void ChooseWorld() {
-		Log.Info("加载世界列表");
+		Log.Debug("加载世界列表");
 		ClearCache();
 		LoadWorldInfos(Utils.UserWorldsPath, true);
 		LoadWorldInfos(Utils.ResWorldsPath);
@@ -152,7 +152,7 @@ public sealed partial class Main : Control {
 		}
 
 		foreach (var (key, worldInfo) in Utils.WorldInfos) {
-			Log.Info(key, worldInfo.JsonString);
+			Log.Debug(key, worldInfo.JsonString);
 			var worldItem = _worldItem.Instantiate();
 			worldItem.GetNode<Label>("%Name").Text = $"{worldInfo.Name}-{worldInfo.Version}";
 			worldItem.GetNode<Label>("%Description").Text = $"{worldInfo.Author}\n{worldInfo.Description}";
@@ -164,7 +164,7 @@ public sealed partial class Main : Control {
 
 			worldItem.GetNode<Button>("%Choose").Pressed += () => {
 				CurrentWorldInfo = worldInfo;
-				Log.Info("选择世界:", CurrentWorldInfo.JsonString);
+				Log.Debug("选择世界:", CurrentWorldInfo.JsonString);
 				_chooseWorld.Hide();
 				_background.Modulate = Color.FromHtml("#ffffff00");
 				CurrentWorldInfo.Config.LoadEncryptedPass(
@@ -181,11 +181,11 @@ public sealed partial class Main : Control {
 			list.AddChild(worldItem);
 		}
 
-		Log.Info("世界列表加载完成");
+		Log.Debug("世界列表加载完成");
 	}
 
 	private void ChooseTemplate() {
-		Log.Info("加载模版列表");
+		Log.Debug("加载模版列表");
 		ClearCache();
 		LoadWorldInfos(Utils.ResTemplatesPath);
 		_home.Hide();
@@ -196,7 +196,7 @@ public sealed partial class Main : Control {
 		}
 
 		foreach (var (key, worldInfo) in Utils.WorldInfos) {
-			Log.Info(key, worldInfo.JsonString);
+			Log.Debug(key, worldInfo.JsonString);
 			var worldItem = _worldItem.Instantiate();
 			worldItem.GetNode<Label>("%Name").Text = $"{worldInfo.Name}-{worldInfo.Version}";
 			worldItem.GetNode<Label>("%Description").Text = $"{worldInfo.Author}\n{worldInfo.Description}";
@@ -208,16 +208,16 @@ public sealed partial class Main : Control {
 
 			worldItem.GetNode<Button>("%Choose").Pressed += () => {
 				var exportPath = Utils.UserWorldsPath.PathJoin($"{worldInfo.Name}-{worldInfo.Version}");
-				Log.Info("导出模版:", worldInfo.JsonString);
+				Log.Debug("导出模版:", worldInfo.JsonString);
 				Utils.CopyDir(worldInfo.GlobalPath, Utils.UserWorldsPath.PathJoin($"{worldInfo.Name}-{worldInfo.Version}"));
-				Log.Info("导出模版完成:", exportPath);
+				Log.Debug("导出模版完成:", exportPath);
 				GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 			};
 			worldItem.GetNode<Button>("%Choose").Text = "导出\n模版";
 			list.AddChild(worldItem);
 		}
 
-		Log.Info("模版列表加载完成");
+		Log.Debug("模版列表加载完成");
 	}
 
 	private void RunWorld() {
@@ -230,7 +230,7 @@ public sealed partial class Main : Control {
 					tween.SetEase(Tween.EaseType.Out);
 					tween.TweenProperty(_background, "modulate:a", 1.5, 1.5).Dispose();
 					tween.TweenCallback(Callable.From(() => {
-						Log.Info("进入世界:", CurrentWorldInfo!.JsonString);
+						Log.Debug("进入世界:", CurrentWorldInfo!.JsonString);
 						_world.GetNode<Control>("Main").Show();
 						_currentWorldEvent = CurrentEngine!.GetValue("World").Get("event").As<JsObject>()!;
 						EmitEvent(EventType.Ready);
@@ -284,7 +284,7 @@ public sealed partial class Main : Control {
 			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
 			constraint?.Reset(Utils.Tcs.Token);
 
-			CurrentEngine.SetValue("print", new Action<string[]>(Log.Debug))
+			CurrentEngine.SetValue("print", Log.Info)
 				.SetValue("setTimeout", SetTimeout)
 				.SetValue("setInterval", SetInterval)
 				.SetValue("clearTimeout",
@@ -383,8 +383,7 @@ public sealed partial class Main : Control {
 				JsValue.FromObject(CurrentEngine,
 					(TextType type, string colorHex) => _world.SetTextFontColor(type, colorHex)));
 
-			currentWorld.FastSetProperty("print",
-				new PropertyDescriptor(JsValue.FromObject(CurrentEngine, new Action<string[]>(Log.Debug)), true, false, true));
+			currentWorld.Set("print", CurrentEngine.GetValue("print"));
 			currentWorld.Set("getSaveValue",
 				JsValue.FromObject(CurrentEngine,
 					(string section, string key, JsValue? defaultValue = null) => {
@@ -508,7 +507,7 @@ public sealed partial class Main : Control {
 
 	private void ExitWorld(int exitCode = 0) {
 		this.SyncSend(_ => {
-			Log.Info("退出世界:", exitCode.ToString(), CurrentWorldInfo?.JsonString ?? string.Empty);
+			Log.Debug("退出世界:", exitCode.ToString(), CurrentWorldInfo?.JsonString ?? string.Empty);
 			EmitEvent(EventType.Exit, exitCode);
 			CurrentEngine?.Dispose();
 			CurrentEngine = null;
