@@ -133,8 +133,7 @@ public sealed partial class Main : Control {
 				return;
 			}
 
-			Log.Debug(e.ToString());
-			ExitWorld(1);
+			CatchExceptions(e);
 		}
 	}
 
@@ -221,32 +220,29 @@ public sealed partial class Main : Control {
 	}
 
 	private void RunWorld() {
-		try {
-			InitWorld(); 
-			Task.Run(() => {
-				InitEngine();
-				this.SyncPost(_ => {
-					using var tween = _world.CreateTween();
-					tween.SetEase(Tween.EaseType.Out);
-					tween.TweenProperty(_background, "modulate:a", 1.5, 1.5).Dispose();
-					tween.TweenCallback(Callable.From(() => {
-						Log.Debug("进入世界:", CurrentWorldInfo!.JsonString);
-						_world.GetNode<Control>("Main").Show();
-						_currentWorldEvent = CurrentEngine!.GetValue("World").Get("event").As<JsObject>()!;
-						EmitEvent(EventType.Ready);
-						_currentWorld = (JsObject)CurrentEngine.GetValue("World");
-					})).Dispose();
-				});
-				CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
+		InitWorld();
+		Task.Run(() => {
+			InitEngine();
+			this.SyncPost(_ => {
+				using var tween = _world.CreateTween();
+				tween.SetEase(Tween.EaseType.Out);
+				tween.TweenProperty(_background, "modulate:a", 1.5, 1.5);
+				tween.TweenCallback(Callable.From(() => {
+					if (CurrentWorldInfo == null) return;
+					Log.Debug("进入世界:", CurrentWorldInfo.JsonString);
+					_world.GetNode<Control>("Main").Show();
+					_currentWorldEvent = CurrentEngine!.GetValue("World").Get("event").As<JsObject>()!;
+					EmitEvent(EventType.Ready);
+					_currentWorld = (JsObject)CurrentEngine.GetValue("World");
+				}));
 			});
-		} catch (JavaScriptException e) {
-			Log.Error(
-				$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
-			ExitWorld(1);
-		} catch (Exception e) {
-			Log.Error(e.ToString());
-			ExitWorld(1);
-		}
+
+			try {
+				CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
+			} catch (Exception e) {
+				CatchExceptions(e);
+			}
+		});
 	}
 
 	private void InitWorld() {
@@ -505,7 +501,7 @@ public sealed partial class Main : Control {
 		_background.GetNode<TextureRect>("TextureRect").Texture = null;
 	}
 
-	private void ExitWorld(int exitCode = 0) {
+	public void ExitWorld(int exitCode = 0) {
 		this.SyncSend(_ => {
 			Log.Debug("退出世界:", exitCode.ToString(), CurrentWorldInfo?.JsonString ?? string.Empty);
 			EmitEvent(EventType.Exit, exitCode);
@@ -520,6 +516,17 @@ public sealed partial class Main : Control {
 			_home.Show();
 			_world.Hide();
 		});
+	}
+
+	public static void CatchExceptions(Exception exception) {
+		string str;
+		if (exception is JavaScriptException javaScriptException) {
+			str = $"{javaScriptException.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, javaScriptException.JavaScriptStackTrace ?? string.Empty)}";
+		} else {
+			str = exception.ToString();
+		}
+
+		Log.Error(str);
 	}
 
 	public static void OnMetaClickedEventHandler(Variant meta, int index) {

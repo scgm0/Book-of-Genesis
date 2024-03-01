@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Jint;
 using Jint.Native;
@@ -33,8 +34,11 @@ public sealed class AudioPlayer {
 		_player.SyncSend(_ => {
 			Utils.Tree.Root.AddChild(_player);
 			_player.Finished += () => {
-				if (FinishedCallback is Function function) {
+				if (FinishedCallback is not Function function) return;
+				try {
 					function.Call(thisObj: JsValue.FromObject(Main.CurrentEngine!, this), []);
+				} catch (Exception e) {
+					Main.CatchExceptions(e);
 				}
 			};
 			Utils.AudioPlayerCache.Add(this);

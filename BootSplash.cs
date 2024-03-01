@@ -20,6 +20,7 @@ public partial class BootSplash : Control {
 			instancedScene.Visible = false;
 			AddSibling(instancedScene);
 			Utils.Tree.Root.MoveChild(instancedScene, -2);
+			Utils.Tree.CurrentScene = instancedScene;
 		}));
 		tween.TweenCallback(Callable.From(() => { instancedScene!.Visible = true; })).SetDelay(0.05);
 		tween.Parallel().TweenProperty(this, "modulate:a", 0, 0.5);
