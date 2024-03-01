@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+// ReSharper disable UnusedMember.Global
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
 namespace 创世记;
 
@@ -8,14 +10,15 @@ public static partial class Log {
 	public sealed partial class LogWindow : Window {
 		static private LogWindow? _instance;
 
-		internal static void Launch() {
+		internal static void Launch(bool show = true) {
 			if (_instance != null) {
-				_instance.Visible = true;
+				_instance.PopupCenteredRatio(0.85f);
 				_instance.ProcessMode = ProcessModeEnum.Always;
 				return;
 			}
 
 			_instance = CreateInstance();
+			_instance.Visible = show;
 
 			foreach (var logData in LogList) {
 				TryAddItem(logData);
@@ -35,9 +38,12 @@ public static partial class Log {
 			_instance._tree.SetSelected(item, 3);
 		}
 
-		internal static TreeItem? TryAddItem(LogData logData) {
-			if (_instance is null) return null;
-			lock (_instance) {
+		internal static TreeItem TryAddItem(LogData logData) {
+			if (_instance is null) {
+				Launch(false);
+			}
+
+			lock (_instance!) {
 				var logDataMap = _instance._logDataMap;
 				var treeItemMap = _instance._treeItemMap;
 				var tree = _instance._tree;
@@ -74,7 +80,7 @@ public static partial class Log {
 			}
 		}
 
-		internal static void UpdateTreeItem(LogData logData, TreeItem treeItem) {
+		static private void UpdateTreeItem(LogData logData, TreeItem treeItem) {
 			treeItem.SetText(0, logData.Time);
 			treeItem.SetText(1, logData.WorldInfo?.Name ?? string.Empty);
 			treeItem.SetText(2, logData.Severity.ToString());
@@ -109,15 +115,9 @@ public static partial class Log {
 			textEdit.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
 
 			var instance = new LogWindow(tree, textEdit) {
-				AlwaysOnTop = false,
-				InitialPosition = WindowInitialPosition.CenterScreenWithMouseFocus,
-				Mode = ModeEnum.Windowed,
 				WrapControls = true,
-				Visible = true,
-				ContentScaleMode = ContentScaleModeEnum.CanvasItems,
 				Title = "创世记 日志",
-				ProcessMode = ProcessModeEnum.Always,
-				Size = new Vector2I(800, 600)
+				Transparent = true
 			};
 			{
 				var panelContainer = new PanelContainer {
@@ -216,13 +216,12 @@ public static partial class Log {
 			_rootTreeItem = _tree.CreateItem();
 		}
 
-		public override void _Notification(int what) {
-			if (what == NotificationWMCloseRequest) {
-				Visible = false;
-				ProcessMode = ProcessModeEnum.Disabled;
-			}
+		public LogWindow() { }
 
-			base._Notification(what);
+		public override void _Notification(int what) {
+			if (what != NotificationWMCloseRequest) return;
+			Hide();
+			ProcessMode = ProcessModeEnum.Disabled;
 		}
 	}
 }
