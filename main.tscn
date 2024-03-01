@@ -34,7 +34,6 @@ font_size = 12
 font_color = Color(1, 1, 1, 0.623529)
 
 [sub_resource type="LabelSettings" id="LabelSettings_10wbn"]
-font_size = 12
 font_color = Color(1, 1, 1, 0.623529)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7wo5i"]
@@ -204,6 +203,17 @@ grow_vertical = 0
 text = "dotnet: version"
 label_settings = SubResource("LabelSettings_10wbn")
 vertical_alignment = 1
+
+[node name="LogButton" type="Button" parent="PanelContainer/Home"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 85.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 25
+text = "日志"
+flat = true
 
 [node name="World" type="Control" parent="."]
 unique_name_in_owner = true

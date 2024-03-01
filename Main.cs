@@ -30,6 +30,7 @@ public sealed partial class Main : Control {
 	[GetNode("%ChooseWorld")] private Control _chooseWorld;
 	[GetNode("%ReadyBar")] private Control _readyBar;
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
+	[GetNode("%LogButton")] private Button _logButton;
 	[GetNode("%WorldsPathHint")] private LinkButton _worldsPathHint;
 	[GetNode("%Background")] private Control _background;
 	[GetNode("%Background/ColorRect")] private ColorRect _backgroundColorRect;
@@ -73,6 +74,7 @@ public sealed partial class Main : Control {
 
 		_chooseWorldButton.Pressed += ChooseWorld;
 		_templateWorldButton.Pressed += ChooseTemplate;
+		_logButton.Pressed += Log.ShowWindow;
 		_back.Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
@@ -255,6 +257,7 @@ public sealed partial class Main : Control {
 
 		_world.SetTitle($"{CurrentWorldInfo!.Name}-{CurrentWorldInfo.Version}");
 		_world.GetNode<Button>("%Encrypt").Disabled = CurrentWorldInfo.IsEncrypt;
+		_world.GetNode<Button>("%Log").Pressed += Log.ShowWindow;
 		_world.GetNode<Button>("%Exit").Pressed +=
 			() => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_world.GetNode<Button>("%Encrypt").Pressed += () => {
