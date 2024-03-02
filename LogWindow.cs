@@ -7,12 +7,12 @@ using Godot;
 namespace 创世记;
 
 public static partial class Log {
-	public sealed partial class LogWindow : Window {
+	public sealed partial class LogWindow : ControlWindow {
 		static private LogWindow? _instance;
 
 		internal static void Launch(bool show = true) {
 			if (_instance != null) {
-				_instance.PopupCenteredRatio(0.85f);
+				_instance.Show();
 				_instance.ProcessMode = ProcessModeEnum.Always;
 				return;
 			}
@@ -25,7 +25,7 @@ public static partial class Log {
 			}
 
 			Utils.Tree.Root.CallDeferred(Node.MethodName.AddChild, _instance);
-			Utils.Tree.Root.CallDeferred(Node.MethodName.MoveChild, _instance, 0);
+			// Utils.Tree.Root.CallDeferred(Node.MethodName.MoveChild, _instance, 0);
 		}
 
 		internal static void ScrollLog(LogData data) {
@@ -104,8 +104,8 @@ public static partial class Log {
 
 		static private LogWindow CreateInstance() {
 			var tree = new Tree {
-				SizeFlagsHorizontal = Control.SizeFlags.Fill,
-				SizeFlagsVertical = Control.SizeFlags.Fill,
+				SizeFlagsHorizontal = SizeFlags.Fill,
+				SizeFlagsVertical = SizeFlags.Fill,
 				SelectMode = Tree.SelectModeEnum.Row,
 				Columns = 4,
 				ColumnTitlesVisible = true,
@@ -115,14 +115,13 @@ public static partial class Log {
 			textEdit.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
 
 			var instance = new LogWindow(tree, textEdit) {
-				WrapControls = true,
 				Title = "创世记 日志",
-				Transparent = true
+				CustomMinimumSize = new Vector2(800, 600)
 			};
 			{
 				var panelContainer = new PanelContainer {
-					SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-					SizeFlagsVertical = Control.SizeFlags.ExpandFill
+					SizeFlagsHorizontal = SizeFlags.ExpandFill,
+					SizeFlagsVertical = SizeFlags.ExpandFill
 				};
 				{
 					var marginContainer = new MarginContainer();
@@ -139,29 +138,29 @@ public static partial class Log {
 							var toolbar = new HBoxContainer();
 							{
 								var spacer = new Control {
-									SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+									SizeFlagsHorizontal = SizeFlags.ExpandFill
 								};
 
-								var gcButton = new Button {
+								var openButton = new Button {
 									Text = "打开日志文件"
 								};
 
-								gcButton.Pressed += () => OS.ShellOpen(ProjectSettings.GlobalizePath(ProjectSettings.GetSetting("debug/file_logging/log_path").ToString()));
+								openButton.Pressed += () => OS.ShellOpen("file://" + ProjectSettings.GlobalizePath(ProjectSettings.GetSetting("debug/file_logging/log_path").ToString()));
 
 								toolbar.AddChild(spacer);
-								toolbar.AddChild(gcButton);
+								toolbar.AddChild(openButton);
 							}
 							vBox.AddChild(toolbar);
 						}
 						{
 							var hSeparator = new HSeparator {
-								SizeFlagsHorizontal = Control.SizeFlags.ExpandFill
+								SizeFlagsHorizontal = SizeFlags.ExpandFill
 							};
 							vBox.AddChild(hSeparator);
 						}
 						{
 							var vSplitContainer = new VSplitContainer {
-								SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+								SizeFlagsVertical = SizeFlags.ExpandFill,
 								SplitOffset = 350
 							};
 							{
@@ -199,7 +198,7 @@ public static partial class Log {
 				}
 
 				instance.AddChild(panelContainer);
-				panelContainer.SetAnchorsPreset(Control.LayoutPreset.FullRect);
+				panelContainer.SetAnchorsPreset(LayoutPreset.FullRect);
 			}
 			return instance;
 		}
