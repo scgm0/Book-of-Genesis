@@ -22,7 +22,7 @@ public static partial class Log {
 		Utils.Tree.Root.SyncPost(_ => {
 			LogWindow.TryAddItem(data);
 			if (data.Severity != Severity.Error) return;
-			ShowWindow();
+			LogWindow.ToggleVisible(true);
 			LogWindow.ScrollLog(data);
 		});
 		if (LogSeverity > data.Severity) return;
@@ -49,10 +49,6 @@ public static partial class Log {
 		ArgumentNullException.ThrowIfNull(m);
 		var data = new LogData(m, s, DateTime.Now.ToString("MM-dd HH:mm:ss.fff"), Main.CurrentWorldInfo);
 		_log(data);
-	}
-
-	public static void ShowWindow() {
-		LogWindow.Launch();
 	}
 
 	public static void Debug(params string[] m) {

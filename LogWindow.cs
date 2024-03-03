@@ -10,22 +10,46 @@ public static partial class Log {
 	public sealed partial class LogWindow : ControlWindow {
 		static private LogWindow? _instance;
 
-		internal static void Launch(bool show = true) {
-			if (_instance != null) {
-				_instance.Show();
-				_instance.ProcessMode = ProcessModeEnum.Always;
-				return;
+		static private readonly Dictionary<string, Texture2D> LogSeverityIcons = new() {
+			{ "Debug", GD.Load<Texture2D>("res://Assets/Debug.svg") },
+			{ "Info", GD.Load<Texture2D>("res://Assets/Info.svg") },
+			{ "Warn", GD.Load<Texture2D>("res://Assets/Warn.svg") },
+			{ "Error", GD.Load<Texture2D>("res://Assets/Error.svg") }
+		};
+
+		public static void ToggleVisible() => ToggleVisible(null);
+
+		public static void ToggleVisible(bool? visible) {
+			if (_instance is null) {
+				Launch();
 			}
 
+			visible ??= !_instance!.Visible;
+
+			if (!(bool)visible) {
+				_instance!.Hide();
+				_instance.ProcessMode = ProcessModeEnum.Disabled;
+			} else {
+				_instance!.Show();
+				_instance.ProcessMode = ProcessModeEnum.Always;
+			}
+		}
+
+		internal static void Launch() {
+			if (_instance != null) return;
+
 			_instance = CreateInstance();
-			_instance.Visible = show;
+			_instance.Visible = false;
 
 			foreach (var logData in LogList) {
 				TryAddItem(logData);
 			}
 
-			Utils.Tree.Root.CallDeferred(Node.MethodName.AddChild, _instance);
-			// Utils.Tree.Root.CallDeferred(Node.MethodName.MoveChild, _instance, 0);
+			var canvas = new CanvasLayer();
+			canvas.Layer = 50;
+			canvas.AddChild(_instance);
+			Utils.Tree.Root.AddChild(canvas);
+			Utils.Tree.Root.MoveChild(canvas, 0);
 		}
 
 		internal static void ScrollLog(LogData data) {
@@ -40,7 +64,7 @@ public static partial class Log {
 
 		internal static TreeItem TryAddItem(LogData logData) {
 			if (_instance is null) {
-				Launch(false);
+				Launch();
 			}
 
 			lock (_instance!) {
@@ -57,6 +81,8 @@ public static partial class Log {
 					treeItem.SetCustomColor(1, Colors.White);
 					treeItem.SetCustomColor(2, Colors.White);
 					treeItem.SetCustomColor(3, Colors.White);
+
+					treeItem.SetIconMaxWidth(2, 24);
 
 					logDataMap.Add(logData, treeItem);
 					treeItemMap.Add(treeItem, logData);
@@ -83,20 +109,23 @@ public static partial class Log {
 		static private void UpdateTreeItem(LogData logData, TreeItem treeItem) {
 			treeItem.SetText(0, logData.Time);
 			treeItem.SetText(1, logData.WorldInfo?.Name ?? string.Empty);
-			treeItem.SetText(2, logData.Severity.ToString());
 			treeItem.SetText(3, logData.Message.Replace("\n", string.Empty));
 			switch (logData.Severity) {
 				case Severity.Debug:
-					treeItem.SetCustomColor(2, Colors.Gray);
+					treeItem.SetIcon(2, LogSeverityIcons["Debug"]);
+					treeItem.SetIconModulate(2, Colors.Gray);
 					break;
 				case Severity.Info:
-					treeItem.SetCustomColor(2, Colors.White);
+					treeItem.SetIcon(2, LogSeverityIcons["Info"]);
+					treeItem.SetIconModulate(2, Colors.White);
 					break;
 				case Severity.Warn:
-					treeItem.SetCustomColor(2, Colors.Orange);
+					treeItem.SetIcon(2, LogSeverityIcons["Warn"]);
+					treeItem.SetIconModulate(2, Colors.Orange);
 					break;
 				case Severity.Error:
-					treeItem.SetCustomColor(2, Colors.Red);
+					treeItem.SetIcon(2, LogSeverityIcons["Error"]);
+					treeItem.SetIconModulate(2, Colors.Red);
 					break;
 				default: throw new ArgumentOutOfRangeException();
 			}
@@ -116,7 +145,8 @@ public static partial class Log {
 
 			var instance = new LogWindow(tree, textEdit) {
 				Title = "创世记 日志",
-				CustomMinimumSize = new Vector2(800, 600)
+				Size = new Vector2(800, 580),
+				CustomMinimumSize = new Vector2(282, 316),
 			};
 			{
 				var panelContainer = new PanelContainer {
@@ -167,11 +197,11 @@ public static partial class Log {
 								tree.SetColumnTitle(0, "日期");
 								tree.SetColumnTitle(1, "世界");
 								tree.SetColumnTitle(2, "级别");
-								tree.SetColumnTitle(3, "消息");
+								tree.SetColumnTitle(3, "内容");
 
 								tree.SetColumnExpandRatio(0, 2);
 								tree.SetColumnExpandRatio(1, 1);
-								tree.SetColumnExpandRatio(2, 1);
+								tree.SetColumnExpandRatio(2, 0);
 								tree.SetColumnExpandRatio(3, 8);
 
 								tree.SetColumnClipContent(0, true);
@@ -183,7 +213,7 @@ public static partial class Log {
 									var item = tree.GetSelected();
 									if (!instance._treeItemMap.TryGetValue(item, out var logData)) return;
 									textEdit.Text = logData.LogText;
-									textEdit.AddThemeColorOverride("font_readonly_color", item.GetCustomColor(2));
+									textEdit.AddThemeColorOverride("font_readonly_color", item.GetIconModulate(2));
 								};
 
 								vSplitContainer.AddChild(tree);
@@ -213,14 +243,14 @@ public static partial class Log {
 			_tree = tree;
 			_textEdit = textEdit;
 			_rootTreeItem = _tree.CreateItem();
+			AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
 		}
 
 		public LogWindow() { }
 
 		public override void _Notification(int what) {
 			if (what != NotificationWMCloseRequest) return;
-			Hide();
-			ProcessMode = ProcessModeEnum.Disabled;
+			ToggleVisible(false);
 		}
 	}
 }

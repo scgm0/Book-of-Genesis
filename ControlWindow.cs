@@ -30,22 +30,20 @@ public partial class ControlWindow : PanelContainer {
 	private Panel _decorations;
 	private MarginContainer _tabBar;
 	private Label _title;
+	private Vector2 _relativePos;
+	private Vector2? _defaultSize;
 	private bool _dragging;
 	private bool _resizable;
 	[Export] public string Title { get => _title.Text; set => _title.Text = value; }
 
 	public ControlWindow() {
-		AddThemeStyleboxOverride("panel",
-			new StyleBoxFlat {
-				BgColor = Color.Color8(77, 77, 77)
-			});
-
 		var defaultTheme = ThemeDB.GetDefaultTheme();
 
 		_decorations = new Panel {
 			Name = "Decorations",
 			ShowBehindParent = true
 		};
+
 		_decorations.AddThemeStyleboxOverride("panel", _decorationsStyle);
 
 		{
@@ -56,6 +54,7 @@ public partial class ControlWindow : PanelContainer {
 				GrowHorizontal = GrowDirection.Begin,
 				FocusMode = FocusModeEnum.Click
 			};
+
 			_tabBar.GuiInput += OnTabBarGuiInput;
 			_tabBar.AddThemeConstantOverride("margin_right", 18);
 			_tabBar.AddThemeConstantOverride("margin_left", 18);
@@ -83,7 +82,8 @@ public partial class ControlWindow : PanelContainer {
 						OffsetRight = 18,
 						OffsetBottom = 9
 					};
-					closeButton.Pressed += OnCloseButtonPressed;
+
+					closeButton.Pressed += () => Notification((int)NotificationWMCloseRequest, true);
 					_title.AddChild(closeButton);
 				}
 
@@ -96,6 +96,7 @@ public partial class ControlWindow : PanelContainer {
 		var resizeMargin = new MarginContainer {
 			Name = "ResizeMargin",
 		};
+
 		resizeMargin.AddThemeConstantOverride("margin_left", -8);
 		resizeMargin.AddThemeConstantOverride("margin_top", -32);
 		resizeMargin.AddThemeConstantOverride("margin_right", -8);
@@ -161,6 +162,7 @@ public partial class ControlWindow : PanelContainer {
 				MouseDefaultCursorShape = CursorShape.Bdiagsize,
 				FocusMode = FocusModeEnum.Click
 			};
+
 			resizeLeft.GuiInput += @event => OnResized(@event, ResizeDirection.Left);
 			resizeTop.GuiInput += @event => OnResized(@event, ResizeDirection.Top);
 			resizeRight.GuiInput += @event => OnResized(@event, ResizeDirection.Right);
@@ -182,7 +184,12 @@ public partial class ControlWindow : PanelContainer {
 
 		AddChild(_decorations, false, InternalMode.Front);
 		AddChild(resizeMargin, false, InternalMode.Front);
-		
+
+		AddThemeStyleboxOverride("panel",
+			new StyleBoxFlat {
+				BgColor = Color.Color8(77, 77, 77)
+			});
+
 		AnchorLeft = 0.5f;
 		AnchorTop = 0.5f;
 		AnchorRight = 0.5f;
@@ -190,18 +197,18 @@ public partial class ControlWindow : PanelContainer {
 		GrowHorizontal = GrowDirection.Both;
 		GrowVertical = GrowDirection.Both;
 		ChildEnteredTree += node => {
-			if (node is Control control) {
-				control.SizeFlagsVertical = SizeFlags.Fill;
-			}
+			if (node is not Control control) return;
+			control.SizeFlagsHorizontal = SizeFlags.Fill;
+			control.SizeFlagsVertical = SizeFlags.Fill;
 		};
 		VisibilityChanged += () => {
+			_defaultSize ??= Size;
+			OffsetLeft = -_defaultSize.Value.X / 2;
+			OffsetTop = -_defaultSize.Value.Y / 2;
+			OffsetRight = _defaultSize.Value.X / 2;
+			OffsetBottom = _defaultSize.Value.Y / 2;
 
-			OffsetLeft = (int)(-CustomMinimumSize.X / 2);
-			OffsetTop = (int)(-CustomMinimumSize.Y / 2);
-			OffsetRight = (int)(CustomMinimumSize.X / 2);
-			OffsetBottom = (int)(CustomMinimumSize.Y / 2);
-
-			Position = Position with { Y = Position.Y + GetTabBarHeight() / 2 };
+			Position = Position with { Y = Position.Y + (GetTabBarHeight() - GetDecorationsWidth()) / 2 };
 		};
 	}
 
@@ -232,9 +239,10 @@ public partial class ControlWindow : PanelContainer {
 
 	private void OnTabBarGuiInput(InputEvent @event) {
 		switch (@event) {
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true }:
+			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
 				_dragging = true;
 				_tabBar.MouseDefaultCursorShape = CursorShape.Drag;
+				_relativePos = mouseButton.Position;
 				break;
 			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
 				_dragging = false;
@@ -242,7 +250,7 @@ public partial class ControlWindow : PanelContainer {
 				break;
 			case InputEventMouseMotion motion:
 				if (_dragging) {
-					Position += motion.Relative;
+					Position += motion.Position - _relativePos;
 				}
 
 				break;
@@ -251,20 +259,19 @@ public partial class ControlWindow : PanelContainer {
 
 	private void OnResized(InputEvent @event, ResizeDirection resizeDirection) {
 		switch (@event) {
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true }:
+			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
 				_resizable = true;
+				_relativePos = mouseButton.Position;
 				break;
 			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
 				_resizable = false;
 				break;
 			case InputEventMouseMotion motion:
 				if (_resizable) {
-					ResizeWindow(resizeDirection, motion.Relative);
+					ResizeWindow(resizeDirection, motion.Position - _relativePos);
 				}
 
 				break;
 		}
 	}
-
-	private void OnCloseButtonPressed() => Hide();
 }
