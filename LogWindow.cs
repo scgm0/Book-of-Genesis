@@ -175,7 +175,14 @@ public static partial class Log {
 									Text = "打开日志文件"
 								};
 
-								openButton.Pressed += () => OS.ShellOpen("file://" + ProjectSettings.GlobalizePath(ProjectSettings.GetSetting("debug/file_logging/log_path").ToString()));
+								openButton.Pressed += () => {
+#if GODOT_ANDROID
+									var path = Utils.LogsPath;
+#else
+									var path = ProjectSettings.GlobalizePath(Utils.LogsPath);
+#endif
+									OS.ShellOpen(path);
+								};
 
 								toolbar.AddChild(spacer);
 								toolbar.AddChild(openButton);

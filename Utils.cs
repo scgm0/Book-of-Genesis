@@ -43,6 +43,8 @@ public static partial class Utils {
 		"user://TsGen";
 #endif
 
+	public static readonly string LogsPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
+
 	public static void ExportEncryptionWorldPck(WorldInfo worldInfo) {
 		Log.Debug("加密开始:", worldInfo.JsonString);
 		var packer = new PckPacker();
