@@ -15,17 +15,7 @@ public partial class ControlWindow : PanelContainer {
 		Bottom = 1 << 4
 	}
 
-	private StyleBoxFlat _decorationsStyle = new() {
-		BgColor = Color.Color8(56, 56, 56),
-		CornerRadiusTopLeft = 3,
-		CornerRadiusTopRight = 3,
-		CornerRadiusBottomLeft = 3,
-		CornerRadiusBottomRight = 3,
-		ExpandMarginLeft = 8,
-		ExpandMarginTop = 32,
-		ExpandMarginRight = 8,
-		ExpandMarginBottom = 8
-	};
+	private StyleBoxFlat _decorationsStyle;
 
 	private Panel _decorations;
 	private MarginContainer _tabBar;
@@ -35,9 +25,22 @@ public partial class ControlWindow : PanelContainer {
 	private bool _dragging;
 	private bool _resizable;
 	[Export] public string Title { get => _title.Text; set => _title.Text = value; }
+	[Export] public int DecorationsWidth = 8;
+	[Export] public int TabBarHeight = 24;
 
 	public ControlWindow() {
 		var defaultTheme = ThemeDB.GetDefaultTheme();
+		_decorationsStyle = new StyleBoxFlat {
+			BgColor = Color.Color8(56, 56, 56),
+			CornerRadiusTopLeft = 3,
+			CornerRadiusTopRight = 3,
+			CornerRadiusBottomLeft = 3,
+			CornerRadiusBottomRight = 3,
+			ExpandMarginLeft = DecorationsWidth,
+			ExpandMarginTop = TabBarHeight + DecorationsWidth,
+			ExpandMarginRight = DecorationsWidth,
+			ExpandMarginBottom = DecorationsWidth
+		};
 
 		_decorations = new Panel {
 			Name = "Decorations",
@@ -97,42 +100,42 @@ public partial class ControlWindow : PanelContainer {
 			Name = "ResizeMargin",
 		};
 
-		resizeMargin.AddThemeConstantOverride("margin_left", -8);
-		resizeMargin.AddThemeConstantOverride("margin_top", -32);
-		resizeMargin.AddThemeConstantOverride("margin_right", -8);
-		resizeMargin.AddThemeConstantOverride("margin_bottom", -8);
+		resizeMargin.AddThemeConstantOverride("margin_left", -DecorationsWidth - 2);
+		resizeMargin.AddThemeConstantOverride("margin_top", -TabBarHeight - DecorationsWidth - 2);
+		resizeMargin.AddThemeConstantOverride("margin_right", -DecorationsWidth - 2);
+		resizeMargin.AddThemeConstantOverride("margin_bottom", -DecorationsWidth - 2);
 		{
 			var resizeLeft = new Control {
 				Name = "ResizeLeft",
-				CustomMinimumSize = new Vector2(8, 0),
+				CustomMinimumSize = new Vector2(DecorationsWidth + 2, 0),
 				SizeFlagsHorizontal = SizeFlags.ShrinkBegin,
 				MouseDefaultCursorShape = CursorShape.Hsize,
 				FocusMode = FocusModeEnum.Click
 			};
 			var resizeTop = new Control {
 				Name = "ResizeTop",
-				CustomMinimumSize = new Vector2(0, 8),
+				CustomMinimumSize = new Vector2(0, DecorationsWidth + 2),
 				SizeFlagsVertical = SizeFlags.ShrinkBegin,
 				MouseDefaultCursorShape = CursorShape.Vsize,
 				FocusMode = FocusModeEnum.Click
 			};
 			var resizeRight = new Control {
 				Name = "ResizeRight",
-				CustomMinimumSize = new Vector2(8, 0),
+				CustomMinimumSize = new Vector2(DecorationsWidth + 2, 0),
 				SizeFlagsHorizontal = SizeFlags.ShrinkEnd,
 				MouseDefaultCursorShape = CursorShape.Hsize,
 				FocusMode = FocusModeEnum.Click
 			};
 			var resizeBottom = new Control {
 				Name = "ResizeBottom",
-				CustomMinimumSize = new Vector2(0, 8),
+				CustomMinimumSize = new Vector2(0, DecorationsWidth + 2),
 				SizeFlagsVertical = SizeFlags.ShrinkEnd,
 				MouseDefaultCursorShape = CursorShape.Vsize,
 				FocusMode = FocusModeEnum.Click
 			};
 			var resizeLeftTop = new Control {
 				Name = "ResizeLeftTop",
-				CustomMinimumSize = new Vector2(8, 8),
+				CustomMinimumSize = new Vector2(DecorationsWidth + 2, DecorationsWidth + 2),
 				SizeFlagsHorizontal = SizeFlags.ShrinkBegin,
 				SizeFlagsVertical = SizeFlags.ShrinkBegin,
 				MouseDefaultCursorShape = CursorShape.Fdiagsize,
@@ -140,7 +143,7 @@ public partial class ControlWindow : PanelContainer {
 			};
 			var resizeRightTop = new Control {
 				Name = "ResizeRightTop",
-				CustomMinimumSize = new Vector2(8, 8),
+				CustomMinimumSize = new Vector2(DecorationsWidth + 2, DecorationsWidth + 2),
 				SizeFlagsHorizontal = SizeFlags.ShrinkEnd,
 				SizeFlagsVertical = SizeFlags.ShrinkBegin,
 				MouseDefaultCursorShape = CursorShape.Bdiagsize,
@@ -148,7 +151,7 @@ public partial class ControlWindow : PanelContainer {
 			};
 			var resizeRightBottom = new Control {
 				Name = "ResizeRightBottom",
-				CustomMinimumSize = new Vector2(8, 8),
+				CustomMinimumSize = new Vector2(DecorationsWidth + 2, DecorationsWidth + 2),
 				SizeFlagsHorizontal = SizeFlags.ShrinkEnd,
 				SizeFlagsVertical = SizeFlags.ShrinkEnd,
 				MouseDefaultCursorShape = CursorShape.Fdiagsize,
@@ -156,7 +159,7 @@ public partial class ControlWindow : PanelContainer {
 			};
 			var resizeLeftBottom = new Control {
 				Name = "ResizeLeftBottom",
-				CustomMinimumSize = new Vector2(8, 8),
+				CustomMinimumSize = new Vector2(DecorationsWidth + 2, DecorationsWidth + 2),
 				SizeFlagsHorizontal = SizeFlags.ShrinkBegin,
 				SizeFlagsVertical = SizeFlags.ShrinkEnd,
 				MouseDefaultCursorShape = CursorShape.Bdiagsize,
@@ -208,12 +211,9 @@ public partial class ControlWindow : PanelContainer {
 			OffsetRight = _defaultSize.Value.X / 2;
 			OffsetBottom = _defaultSize.Value.Y / 2;
 
-			Position = Position with { Y = Position.Y + (GetTabBarHeight() - GetDecorationsWidth()) / 2 };
+			Position = Position with { Y = Position.Y + TabBarHeight / 2.0f };
 		};
 	}
-
-	public float GetTabBarHeight() => _decorationsStyle.ExpandMarginTop;
-	public float GetDecorationsWidth() => _decorationsStyle.ExpandMarginRight;
 
 	private void ResizeWindow(ResizeDirection resizeDirection, Vector2 relative) {
 		if ((resizeDirection & ResizeDirection.Left) == ResizeDirection.Left) {

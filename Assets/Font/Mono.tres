@@ -1,0 +1,9 @@
+[gd_resource type="FontVariation" load_steps=4 format=3 uid="uid://bkmi4w7p015uk"]
+
+[ext_resource type="FontFile" uid="uid://dkclhj48bxqnw" path="res://Assets/Font/SarasaMonoSC-Regular.ttf" id="1_5eipe"]
+[ext_resource type="FontFile" uid="uid://dfifuxol3m8y5" path="res://Assets/Font/JetBrainsMono-Regular.ttf" id="2_cdcsf"]
+[ext_resource type="SystemFont" uid="uid://02gmthtwdap7" path="res://Assets/Font/SystemFont.tres" id="3_88lxe"]
+
+[resource]
+fallbacks = Array[Font]([ExtResource("1_5eipe"), ExtResource("3_88lxe")])
+base_font = ExtResource("2_cdcsf")

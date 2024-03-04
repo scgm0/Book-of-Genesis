@@ -114,24 +114,29 @@ public static partial class Log {
 				case Severity.Debug:
 					treeItem.SetIcon(2, LogSeverityIcons["Debug"]);
 					treeItem.SetIconModulate(2, Colors.Gray);
+					treeItem.SetCustomColor(3, Colors.Gray);
 					break;
 				case Severity.Info:
 					treeItem.SetIcon(2, LogSeverityIcons["Info"]);
 					treeItem.SetIconModulate(2, Colors.White);
+					treeItem.SetCustomColor(3, Colors.White);
 					break;
 				case Severity.Warn:
 					treeItem.SetIcon(2, LogSeverityIcons["Warn"]);
 					treeItem.SetIconModulate(2, Colors.Orange);
+					treeItem.SetCustomColor(3, Colors.Orange);
 					break;
 				case Severity.Error:
 					treeItem.SetIcon(2, LogSeverityIcons["Error"]);
 					treeItem.SetIconModulate(2, Colors.Red);
+					treeItem.SetCustomColor(3, Colors.Red);
 					break;
 				default: throw new ArgumentOutOfRangeException();
 			}
 		}
 
 		static private LogWindow CreateInstance() {
+			using var monoFont = GD.Load<Font>("res://Assets/Font/Mono.tres");
 			var tree = new Tree {
 				SizeFlagsHorizontal = SizeFlags.Fill,
 				SizeFlagsVertical = SizeFlags.Fill,
@@ -140,7 +145,14 @@ public static partial class Log {
 				ColumnTitlesVisible = true,
 				HideRoot = true
 			};
-			var textEdit = new TextEdit { Editable = false };
+			tree.AddThemeFontOverride("font", monoFont);
+			tree.AddThemeFontOverride("title_button_font", monoFont);
+			var textEdit = new TextEdit {
+				Editable = false,
+				DrawTabs = true,
+				DrawSpaces = true
+			};
+			textEdit.AddThemeFontOverride("font", monoFont);
 			textEdit.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
 
 			var instance = new LogWindow(tree, textEdit) {

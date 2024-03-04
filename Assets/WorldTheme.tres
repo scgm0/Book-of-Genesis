@@ -1,8 +1,9 @@
-[gd_resource type="Theme" load_steps=8 format=3 uid="uid://be0fvf0itb1wb"]
+[gd_resource type="Theme" load_steps=9 format=3 uid="uid://be0fvf0itb1wb"]
 
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_ub4pw"]
 [ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_sxng7"]
 [ext_resource type="FontVariation" uid="uid://dcqk6d3is3us1" path="res://Assets/Font/ItalicsFont.tres" id="3_ajxqa"]
+[ext_resource type="FontVariation" uid="uid://bkmi4w7p015uk" path="res://Assets/Font/Mono.tres" id="4_f2xln"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vemab"]
 resource_local_to_scene = true
@@ -61,4 +62,5 @@ RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("1_ub4pw")
 RichTextLabel/fonts/bold_italics_font = ExtResource("2_sxng7")
 RichTextLabel/fonts/italics_font = ExtResource("3_ajxqa")
+RichTextLabel/fonts/mono_font = ExtResource("4_f2xln")
 RichTextLabel/styles/focus = SubResource("StyleBoxEmpty_6v3t7")
