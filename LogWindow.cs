@@ -32,6 +32,7 @@ public static partial class Log {
 			} else {
 				_instance!.Show();
 				_instance.ProcessMode = ProcessModeEnum.Always;
+				ScrollLog(LogList[^1]);
 			}
 		}
 
@@ -60,6 +61,7 @@ public static partial class Log {
 
 			_instance._tree.ScrollToItem(item);
 			_instance._tree.SetSelected(item, 3);
+			_instance._tree.GrabFocus();
 		}
 
 		internal static TreeItem TryAddItem(LogData logData) {
