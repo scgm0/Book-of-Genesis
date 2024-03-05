@@ -27,6 +27,7 @@ public partial class ControlWindow : PanelContainer {
 	[Export] public string Title { get => _title.Text; set => _title.Text = value; }
 	[Export] public int DecorationsWidth = 8;
 	[Export] public int TabBarHeight = 24;
+	[Export] public int ResizeGripExtra = 2;
 
 	public ControlWindow() {
 		var defaultTheme = ThemeDB.GetDefaultTheme();
@@ -96,46 +97,47 @@ public partial class ControlWindow : PanelContainer {
 			_decorations.AddChild(_tabBar);
 		}
 
+		var resizeGripSize = DecorationsWidth + ResizeGripExtra;
 		var resizeMargin = new MarginContainer {
-			Name = "ResizeMargin",
+			Name = "ResizeMargin"
 		};
 
-		resizeMargin.AddThemeConstantOverride("margin_left", -DecorationsWidth - 2);
-		resizeMargin.AddThemeConstantOverride("margin_top", -TabBarHeight - DecorationsWidth - 2);
-		resizeMargin.AddThemeConstantOverride("margin_right", -DecorationsWidth - 2);
-		resizeMargin.AddThemeConstantOverride("margin_bottom", -DecorationsWidth - 2);
+		resizeMargin.AddThemeConstantOverride("margin_left", -resizeGripSize);
+		resizeMargin.AddThemeConstantOverride("margin_top", -TabBarHeight - resizeGripSize);
+		resizeMargin.AddThemeConstantOverride("margin_right", -resizeGripSize);
+		resizeMargin.AddThemeConstantOverride("margin_bottom", -resizeGripSize);
 		{
 			var resizeLeft = new Control {
 				Name = "ResizeLeft",
-				CustomMinimumSize = new Vector2(DecorationsWidth + 2, 0),
+				CustomMinimumSize = new Vector2(resizeGripSize, 0),
 				SizeFlagsHorizontal = SizeFlags.ShrinkBegin,
 				MouseDefaultCursorShape = CursorShape.Hsize,
 				FocusMode = FocusModeEnum.Click
 			};
 			var resizeTop = new Control {
 				Name = "ResizeTop",
-				CustomMinimumSize = new Vector2(0, DecorationsWidth + 2),
+				CustomMinimumSize = new Vector2(0, resizeGripSize),
 				SizeFlagsVertical = SizeFlags.ShrinkBegin,
 				MouseDefaultCursorShape = CursorShape.Vsize,
 				FocusMode = FocusModeEnum.Click
 			};
 			var resizeRight = new Control {
 				Name = "ResizeRight",
-				CustomMinimumSize = new Vector2(DecorationsWidth + 2, 0),
+				CustomMinimumSize = new Vector2(resizeGripSize, 0),
 				SizeFlagsHorizontal = SizeFlags.ShrinkEnd,
 				MouseDefaultCursorShape = CursorShape.Hsize,
 				FocusMode = FocusModeEnum.Click
 			};
 			var resizeBottom = new Control {
 				Name = "ResizeBottom",
-				CustomMinimumSize = new Vector2(0, DecorationsWidth + 2),
+				CustomMinimumSize = new Vector2(0, resizeGripSize),
 				SizeFlagsVertical = SizeFlags.ShrinkEnd,
 				MouseDefaultCursorShape = CursorShape.Vsize,
 				FocusMode = FocusModeEnum.Click
 			};
 			var resizeLeftTop = new Control {
 				Name = "ResizeLeftTop",
-				CustomMinimumSize = new Vector2(DecorationsWidth + 2, DecorationsWidth + 2),
+				CustomMinimumSize = new Vector2(resizeGripSize, resizeGripSize),
 				SizeFlagsHorizontal = SizeFlags.ShrinkBegin,
 				SizeFlagsVertical = SizeFlags.ShrinkBegin,
 				MouseDefaultCursorShape = CursorShape.Fdiagsize,
@@ -143,7 +145,7 @@ public partial class ControlWindow : PanelContainer {
 			};
 			var resizeRightTop = new Control {
 				Name = "ResizeRightTop",
-				CustomMinimumSize = new Vector2(DecorationsWidth + 2, DecorationsWidth + 2),
+				CustomMinimumSize = new Vector2(resizeGripSize, resizeGripSize),
 				SizeFlagsHorizontal = SizeFlags.ShrinkEnd,
 				SizeFlagsVertical = SizeFlags.ShrinkBegin,
 				MouseDefaultCursorShape = CursorShape.Bdiagsize,
@@ -151,7 +153,7 @@ public partial class ControlWindow : PanelContainer {
 			};
 			var resizeRightBottom = new Control {
 				Name = "ResizeRightBottom",
-				CustomMinimumSize = new Vector2(DecorationsWidth + 2, DecorationsWidth + 2),
+				CustomMinimumSize = new Vector2(resizeGripSize, resizeGripSize),
 				SizeFlagsHorizontal = SizeFlags.ShrinkEnd,
 				SizeFlagsVertical = SizeFlags.ShrinkEnd,
 				MouseDefaultCursorShape = CursorShape.Fdiagsize,
@@ -159,7 +161,7 @@ public partial class ControlWindow : PanelContainer {
 			};
 			var resizeLeftBottom = new Control {
 				Name = "ResizeLeftBottom",
-				CustomMinimumSize = new Vector2(DecorationsWidth + 2, DecorationsWidth + 2),
+				CustomMinimumSize = new Vector2(resizeGripSize, resizeGripSize),
 				SizeFlagsHorizontal = SizeFlags.ShrinkBegin,
 				SizeFlagsVertical = SizeFlags.ShrinkEnd,
 				MouseDefaultCursorShape = CursorShape.Bdiagsize,

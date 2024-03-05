@@ -111,6 +111,7 @@ public static partial class Log {
 		static private void UpdateTreeItem(LogData logData, TreeItem treeItem) {
 			treeItem.SetText(0, logData.Time);
 			treeItem.SetText(1, logData.WorldInfo?.Name ?? string.Empty);
+			treeItem.SetTooltipText(2, logData.Severity.ToString());
 			treeItem.SetText(3, logData.Message.Replace("\n", string.Empty));
 			switch (logData.Severity) {
 				case Severity.Debug:
@@ -159,8 +160,11 @@ public static partial class Log {
 
 			var instance = new LogWindow(tree, textEdit) {
 				Title = "创世记 日志",
+#if GODOT_ANDROID
+				ResizeGripExtra = 8,
+#endif
 				Size = new Vector2(800, 580),
-				CustomMinimumSize = new Vector2(282, 316),
+				CustomMinimumSize = new Vector2(282, 316)
 			};
 			{
 				var panelContainer = new PanelContainer {

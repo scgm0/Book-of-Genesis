@@ -167,11 +167,11 @@ sealed class CustomModuleLoader : IModuleLoader {
 		}
 
 		code = fileName.GetExtension() == "ts" ? ReadTs2Js(fileName, resolved) : FileAccess.GetFileAsString(fileName);
-		RegisterSourceMap(ref code, resolved);
+		RegisterSourceMap(in code, resolved);
 	}
 
 	private string ReadTs2Js(string fileName, ResolvedSpecifier resolved) {
-		var code = "";
+		string code;
 		var cachePath = Utils.TsGenPath.PathJoin(resolved.Key.ReplaceOnce(_worldInfo.Path, $"/{_worldInfo.WorldKey}/"))
 			.SimplifyPath();
 		var jsPath = $"{cachePath}{(_worldInfo.IsEncrypt ? ".encrypt" : "")}.js";
@@ -235,7 +235,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 		tsMetaFile.Dispose();
 	}
 
-	private void RegisterSourceMap(ref string code, ResolvedSpecifier resolved) {
+	private void RegisterSourceMap(in string code, ResolvedSpecifier resolved) {
 		if (!Utils.SourceMapPathRegex().IsMatch(code)) return;
 		var sourceMappingUrl = Utils.SourceMapPathRegex().Match(code).Value;
 		if (sourceMappingUrl.StartsWith("data:application/json;base64,")) {
