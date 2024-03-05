@@ -189,9 +189,9 @@ public static partial class Log {
 
 								openButton.Pressed += () => {
 #if GODOT_ANDROID
-									var path = Utils.LogsPath;
+									var path = Utils.LogPath;
 #else
-									var path = ProjectSettings.GlobalizePath(Utils.LogsPath);
+									var path = ProjectSettings.GlobalizePath(Utils.LogPath);
 #endif
 									OS.ShellOpen(path);
 								};

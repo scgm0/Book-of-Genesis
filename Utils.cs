@@ -20,30 +20,27 @@ public static partial class Utils {
 
 	public static readonly StringName GameVersion = ProjectSettings.GetSetting("application/config/version").AsStringName();
 
-	public static readonly StringName AppName = ProjectSettings.GetSetting("application/config/name").AsStringName();
+	public static readonly StringName GameName = ProjectSettings.GetSetting("application/config/name").AsStringName();
 
-	public static readonly string SavesPath =
 #if GODOT_ANDROID
-		$"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/Saves";
+	public static readonly string GameUserDataPath = $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{GameName}";
+
+	public static readonly string SavesPath = $"{GameUserDataPath}/Saves";
+
+	public static readonly string UserWorldsPath = $"{GameUserDataPath}/Worlds";
+
+	public static readonly string TsGenPath = $"{GameUserDataPath}/TsGen";
 #else
-		"user://Saves";
+	public static readonly string GameUserDataPath = ProjectSettings.GlobalizePath("user://");
+
+	public const string SavesPath = "user://Saves";
+
+	public const string UserWorldsPath = "user://Worlds";
+
+	public const string TsGenPath = "user://TsGen";
 #endif
 
-	public static readonly string UserWorldsPath =
-#if GODOT_ANDROID
-		$"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/Worlds";
-#else
-		"user://Worlds";
-#endif
-
-	public static readonly string TsGenPath =
-#if GODOT_ANDROID
-		$"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{AppName}/TsGen";
-#else
-		"user://TsGen";
-#endif
-
-	public static readonly string LogsPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
+	public static readonly string LogPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
 
 	public static void ExportEncryptionWorldPck(WorldInfo worldInfo) {
 		Log.Debug("加密开始:", worldInfo.JsonString);
@@ -120,7 +117,7 @@ public static partial class Utils {
 		if (v1 == v2) return 0;
 		return -1;
 	}
-	
+
 	public static void SetRichText(RichTextLabel label, string text) {
 		LoadRichTextImg(ref text);
 		label.ParseBbcode(text);
