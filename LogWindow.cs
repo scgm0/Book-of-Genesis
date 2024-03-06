@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using FuzzySharp;
 using Godot;
 // ReSharper disable UnusedMember.Global
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
@@ -53,6 +55,26 @@ public static partial class Log {
 			Utils.Tree.Root.MoveChild(canvas, 0);
 		}
 
+		static private void SortLog() {
+			SortLog(LogList);
+		}
+
+		static private void SortLog(IEnumerable<LogData> logDatas) {
+			_instance!._tree.DeselectAll();
+			_instance._textEdit.Text = "";
+			TreeItem? lastItem = null;
+			foreach (var logData in logDatas) {
+				var treeItem = _instance._logDataMap[logData with { Ratio = 100 }];
+				treeItem.Visible = logData.Ratio > 0;
+				if (lastItem == null) {
+					lastItem = treeItem;
+				} else {
+					treeItem.MoveAfter(lastItem);
+					lastItem = treeItem;
+				}
+			}
+		}
+
 		internal static void ScrollLog(LogData data) {
 			if (_instance is null) return;
 			if (!_instance._logDataMap.TryGetValue(data, out var item)) {
@@ -69,30 +91,28 @@ public static partial class Log {
 				Launch();
 			}
 
-			lock (_instance!) {
-				var logDataMap = _instance._logDataMap;
-				var treeItemMap = _instance._treeItemMap;
-				var tree = _instance._tree;
-				if (!logDataMap.TryGetValue(logData, out var treeItem)) {
-					treeItem = tree.CreateItem(_instance._rootTreeItem);
+			var logDataMap = _instance!._logDataMap;
+			var treeItemMap = _instance._treeItemMap;
+			var tree = _instance._tree;
+			if (!logDataMap.TryGetValue(logData, out var treeItem)) {
+				treeItem = tree.CreateItem(_instance._rootTreeItem);
 
-					treeItem.SetTextAlignment(1, HorizontalAlignment.Center);
-					treeItem.SetTextAlignment(2, HorizontalAlignment.Center);
+				treeItem.SetTextAlignment(1, HorizontalAlignment.Center);
+				treeItem.SetTextAlignment(2, HorizontalAlignment.Center);
 
-					treeItem.SetCustomColor(0, Colors.White);
-					treeItem.SetCustomColor(1, Colors.White);
-					treeItem.SetCustomColor(2, Colors.White);
-					treeItem.SetCustomColor(3, Colors.White);
+				treeItem.SetCustomColor(0, Colors.White);
+				treeItem.SetCustomColor(1, Colors.White);
+				treeItem.SetCustomColor(2, Colors.White);
+				treeItem.SetCustomColor(3, Colors.White);
 
-					treeItem.SetIconMaxWidth(2, 24);
+				treeItem.SetIconMaxWidth(2, 24);
 
-					logDataMap.Add(logData, treeItem);
-					treeItemMap.Add(treeItem, logData);
-				}
-
-				UpdateTreeItem(logData, treeItem);
-				return treeItem;
+				logDataMap.Add(logData, treeItem);
+				treeItemMap.Add(treeItem, logData);
 			}
+
+			UpdateTreeItem(logData, treeItem);
+			return treeItem;
 		}
 
 		internal static void TryRemoveItem(LogData logData) {
@@ -110,7 +130,7 @@ public static partial class Log {
 
 		static private void UpdateTreeItem(LogData logData, TreeItem treeItem) {
 			treeItem.SetText(0, logData.Time);
-			treeItem.SetText(1, logData.WorldInfo?.Name ?? string.Empty);
+			treeItem.SetText(1, logData.WorldName ?? string.Empty);
 			treeItem.SetTooltipText(2, logData.Severity.ToString());
 			treeItem.SetText(3, logData.Message.Replace("\n", string.Empty));
 			switch (logData.Severity) {
@@ -185,14 +205,41 @@ public static partial class Log {
 						{
 							var toolbar = new HBoxContainer();
 							{
-								var spacer = new Control {
-									SizeFlagsHorizontal = SizeFlags.ExpandFill
+								var searchButton = new Button {
+									Text = "搜索"
 								};
-
+								var searchBox = new LineEdit {
+									SizeFlagsHorizontal = SizeFlags.ExpandFill,
+									ClearButtonEnabled = true
+								};
 								var openButton = new Button {
 									Text = "打开日志文件"
 								};
 
+								searchButton.Pressed += () => {
+									var text = searchBox.Text;
+									if (string.IsNullOrEmpty(text)) {
+										SortLog();
+										return;
+									}
+
+									var ratioList = LogList.Select(data => data with { Ratio = Fuzz.WeightedRatio(text, data.Message) })
+										.OrderByDescending(data => data.Ratio)
+										.ToList();
+									SortLog(ratioList);
+									if (ratioList.Count == 0) return;
+									ScrollLog(ratioList[0] with { Ratio = 100 });
+								};
+								searchBox.TextChanged += text => {
+									if (string.IsNullOrEmpty(text)) {
+										SortLog();
+									}
+								};
+								searchBox.VisibilityChanged += () => {
+									if (!instance.Visible) {
+										searchBox.Clear();
+									}
+								};
 								openButton.Pressed += () => {
 #if GODOT_ANDROID
 									var path = Utils.LogPath;
@@ -202,7 +249,8 @@ public static partial class Log {
 									OS.ShellOpen(path);
 								};
 
-								toolbar.AddChild(spacer);
+								toolbar.AddChild(searchButton);
+								toolbar.AddChild(searchBox);
 								toolbar.AddChild(openButton);
 							}
 							vBox.AddChild(toolbar);
@@ -244,7 +292,6 @@ public static partial class Log {
 								vSplitContainer.AddChild(tree);
 								vSplitContainer.AddChild(textEdit);
 							}
-
 							vBox.AddChild(vSplitContainer);
 						}
 						marginContainer.AddChild(vBox);

@@ -4,7 +4,7 @@ using Godot;
 namespace 创世记;
 
 public static partial class Log {
-	public sealed record LogData(string Message, Severity Severity, string Time, WorldInfo? WorldInfo) {
-		public readonly string LogText = $"[{Time}]{(WorldInfo == null ? string.Empty : $"[{WorldInfo.Name}]")}[{Severity}] {Message}";
+	public readonly record struct LogData(string Message, Severity Severity, string Time, string? WorldName, int Ratio = 100) {
+		public readonly string LogText = $"[{Time}]{(WorldName == null ? string.Empty : $"[{WorldName}]")}[{Severity}] {Message}";
 	}
 }
