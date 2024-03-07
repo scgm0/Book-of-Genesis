@@ -227,7 +227,7 @@ public static partial class Log {
 										.OrderByDescending(data => data.Ratio)
 										.ToList();
 									SortLog(ratioList);
-									if (ratioList.Count == 0) return;
+									if (ratioList[0].Ratio <= 0) return;
 									ScrollLog(ratioList[0] with { Ratio = 100 });
 								};
 								searchBox.TextChanged += text => {

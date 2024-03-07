@@ -127,9 +127,8 @@ public sealed partial class Main : Control {
 		try {
 			EmitEvent(EventType.Tick);
 		} catch (JavaScriptException e) {
-			Log.Debug(
+			Log.Error(
 				$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
-			ExitWorld(1);
 		} catch (Exception e) {
 			if (e is ExecutionCanceledException) {
 				return;
@@ -419,7 +418,6 @@ public sealed partial class Main : Control {
 			CurrentEngine.SetValue("World", currentWorld);
 		} catch (Exception e) {
 			Log.Error(e.ToString());
-			ExitWorld(1);
 		}
 	}
 
@@ -455,7 +453,6 @@ public sealed partial class Main : Control {
 				} catch (JavaScriptException e) {
 					Log.Error(
 						$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
-					ExitWorld(1);
 				}
 			});
 
@@ -505,7 +502,8 @@ public sealed partial class Main : Control {
 	}
 
 	public void ExitWorld(int exitCode = 0) {
-		this.SyncSend(_ => {
+		this.SyncPost(_ => {
+			if(CurrentEngine is null || CurrentWorldInfo is null) return;
 			Log.Debug("退出世界:", exitCode.ToString(), CurrentWorldInfo?.JsonString ?? string.Empty);
 			EmitEvent(EventType.Exit, exitCode);
 			CurrentEngine?.Dispose();
