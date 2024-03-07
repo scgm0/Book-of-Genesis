@@ -130,10 +130,6 @@ public sealed partial class Main : Control {
 			Log.Error(
 				$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 		} catch (Exception e) {
-			if (e is ExecutionCanceledException) {
-				return;
-			}
-
 			CatchExceptions(e);
 		}
 	}
@@ -471,7 +467,7 @@ public sealed partial class Main : Control {
 		}
 
 		Utils.Timers.Clear();
-		Utils.Tcs?.Cancel();
+		Utils.Tcs?.Dispose();
 		Utils.Tcs = null;
 		Utils.SourceMapCollection = null;
 
@@ -502,24 +498,24 @@ public sealed partial class Main : Control {
 	}
 
 	public void ExitWorld(int exitCode = 0) {
-		this.SyncPost(_ => {
-			if(CurrentEngine is null || CurrentWorldInfo is null) return;
-			Log.Debug("退出世界:", exitCode.ToString(), CurrentWorldInfo?.JsonString ?? string.Empty);
-			EmitEvent(EventType.Exit, exitCode);
-			CurrentEngine?.Dispose();
-			CurrentEngine = null;
-			_currentWorldEvent = null;
-			_currentWorld = null;
-			CurrentWorldInfo = null;
-
+		if (CurrentEngine is null || CurrentWorldInfo is null) return;
+		EmitEvent(EventType.Exit, exitCode);
+		Utils.Tcs?.Cancel();
+		Log.Debug("退出世界:", exitCode.ToString(), CurrentWorldInfo?.JsonString ?? string.Empty);
+		CurrentEngine.Dispose();
+		CurrentEngine = null;
+		_currentWorldEvent = null;
+		_currentWorld = null;
+		CurrentWorldInfo = null;
+		this.SyncSend(_ => {
 			ClearCache();
-
 			_home.Show();
 			_world.Hide();
 		});
 	}
 
 	public static void CatchExceptions(Exception exception) {
+		if (exception is ExecutionCanceledException) return;
 		string str;
 		if (exception is JavaScriptException javaScriptException) {
 			str = $"{javaScriptException.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, javaScriptException.JavaScriptStackTrace ?? string.Empty)}";
@@ -539,7 +535,11 @@ public sealed partial class Main : Control {
 	}
 
 	public static void EmitEvent(EventType name, params JsValue[] values) {
-		_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]);
+		try {
+			_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]);
+		} catch (Exception e) {
+			CatchExceptions(e);
+		}
 	}
 
 	static private Variant GetSaveValue(string section, string key) {
