@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using Godot;
 using Jint.Runtime;
 using World;
+using Timer = Godot.Timer;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -41,6 +43,15 @@ public static partial class Utils {
 #endif
 
 	public static readonly string LogPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
+
+	static private System.Threading.Timer? _debounceTimer;
+
+	public static void Debounce(Action action, int delay) {
+		_debounceTimer?.Dispose();
+		_debounceTimer = new System.Threading.Timer(_ => {
+			action.Invoke();
+		}, null, delay, Timeout.Infinite);
+	}
 
 	public static void ExportEncryptionWorldPck(WorldInfo worldInfo) {
 		Log.Debug("加密开始:", worldInfo.JsonString);

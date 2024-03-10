@@ -55,6 +55,24 @@ public static partial class Log {
 			Utils.Tree.Root.MoveChild(canvas, 0);
 		}
 
+		static private void SearchLog(string text) {
+			if (string.IsNullOrEmpty(text)) {
+				SortLog();
+				return;
+			}
+
+			var ratioList = LogList.Select(data => data with {
+					Ratio = Fuzz.WeightedRatio(text, data.Message)
+				})
+				.OrderByDescending(data => data.Ratio)
+				.ToList();
+			SortLog(ratioList);
+			if (ratioList[0].Ratio <= 0) return;
+			ScrollLog(ratioList[0] with {
+				Ratio = 100
+			}, false);
+		}
+
 		static private void SortLog() {
 			SortLog(LogList);
 		}
@@ -75,13 +93,14 @@ public static partial class Log {
 			}
 		}
 
-		internal static void ScrollLog(LogData data) {
+		internal static void ScrollLog(LogData data, bool focus = true) {
 			if (_instance is null) return;
 			if (!_instance._logDataMap.TryGetValue(data, out var item)) {
 				item = TryAddItem(data);
 			}
 
 			_instance._tree.ScrollToItem(item);
+			if (!focus) return;
 			_instance._tree.SetSelected(item, 3);
 			_instance._tree.GrabFocus();
 		}
@@ -117,15 +136,13 @@ public static partial class Log {
 
 		internal static void TryRemoveItem(LogData logData) {
 			if (_instance is null) return;
-			lock (_instance) {
-				var logDataMap = _instance._logDataMap;
-				var treeItemMap = _instance._treeItemMap;
+			var logDataMap = _instance._logDataMap;
+			var treeItemMap = _instance._treeItemMap;
 
-				if (!logDataMap.Remove(logData, out var treeItem)) return;
-				treeItemMap.Remove(treeItem);
+			if (!logDataMap.Remove(logData, out var treeItem)) return;
+			treeItemMap.Remove(treeItem);
 
-				treeItem.Free();
-			}
+			treeItem.Free();
 		}
 
 		static private void UpdateTreeItem(LogData logData, TreeItem treeItem) {
@@ -216,25 +233,13 @@ public static partial class Log {
 									Text = "打开日志文件"
 								};
 
-								searchButton.Pressed += () => {
-									var text = searchBox.Text;
-									if (string.IsNullOrEmpty(text)) {
-										SortLog();
-										return;
-									}
-
-									var ratioList = LogList.Select(data => data with { Ratio = Fuzz.WeightedRatio(text, data.Message) })
-										.OrderByDescending(data => data.Ratio)
-										.ToList();
-									SortLog(ratioList);
-									if (ratioList[0].Ratio <= 0) return;
-									ScrollLog(ratioList[0] with { Ratio = 100 });
-								};
-								searchBox.TextChanged += text => {
+								searchButton.Pressed += () => SearchLog(searchBox.Text);
+								searchBox.TextChanged += text => Utils.Debounce(() => _instance?.SyncSend(_ => {
 									if (string.IsNullOrEmpty(text)) {
 										SortLog();
 									}
-								};
+								}), 500);
+								searchBox.TextSubmitted += SearchLog;
 								searchBox.VisibilityChanged += () => {
 									if (!instance.Visible) {
 										searchBox.Clear();
