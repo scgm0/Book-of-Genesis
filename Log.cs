@@ -18,37 +18,36 @@ public static partial class Log {
 	public static readonly List<LogData> LogList = [];
 
 	static private void _log(LogData data) {
-		Utils.Tree.Root.SyncPost(_ => {
-			LogList.Add(data);
-			LogWindow.TryAddItem(data);
 
-			if (LogSeverity > data.Severity) return;
-			var str = data.LogText;
-			switch (data.Severity) {
-				case Severity.Warn:
-					GD.PushWarning(str);
-					GD.PrintRich($"[color=orange]{str}[/color]");
-					break;
-				case Severity.Error:
-					GD.PrintRich($"[color=red]{str}[/color]");
-					LogWindow.ToggleVisible(true);
-					LogWindow.ScrollLog(data);
-					break;
-				case Severity.Info:
-					GD.Print(str);
-					break;
-				case Severity.Debug:
-				default:
-					GD.PrintRich($"[color=gray]{str}[/color]");
-					break;
-			}
-		});
+		LogList.Add(data);
+		LogWindow.TryAddItem(data);
+
+		if (LogSeverity > data.Severity) return;
+		var str = data.LogText;
+		switch (data.Severity) {
+			case Severity.Warn:
+				GD.PushWarning(str);
+				GD.PrintRich($"[color=orange]{str}[/color]");
+				break;
+			case Severity.Error:
+				GD.PrintRich($"[color=red]{str}[/color]");
+				LogWindow.ToggleVisible(true);
+				LogWindow.ScrollLog(data);
+				break;
+			case Severity.Info:
+				GD.Print(str);
+				break;
+			case Severity.Debug:
+			default:
+				GD.PrintRich($"[color=gray]{str}[/color]");
+				break;
+		}
 	}
 
 	static private void _log(string m, Severity s) {
 		ArgumentNullException.ThrowIfNull(m);
 		var data = new LogData(m, s, DateTime.Now.ToString("MM-dd HH:mm:ss.fff"), Main.CurrentWorldInfo?.Name);
-		_log(data);
+		Utils.Tree.Root.SyncPost(_ => _log(data));
 	}
 
 	public static void Debug(params string[] m) {
