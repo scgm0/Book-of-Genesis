@@ -234,11 +234,7 @@ public static partial class Log {
 								};
 
 								searchButton.Pressed += () => SearchLog(searchBox.Text);
-								searchBox.TextChanged += text => Utils.Debounce(() => _instance?.SyncSend(_ => {
-									if (string.IsNullOrEmpty(text)) {
-										SortLog();
-									}
-								}), 500);
+								searchBox.TextChanged += SearchLog;
 								searchBox.TextSubmitted += SearchLog;
 								searchBox.VisibilityChanged += () => {
 									if (!instance.Visible) {
