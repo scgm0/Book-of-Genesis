@@ -41,7 +41,7 @@ public sealed partial class Main : Control {
 	[Export] private PackedScene _worldItem;
 
 	private World _world;
-	static private JsonParser? _jsonParser;
+
 	static private readonly DateTime StartTime = DateTime.Now;
 
 	public override void _Ready() {
@@ -274,7 +274,7 @@ public sealed partial class Main : Control {
 				options.CancellationToken(new CancellationToken(true));
 				options.EnableModules(new CustomModuleLoader(CurrentWorldInfo!));
 			});
-			_jsonParser = new JsonParser(CurrentEngine);
+			Utils.JsonParser = new JsonParser(CurrentEngine);
 			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
 			constraint?.Reset(Utils.Tcs.Token);
 
@@ -315,7 +315,7 @@ public sealed partial class Main : Control {
 			currentWorld.DefineOwnProperty("info",
 				new GetSetPropertyDescriptor(
 					JsValue.FromObject(CurrentEngine,
-						() => _jsonParser.Parse(CurrentWorldInfo!.JsonString)),
+						() => Utils.JsonParser.Parse(CurrentWorldInfo!.JsonString)),
 					null));
 			currentWorld.DefineOwnProperty("event",
 				new GetSetPropertyDescriptor(
@@ -442,7 +442,7 @@ public sealed partial class Main : Control {
 				return;
 			}
 
-			this.SyncPost(_ => {
+			// this.SyncPost(_ => {
 				try {
 					callback.Call(thisObj: JsValue.Undefined, values ?? []);
 					CurrentEngine?.Advanced.ProcessTasks();
@@ -450,7 +450,7 @@ public sealed partial class Main : Control {
 					Log.Error(
 						$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 				}
-			});
+			// });
 
 			if (autoReset) return;
 			Utils.Timers.Remove(id);
@@ -501,7 +501,7 @@ public sealed partial class Main : Control {
 		if (CurrentEngine is null || CurrentWorldInfo is null) return;
 		EmitEvent(EventType.Exit, exitCode);
 		Utils.Tcs?.Cancel();
-		Log.Debug("退出世界:", exitCode.ToString(), CurrentWorldInfo?.JsonString ?? string.Empty);
+		Log.Debug("退出世界:", exitCode.ToString(), CurrentWorldInfo.JsonString);
 		CurrentEngine.Dispose();
 		CurrentEngine = null;
 		_currentWorldEvent = null;
@@ -527,11 +527,8 @@ public sealed partial class Main : Control {
 	}
 
 	public static void OnMetaClickedEventHandler(Variant meta, int index) {
-		try {
-			EmitEvent(EventType.TextUrlClick, _jsonParser!.Parse(meta.ToString()), index);
-		} catch (Exception) {
-			EmitEvent(EventType.TextUrlClick, meta.ToString(), index);
-		}
+		var value = meta.VariantToJsValue(CurrentEngine!);
+		EmitEvent(EventType.TextUrlClick, value, index);
 	}
 
 	public static void EmitEvent(EventType name, params JsValue[] values) {

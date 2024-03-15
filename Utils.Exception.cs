@@ -62,7 +62,7 @@ public static partial class Utils {
 				variant.Dispose();
 				try {
 					// 尝试解析字符串
-					return new JsonParser(engine).Parse(str);
+					return JsonParser?.Parse(str) ?? str;
 				} catch (Exception) {
 					// 如果解析失败，返回字符串
 					return str;

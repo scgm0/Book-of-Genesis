@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Godot;
+using Jint.Native.Json;
 using Jint.Runtime;
 using World;
 using Timer = Godot.Timer;
@@ -43,6 +44,8 @@ public static partial class Utils {
 #endif
 
 	public static readonly string LogPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
+	
+	public static JsonParser? JsonParser;
 
 	static private System.Threading.Timer? _debounceTimer;
 
