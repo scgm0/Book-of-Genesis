@@ -275,6 +275,7 @@ public sealed partial class Main : Control {
 				options.EnableModules(new CustomModuleLoader(CurrentWorldInfo!));
 			});
 			Utils.JsonParser = new JsonParser(CurrentEngine);
+			Utils.JsonSerializer = new JsonSerializer(CurrentEngine);
 			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
 			constraint?.Reset(Utils.Tcs.Token);
 
@@ -381,7 +382,7 @@ public sealed partial class Main : Control {
 			currentWorld.Set("getSaveValue",
 				JsValue.FromObject(CurrentEngine,
 					(string section, string key, JsValue? defaultValue = null) => {
-						var value = GetSaveValue(section, key).VariantToJsValue(CurrentEngine);
+						var value = GetSaveValue(section, key).VariantToJsValue();
 						return value == JsValue.Undefined ? defaultValue ?? JsValue.Undefined : value;
 					}));
 			currentWorld.Set("setSaveValue",
@@ -389,16 +390,14 @@ public sealed partial class Main : Control {
 			currentWorld.Set("getGlobalSaveValue",
 				JsValue.FromObject(CurrentEngine,
 					(string section, string key, JsValue? defaultValue = null) => {
-						using var defaultGodotObject = new GodotObject();
-						var variant = Utils.GlobalConfig.GetValue(section, key, defaultGodotObject);
-						if (variant.Obj != defaultGodotObject) defaultGodotObject.Free();
-						var value = variant.VariantToJsValue(CurrentEngine);
+						var variant = Utils.GlobalConfig.GetValue(section, key, new RefCounted());
+						var value = variant.VariantToJsValue();
 						return value == JsValue.Undefined ? defaultValue ?? JsValue.Undefined : value;
 					}));
 			currentWorld.Set("setGlobalSaveValue",
 				JsValue.FromObject(CurrentEngine,
 					(string section, string key, JsValue value) => {
-						Utils.GlobalConfig.SetValue(section, key, value.JsValueToVariant(CurrentEngine));
+						Utils.GlobalConfig.SetValue(section, key, value.JsValueToVariant());
 						Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
 					}));
 
@@ -527,7 +526,8 @@ public sealed partial class Main : Control {
 	}
 
 	public static void OnMetaClickedEventHandler(Variant meta, int index) {
-		var value = meta.VariantToJsValue(CurrentEngine!);
+		var json = new Json();
+		var value = json.Parse(meta.AsString()) == Error.Ok ? json.Data.VariantToJsValue() : meta.VariantToJsValue();
 		EmitEvent(EventType.TextUrlClick, value, index);
 	}
 
@@ -540,14 +540,12 @@ public sealed partial class Main : Control {
 	}
 
 	static private Variant GetSaveValue(string section, string key) {
-		using var defaultValue = new GodotObject();
-		var value = CurrentWorldInfo!.Config.GetValue(section, key, defaultValue);
-		if (value.Obj != defaultValue) defaultValue.Free();
+		var value = CurrentWorldInfo!.Config.GetValue(section, key, new RefCounted());
 		return value;
 	}
 
 	static private void SetSaveValue(string section, string key, JsValue value) {
-		CurrentWorldInfo!.Config.SetValue(section, key, value.JsValueToVariant(CurrentEngine!));
+		CurrentWorldInfo!.Config.SetValue(section, key, value.JsValueToVariant());
 		CurrentWorldInfo.Config.SaveEncryptedPass(
 			$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
 			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");

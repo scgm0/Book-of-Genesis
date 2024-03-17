@@ -4,8 +4,7 @@ using System.Threading;
 using Godot;
 using Jint;
 using Jint.Native;
-using Jint.Native.Json;
-using Engine = Jint.Engine;
+using Jint.Runtime;
 
 namespace 创世记;
 
@@ -27,46 +26,34 @@ public static partial class Utils {
 	}
 
 	public static string ReplaceOnce(this string str, string oldValue, string newValue) {
-		//获取字符串中oldValue的索引
 		var index = str.IndexOf(oldValue, StringComparison.Ordinal);
-		//如果存在oldValue，则替换一次，否则返回原字符串
 		return index > -1 ? str.Remove(index, oldValue.Length).Insert(index, newValue) : str;
 	}
 
-	public static Variant JsValueToVariant(this JsValue jsValue, Engine engine) {
-		//如果jsValue是布尔值，则返回布尔值
-		if (jsValue.IsBoolean()) return jsValue.AsBoolean();
-		//如果jsValue是数字，则返回数字
-		if (jsValue.IsNumber()) return jsValue.AsNumber();
-		//如果jsValue是字符串，则返回字符串
-		if (jsValue.IsString()) return jsValue.AsString();
-		//如果jsValue是对象，则使用JsonSerializer将对象序列化，并返回字符串
-		return (jsValue.IsObject() ? new JsonSerializer(engine).Serialize(jsValue).ToString() : null) ?? string.Empty;
+	public static Variant JsValueToVariant(this JsValue jsValue) {
+		switch (jsValue.Type) {
+			case Types.Boolean: return jsValue.AsBoolean();
+			case Types.String: return jsValue.AsString();
+			case Types.BigInt: return (int)jsValue.AsNumber();
+			case Types.Number: return jsValue.AsNumber();
+			case Types.Object: return Json.ParseString(JsonSerializer!.Serialize(jsValue).AsString());
+			case Types.Symbol:
+			case Types.Empty:
+			case Types.Undefined:
+			case Types.Null:
+			default: return default;
+		}
 	}
 
-	public static JsValue VariantToJsValue(this Variant variant, Engine engine) {
-		// 根据Variant的类型，返回不同的JsValue
+	public static JsValue VariantToJsValue(this Variant variant) {
 		switch (variant.VariantType) {
-			case Variant.Type.Bool:
-				// 返回布尔值
-				return variant.AsBool();
+			case Variant.Type.Bool: return variant.AsBool();
 			case Variant.Type.Int:
-			case Variant.Type.Float:
-				// 返回浮点数
-				return variant.AsDouble();
+			case Variant.Type.Float: return variant.AsDouble();
 			case Variant.Type.String:
-			case Variant.Type.StringName:
-				// 获取字符串
-				var str = variant.ToString();
-				// 释放Variant
-				variant.Dispose();
-				try {
-					// 尝试解析字符串
-					return JsonParser?.Parse(str) ?? str;
-				} catch (Exception) {
-					// 如果解析失败，返回字符串
-					return str;
-				}
+			case Variant.Type.StringName: return variant.AsString();
+			case Variant.Type.Dictionary:
+			case Variant.Type.Array: return JsonParser!.Parse(Json.Stringify(variant));
 			case Variant.Type.Object:
 			case Variant.Type.Nil:
 			case Variant.Type.Vector2:
@@ -89,8 +76,6 @@ public static partial class Utils {
 			case Variant.Type.Rid:
 			case Variant.Type.Callable:
 			case Variant.Type.Signal:
-			case Variant.Type.Dictionary:
-			case Variant.Type.Array:
 			case Variant.Type.PackedByteArray:
 			case Variant.Type.PackedInt32Array:
 			case Variant.Type.PackedInt64Array:
@@ -102,9 +87,6 @@ public static partial class Utils {
 			case Variant.Type.PackedColorArray:
 			case Variant.Type.Max:
 			default:
-				// 释放Godot对象
-				variant.AsGodotObject().Free();
-				// 返回未定义
 				return JsValue.Undefined;
 		}
 	}

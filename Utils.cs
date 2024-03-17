@@ -6,7 +6,6 @@ using Godot;
 using Jint.Native.Json;
 using Jint.Runtime;
 using World;
-using Timer = Godot.Timer;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -46,6 +45,7 @@ public static partial class Utils {
 	public static readonly string LogPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
 	
 	public static JsonParser? JsonParser;
+	public static JsonSerializer? JsonSerializer;
 
 	static private System.Threading.Timer? _debounceTimer;
 
