@@ -14,11 +14,13 @@ public partial class World : Control {
 	[GetNode("%CenterText")] public RichTextLabel CenterText;
 	[GetNode("%RightText")] public RichTextLabel RightText;
 	[GetNode("%CommandEdit")] public LineEdit CommandEdit;
+	[GetNode("%Toast")] public Label Toast;
 
 	private StyleBoxFlat _titleStyle;
 	private StyleBoxFlat _leftTextStyle;
 	private StyleBoxFlat _centerTextStyle;
 	private StyleBoxFlat _rightTextStyle;
+	private Tween? _toastTween;
 
 
 	public override void _Ready() {
@@ -54,7 +56,17 @@ public partial class World : Control {
 		};
 	}
 
-	public void SetTitle(string title) => this.SyncSend(_ => Utils.SetRichText(Title, title));
+	public void ShowToast(string text) {
+		this.SyncSend(_ => {
+			Toast.Text = text.Replace("\n", "").Replace("\r", "");
+			_toastTween?.Kill();
+			_toastTween = CreateTween();
+			_toastTween.TweenProperty(Toast, "modulate", Colors.White, 0.5f);
+			_toastTween.TweenProperty(Toast, "modulate", Colors.Transparent, 0.5f).SetDelay(2.5);
+		});
+	}
+
+	public void SetTitle(string title) => Utils.SetRichText(Title, title);
 	public void SetLeftStretchRatio(float ratio) => this.SyncSend(_ => LeftText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
 
 	public void SetCenterStretchRatio(float ratio) => this.SyncSend(_ => CenterText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
@@ -63,43 +75,43 @@ public partial class World : Control {
 	public void SetCommandPlaceholderText(string text) => this.SyncSend(_ => CommandEdit.PlaceholderText = text);
 
 	public void SetLeftText(string text) {
+		Utils.SetRichText(LeftText, text);
 		this.SyncSend(_ => {
-			Utils.SetRichText(LeftText, text);
 			LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void SetCenterText(string text) {
+		Utils.SetRichText(CenterText, text);
 		this.SyncSend(_ => {
-			Utils.SetRichText(CenterText, text);
 			CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void SetRightText(string text) {
+		Utils.SetRichText(RightText, text);
 		this.SyncSend(_ => {
-			Utils.SetRichText(RightText, text);
 			RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void AddLeftText(string text) {
+		Utils.AddRichText(LeftText, text);
 		this.SyncSend(_ => {
-			Utils.AddRichText(LeftText, text);
 			LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void AddCenterText(string text) {
+		Utils.AddRichText(CenterText, text);
 		this.SyncSend(_ => {
-			Utils.AddRichText(CenterText, text);
 			CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
 
 	public void AddRightText(string text) {
+		Utils.AddRichText(RightText, text);
 		this.SyncSend(_ => {
-			Utils.AddRichText(RightText, text);
 			RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}

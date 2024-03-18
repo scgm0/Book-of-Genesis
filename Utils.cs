@@ -134,12 +134,12 @@ public static partial class Utils {
 
 	public static void SetRichText(RichTextLabel label, string text) {
 		LoadRichTextImg(ref text);
-		label.ParseBbcode(text);
+		label.CallDeferred(RichTextLabel.MethodName.ParseBbcode, text);
 	}
 
 	public static void AddRichText(RichTextLabel label, string text) {
 		LoadRichTextImg(ref text);
-		label.AppendText(text);
+		label.CallDeferred(RichTextLabel.MethodName.AppendText, text);
 	}
 
 	public static void LoadRichTextImg(ref string text) {
@@ -162,7 +162,8 @@ public static partial class Utils {
 	}
 
 	public static CanvasTexture? LoadImageFile(string path, FilterType filter = FilterType.Linear) {
-		return LoadImageFile(Main.CurrentWorldInfo!, path, (CanvasItem.TextureFilterEnum)filter);
+		ArgumentNullException.ThrowIfNull(Main.CurrentWorldInfo);
+		return LoadImageFile(Main.CurrentWorldInfo, path, (CanvasItem.TextureFilterEnum)filter);
 	}
 
 	public static CanvasTexture? LoadImageFile(

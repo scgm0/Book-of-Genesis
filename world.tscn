@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://k2w3hc0p1xm3"]
+[gd_scene load_steps=10 format=3 uid="uid://k2w3hc0p1xm3"]
 
 [ext_resource type="Theme" uid="uid://be0fvf0itb1wb" path="res://Assets/WorldTheme.tres" id="1_mjgsx"]
 [ext_resource type="Script" path="res://World.cs" id="4_2mjxf"]
@@ -63,6 +63,16 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 anti_aliasing_size = 0.5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_411sf"]
+bg_color = Color(0, 0, 0, 0.690196)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_k46pu"]
+font_size = 20
 
 [node name="World" type="Control"]
 custom_minimum_size = Vector2(1152, 648)
@@ -305,3 +315,25 @@ unique_name_in_owner = true
 layout_direction = 3
 layout_mode = 2
 alignment = 1
+
+[node name="Toast" type="Label" parent="Main/Control"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 7.0
+offset_top = -107.0
+offset_right = -7.0
+offset_bottom = -67.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_411sf")
+label_settings = SubResource("LabelSettings_k46pu")
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 1

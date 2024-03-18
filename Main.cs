@@ -379,6 +379,7 @@ public sealed partial class Main : Control {
 					(TextType type, string colorHex) => _world.SetTextFontColor(type, colorHex)));
 
 			currentWorld.Set("print", CurrentEngine.GetValue("print"));
+			currentWorld.Set("toast", JsValue.FromObject(CurrentEngine, _world.ShowToast));
 			currentWorld.Set("getSaveValue",
 				JsValue.FromObject(CurrentEngine,
 					(string section, string key, JsValue? defaultValue = null) => {
@@ -441,7 +442,7 @@ public sealed partial class Main : Control {
 				return;
 			}
 
-			// this.SyncPost(_ => {
+			this.SyncPost(_ => {
 				try {
 					callback.Call(thisObj: JsValue.Undefined, values ?? []);
 					CurrentEngine?.Advanced.ProcessTasks();
@@ -449,7 +450,7 @@ public sealed partial class Main : Control {
 					Log.Error(
 						$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
 				}
-			// });
+			});
 
 			if (autoReset) return;
 			Utils.Timers.Remove(id);
