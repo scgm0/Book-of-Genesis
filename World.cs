@@ -14,7 +14,7 @@ public partial class World : Control {
 	[GetNode("%CenterText")] public RichTextLabel CenterText;
 	[GetNode("%RightText")] public RichTextLabel RightText;
 	[GetNode("%CommandEdit")] public LineEdit CommandEdit;
-	[GetNode("%Toast")] public Label Toast;
+	[GetNode("%Toast")] public LineEdit Toast;
 
 	private StyleBoxFlat _titleStyle;
 	private StyleBoxFlat _leftTextStyle;
@@ -58,11 +58,12 @@ public partial class World : Control {
 
 	public void ShowToast(string text) {
 		this.SyncSend(_ => {
-			Toast.Text = text.Replace("\n", "").Replace("\r", "");
+			Toast.Text = text;
 			_toastTween?.Kill();
 			_toastTween = CreateTween();
-			_toastTween.TweenProperty(Toast, "modulate", Colors.White, 0.5f);
-			_toastTween.TweenProperty(Toast, "modulate", Colors.Transparent, 0.5f).SetDelay(2.5);
+			_toastTween.TweenProperty(Toast, "modulate:a", 1, 0.5f);
+			_toastTween.TweenProperty(Toast, "modulate:a", 0, 0.5f)
+				.SetDelay(2.5);
 		});
 	}
 
