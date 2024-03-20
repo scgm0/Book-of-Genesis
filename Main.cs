@@ -111,13 +111,13 @@ public sealed partial class Main : Control {
 			Log.Debug("退出游戏，运行时长:", (DateTime.Now - StartTime).ToString());
 			GetTree().Quit();
 		} else if (what == NotificationWMGoBackRequest) {
-			if (_home.Visible) {
-				GetTree().Root.PropagateNotification((int)NotificationWMCloseRequest);
+			if (_world is { Visible: true }) {
+				ExitWorld();
 			} else if (_chooseWorld.Visible) {
 				_home.Show();
 				_chooseWorld.Hide();
-			} else if (_world.Visible) {
-				ExitWorld();
+			} else if (_home.Visible) {
+				GetTree().Root.PropagateNotification((int)NotificationWMCloseRequest);
 			}
 		}
 	}
@@ -140,7 +140,6 @@ public sealed partial class Main : Control {
 		ClearCache();
 		LoadWorldInfos(Utils.UserWorldsPath, true);
 		LoadWorldInfos(Utils.ResWorldsPath);
-		_home.Hide();
 		_chooseWorld.Show();
 		var list = GetNode<VBoxContainer>("%WorldList");
 		foreach (var child in list.GetChildren()) {
@@ -158,21 +157,7 @@ public sealed partial class Main : Control {
 				worldItem.GetNode<TextureRect>("%Icon").Texture = icon;
 			}
 
-			worldItem.GetNode<Button>("%Choose").Pressed += () => {
-				CurrentWorldInfo = worldInfo;
-				Log.Debug("选择世界:", CurrentWorldInfo.JsonString);
-				_chooseWorld.Hide();
-				_background.Modulate = Color.FromHtml("#ffffff00");
-				CurrentWorldInfo.Config.LoadEncryptedPass(
-					$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
-					$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
-				CurrentWorldInfo.Config.SaveEncryptedPass(
-					$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
-					$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
-				Utils.GlobalConfig.LoadEncryptedPass($"{Utils.SavesPath}/global.save", "global");
-				Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
-				RunWorld();
-			};
+			worldItem.GetNode<Button>("%Choose").Pressed += () => LoadWorld(worldInfo);
 			worldItem.GetNode<Button>("%Choose").Text = "进入\n世界";
 			list.AddChild(worldItem);
 		}
@@ -216,6 +201,23 @@ public sealed partial class Main : Control {
 		Log.Debug("模版列表加载完成");
 	}
 
+	private void LoadWorld(WorldInfo worldInfo) {
+		CurrentWorldInfo = worldInfo;
+		Log.Debug("加载世界:", CurrentWorldInfo.JsonString);
+		_home.Hide();
+		_chooseWorld.Hide();
+		_background.Modulate = Color.FromHtml("#ffffff00");
+		CurrentWorldInfo.Config.LoadEncryptedPass(
+			$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
+			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
+		CurrentWorldInfo.Config.SaveEncryptedPass(
+			$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
+			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
+		Utils.GlobalConfig.LoadEncryptedPass($"{Utils.SavesPath}/global.save", "global");
+		Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
+		RunWorld();
+	}
+
 	private void RunWorld() {
 		InitWorld();
 		Task.Run(() => {
@@ -253,6 +255,16 @@ public sealed partial class Main : Control {
 		_world.SetTitle($"{CurrentWorldInfo!.Name}-{CurrentWorldInfo.Version}");
 		_world.GetNode<Button>("%Encrypt").Disabled = CurrentWorldInfo.IsEncrypt;
 		_world.GetNode<Button>("%Log").Pressed += Log.LogWindow.ToggleVisible;
+		_world.GetNode<Button>("%Overload").Pressed += () => {
+			var worldKey = CurrentWorldInfo.WorldKey;
+			var worldsPath = CurrentWorldInfo.GlobalPath.GetBaseDir();
+			var worldConfigPath = CurrentWorldInfo.GlobalPath.PathJoin("config.json");
+			var fileName = CurrentWorldInfo.GlobalPath.GetFile();
+			var encrypt = CurrentWorldInfo.IsEncrypt;
+			ExitWorld();
+			DeserializeWorldInfo(worldConfigPath, fileName, worldsPath, !encrypt);
+			LoadWorld(Utils.WorldInfos[worldKey]);
+		};
 		_world.GetNode<Button>("%Exit").Pressed +=
 			() => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
 		_world.GetNode<Button>("%Encrypt").Pressed += () => {
@@ -446,9 +458,8 @@ public sealed partial class Main : Control {
 				try {
 					callback.Call(thisObj: JsValue.Undefined, values ?? []);
 					CurrentEngine?.Advanced.ProcessTasks();
-				} catch (JavaScriptException e) {
-					Log.Error(
-						$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
+				} catch (Exception e) {
+					CatchExceptions(e);
 				}
 			});
 

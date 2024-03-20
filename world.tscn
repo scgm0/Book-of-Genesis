@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://k2w3hc0p1xm3"]
+[gd_scene load_steps=11 format=3 uid="uid://k2w3hc0p1xm3"]
 
 [ext_resource type="Theme" uid="uid://be0fvf0itb1wb" path="res://Assets/WorldTheme.tres" id="1_mjgsx"]
 [ext_resource type="Script" path="res://World.cs" id="4_2mjxf"]
@@ -64,25 +64,17 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 anti_aliasing_size = 0.5
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_bwpaa"]
-
 [sub_resource type="Gradient" id="Gradient_q2uwk"]
-interpolation_mode = 2
 offsets = PackedFloat32Array(0, 0.15, 0.5, 0.850467, 1)
-colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.72549, 0, 0, 0, 0.72549, 0, 0, 0, 0.611765, 0, 0, 0, 0)
+colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.611765, 0, 0, 0, 0.611765, 0, 0, 0, 0.611765, 0, 0, 0, 0)
 
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_6fyxh"]
 gradient = SubResource("Gradient_q2uwk")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jgkos"]
+content_margin_left = 160.0
+content_margin_right = 160.0
 texture = SubResource("GradientTexture1D_6fyxh")
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_411sf"]
-bg_color = Color(0, 0, 0, 0.690196)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
 
 [node name="World" type="Control"]
 custom_minimum_size = Vector2(1152, 648)
@@ -139,6 +131,11 @@ theme_override_constants/h_separation = 15
 unique_name_in_owner = true
 layout_mode = 2
 text = "日志"
+
+[node name="Overload" type="Button" parent="Main/Control/VBoxContainer/HBoxContainer/HFlowContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "重载"
 
 [node name="Title" type="RichTextLabel" parent="Main/Control/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
@@ -301,6 +298,7 @@ custom_minimum_size = Vector2(400, 45)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
+alignment = 1
 context_menu_enabled = false
 caret_blink = true
 
@@ -326,7 +324,7 @@ layout_direction = 3
 layout_mode = 2
 alignment = 1
 
-[node name="Toast" type="LineEdit" parent="Main/Control"]
+[node name="Toast" type="Label" parent="Main/Control"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(0, 40)
@@ -341,18 +339,7 @@ offset_right = -7.0
 offset_bottom = -67.0
 grow_horizontal = 2
 grow_vertical = 0
-mouse_filter = 2
-mouse_default_cursor_shape = 0
-theme_override_colors/font_uneditable_color = Color(1, 1, 1, 1)
-theme_override_styles/focus = SubResource("StyleBoxEmpty_bwpaa")
-theme_override_styles/read_only = SubResource("StyleBoxTexture_jgkos")
-theme_override_styles/normal = SubResource("StyleBoxFlat_411sf")
-alignment = 1
-editable = false
-context_menu_enabled = false
-virtual_keyboard_enabled = false
-shortcut_keys_enabled = false
-middle_mouse_paste_enabled = false
-selecting_enabled = false
-deselect_on_focus_loss_enabled = false
-drag_and_drop_selection_enabled = false
+theme_override_styles/normal = SubResource("StyleBoxTexture_jgkos")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

@@ -14,7 +14,7 @@ public partial class World : Control {
 	[GetNode("%CenterText")] public RichTextLabel CenterText;
 	[GetNode("%RightText")] public RichTextLabel RightText;
 	[GetNode("%CommandEdit")] public LineEdit CommandEdit;
-	[GetNode("%Toast")] public LineEdit Toast;
+	[GetNode("%Toast")] public Label Toast;
 
 	private StyleBoxFlat _titleStyle;
 	private StyleBoxFlat _leftTextStyle;

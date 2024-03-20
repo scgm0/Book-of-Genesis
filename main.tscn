@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://diqreobfnlwp4"]
+[gd_scene load_steps=14 format=3 uid="uid://diqreobfnlwp4"]
 
 [ext_resource type="Script" path="res://Main.cs" id="1_2evw0"]
 [ext_resource type="PackedScene" uid="uid://kbkbbjhef0jq" path="res://world_item.tscn" id="3_51by6"]
@@ -35,6 +35,9 @@ font_color = Color(1, 1, 1, 0.623529)
 
 [sub_resource type="LabelSettings" id="LabelSettings_10wbn"]
 font_color = Color(1, 1, 1, 0.623529)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w27hv"]
+bg_color = Color(0.176471, 0.176471, 0.176471, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7wo5i"]
 bg_color = Color(0.376471, 0.376471, 0.376471, 0.376471)
@@ -232,6 +235,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_w27hv")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Window/ChooseWorld"]
 layout_mode = 1
