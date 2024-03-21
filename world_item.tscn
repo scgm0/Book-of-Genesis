@@ -11,10 +11,11 @@ shader_parameter/corner_scale = 0.095
 
 [sub_resource type="LabelSettings" id="LabelSettings_o2u6e"]
 font = ExtResource("4_34lqs")
-font_size = 24
+font_size = 20
 
 [sub_resource type="LabelSettings" id="LabelSettings_8hhd1"]
 line_spacing = 0.0
+font_size = 12
 
 [node name="WorldItem" type="Panel"]
 custom_minimum_size = Vector2(500, 100)
@@ -76,6 +77,8 @@ text = "世界名称-0.0.1"
 label_settings = SubResource("LabelSettings_o2u6e")
 horizontal_alignment = 1
 vertical_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="Description" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
@@ -86,6 +89,8 @@ text = "作者
 一个空白的世界。"
 label_settings = SubResource("LabelSettings_8hhd1")
 horizontal_alignment = 1
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="Choose" type="Button" parent="MarginContainer/HBoxContainer"]
 unique_name_in_owner = true
