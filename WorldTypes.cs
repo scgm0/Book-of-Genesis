@@ -8,9 +8,7 @@ public enum FilterType {
 
 public enum EventType {
 	Ready,
-	Tick,
 	Exit,
-
 	Command,
 	LeftButtonClick,
 	RightButtonClick,

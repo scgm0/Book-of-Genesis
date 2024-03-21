@@ -122,19 +122,6 @@ public sealed partial class Main : Control {
 		}
 	}
 
-	public override void _PhysicsProcess(double delta) {
-		if (_currentWorld == null) return;
-		try {
-			EmitEvent(EventType.Tick);
-		} catch (JavaScriptException e) {
-			Log.Error(
-				$"{e.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, e.JavaScriptStackTrace ?? string.Empty)}");
-		} catch (Exception e) {
-			CatchExceptions(e);
-		}
-	}
-
-
 	private void ChooseWorld() {
 		Log.Debug("加载世界列表");
 		ClearCache();
@@ -454,14 +441,12 @@ public sealed partial class Main : Control {
 				return;
 			}
 
-			this.SyncPost(_ => {
-				try {
-					callback.Call(thisObj: JsValue.Undefined, values ?? []);
-					CurrentEngine?.Advanced.ProcessTasks();
-				} catch (Exception e) {
-					CatchExceptions(e);
-				}
-			});
+			try {
+				callback.Call(thisObj: JsValue.Undefined, values ?? []);
+				CurrentEngine?.Advanced.ProcessTasks();
+			} catch (Exception e) {
+				CatchExceptions(e);
+			}
 
 			if (autoReset) return;
 			Utils.Timers.Remove(id);
