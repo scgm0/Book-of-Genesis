@@ -75,6 +75,31 @@ public partial class World : Control {
 	public void SetRightStretchRatio(float ratio) => this.SyncSend(_ => RightText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
 	public void SetCommandPlaceholderText(string text) => this.SyncSend(_ => CommandEdit.PlaceholderText = text);
 
+	public void SetText(TextType textType, string text, TextType? exclude = null) {
+		switch (textType) {
+			case TextType.All:
+				foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
+					if (t is TextType.All || t == exclude) continue;
+					SetText(t, text);
+				}
+
+				break;
+			case TextType.Title:
+				SetTitle(text);
+				break;
+			case TextType.LeftText:
+				SetLeftText(text);
+				break;
+			case TextType.CenterText:
+				SetCenterText(text);
+				break;
+			case TextType.RightText:
+				SetRightText(text);
+				break;
+			default: return;
+		}
+	}
+
 	public void SetLeftText(string text) {
 		Utils.SetRichText(LeftText, text);
 		this.SyncSend(_ => {
@@ -95,6 +120,33 @@ public partial class World : Control {
 			RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 		});
 	}
+
+	public void AddText(TextType textType, string text, TextType? exclude = null) {
+		switch (textType) {
+			case TextType.All:
+				foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
+					if (t is TextType.All || t == exclude) continue;
+					AddText(t, text);
+				}
+
+				break;
+			case TextType.Title:
+				AddTitle(text);
+				break;
+			case TextType.LeftText:
+				SetLeftText(text);
+				break;
+			case TextType.CenterText:
+				SetCenterText(text);
+				break;
+			case TextType.RightText:
+				SetRightText(text);
+				break;
+			default: return;
+		}
+	}
+
+	public void AddTitle(string title) => Utils.AddRichText(Title, title);
 
 	public void AddLeftText(string text) {
 		Utils.AddRichText(LeftText, text);
@@ -200,35 +252,43 @@ public partial class World : Control {
 	}
 
 	public static void RemoveButtonById(ulong id) {
-		var button = InstanceFromId(id) as Button;
-		button?.QueueFree();
+		Utils.Tree.Root.SyncSend(_ => {
+			var button = InstanceFromId(id) as Button;
+			button?.QueueFree();
+		});
 	}
 
-	public void SetTextBackgroundColor(TextType type, string colorHex) {
+	public void SetTextBackgroundColor(TextType type, string colorHex, TextType? exclude = null) {
 		var color = Color.FromString(colorHex, Color.Color8(0, 0, 0, 96));
 		if (type != TextType.All) {
 			SetTextBackgroundColor(type, color);
 		} else {
 			foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
+				if (t == exclude) continue;
 				SetTextBackgroundColor(t, color);
 			}
 		}
 	}
 
 	private void SetTextBackgroundColor(TextType type, Color color) {
+		var modulate = color.A > 0 ? Colors.White : Colors.Transparent;
 		this.SyncSend(_ => {
 			switch (type) {
 				case TextType.Title:
 					_titleStyle.BgColor = color;
+					Title.Modulate = modulate;
 					break;
 				case TextType.LeftText:
 					_leftTextStyle.BgColor = color;
+					LeftText.GetParent().GetParent<Panel>().Modulate = modulate;
 					break;
 				case TextType.CenterText:
 					_centerTextStyle.BgColor = color;
+					CenterText.GetParent().GetParent<Panel>().Modulate = modulate;
 					break;
 				case TextType.RightText:
 					_rightTextStyle.BgColor = color;
+					RightText.GetParent().GetParent<Panel>().Modulate = modulate;
 					break;
 				case TextType.All:
 				default: return;
@@ -236,12 +296,13 @@ public partial class World : Control {
 		});
 	}
 
-	public void SetTextFontColor(TextType type, string colorHex) {
+	public void SetTextFontColor(TextType type, string colorHex, TextType? exclude = null) {
 		var color = Color.FromString(colorHex, Colors.White);
 		if (type != TextType.All) {
 			SetTextFontColor(type, color);
 		} else {
 			foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
+				if (t == exclude) continue;
 				SetTextFontColor(t, color);
 			}
 		}

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Godot;
@@ -43,6 +44,7 @@ public sealed partial class Main : Control {
 	private World _world;
 
 	static private readonly DateTime StartTime = DateTime.Now;
+	static private BlockingCollection<Action> JsEventQueue = new();
 
 	public override void _Ready() {
 		if (!DirAccess.DirExistsAbsolute(Utils.UserWorldsPath)) {
@@ -84,6 +86,16 @@ public sealed partial class Main : Control {
 			Log.Debug("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());
 			_readyBar.CallDeferred(CanvasItem.MethodName.Hide);
 			Utils.Tree.AutoAcceptQuit = false;
+		});
+		Task.Factory.StartNew(() => {
+			foreach (var action in JsEventQueue.GetConsumingEnumerable()) {
+				if (CurrentEngine is null) continue;
+				try {
+					action();
+				} catch (Exception e) {
+					CatchExceptions(e);
+				}
+			}
 		});
 	}
 
@@ -213,14 +225,7 @@ public sealed partial class Main : Control {
 				using var tween = _world.CreateTween();
 				tween.SetEase(Tween.EaseType.Out);
 				tween.TweenProperty(_background, "modulate:a", 1.5, 1.5);
-				tween.TweenCallback(Callable.From(() => {
-					if (CurrentWorldInfo == null) return;
-					Log.Debug("进入世界:", CurrentWorldInfo.JsonString);
-					_world.GetNode<Control>("Main").Show();
-					_currentWorldEvent = CurrentEngine!.GetValue("World").Get("event").As<JsObject>()!;
-					EmitEvent(EventType.Ready);
-					_currentWorld = (JsObject)CurrentEngine.GetValue("World");
-				}));
+				tween.TweenCallback(new Callable(this, nameof(ReadyWorld)));
 			});
 
 			try {
@@ -229,6 +234,15 @@ public sealed partial class Main : Control {
 				CatchExceptions(e);
 			}
 		});
+	}
+
+	private void ReadyWorld() {
+		if (CurrentWorldInfo == null) return;
+		Log.Debug("进入世界:", CurrentWorldInfo.JsonString);
+		_world.GetNode<Control>("Main").Show();
+		_currentWorldEvent = CurrentEngine!.GetValue("World").Get("event").As<JsObject>()!;
+		EmitEvent(EventType.Ready);
+		_currentWorld = (JsObject)CurrentEngine.GetValue("World");
 	}
 
 	private void InitWorld() {
@@ -329,15 +343,20 @@ public sealed partial class Main : Control {
 				JsValue.FromObject(CurrentEngine,
 					(string path, FilterType filter = FilterType.Linear) => this.SyncSend(_ => _backgroundTextureRect.Texture = Utils.LoadImageFile(path, filter))));
 
+			currentWorld.Set("setText",
+				JsValue.FromObject(CurrentEngine, _world.SetText));
 			currentWorld.Set("setTitle",
 				JsValue.FromObject(CurrentEngine, _world.SetTitle));
-
 			currentWorld.Set("setLeftText",
 				JsValue.FromObject(CurrentEngine, _world.SetLeftText));
 			currentWorld.Set("setCenterText",
 				JsValue.FromObject(CurrentEngine, _world.SetCenterText));
 			currentWorld.Set("setRightText",
 				JsValue.FromObject(CurrentEngine, _world.SetRightText));
+			currentWorld.Set("addText",
+				JsValue.FromObject(CurrentEngine, _world.AddText));
+			currentWorld.Set("addTitle",
+				JsValue.FromObject(CurrentEngine, _world.AddTitle));
 			currentWorld.Set("addLeftText",
 				JsValue.FromObject(CurrentEngine, _world.AddLeftText));
 			currentWorld.Set("addCenterText",
@@ -436,17 +455,21 @@ public sealed partial class Main : Control {
 		Utils.Timers[id] = timer;
 		timer.AutoReset = autoReset;
 		timer.Elapsed += (_, _) => {
-			if (!Utils.Timers.ContainsKey(id)) {
+			if (!Utils.Timers.ContainsKey(id) || CurrentEngine is null) {
 				timer.Dispose();
 				return;
 			}
 
-			try {
-				callback.Call(thisObj: JsValue.Undefined, values ?? []);
-				CurrentEngine?.Advanced.ProcessTasks();
-			} catch (Exception e) {
-				CatchExceptions(e);
-			}
+			this.SyncSend(_ => {
+				try {
+					lock (_currentWorldEvent!) {
+						callback.Call(thisObj: JsValue.Undefined, values ?? []);
+						CurrentEngine.Advanced.ProcessTasks();
+					}
+				} catch (Exception e) {
+					CatchExceptions(e);
+				}
+			});
 
 			if (autoReset) return;
 			Utils.Timers.Remove(id);
@@ -493,6 +516,20 @@ public sealed partial class Main : Control {
 		_background.GetNode<TextureRect>("TextureRect").Texture = null;
 	}
 
+	public static void JsPost(Action callback) {
+		JsEventQueue.Add(callback);
+	}
+
+	public static Task JsAsync(Action callback) {
+		var tsc = new TaskCompletionSource();
+		JsEventQueue.Add(() => {
+			callback();
+			tsc.SetResult();
+		});
+		return tsc.Task;
+	}
+
+
 	public void ExitWorld(int exitCode = 0) {
 		if (CurrentEngine is null || CurrentWorldInfo is null) return;
 		EmitEvent(EventType.Exit, exitCode);
@@ -529,11 +566,14 @@ public sealed partial class Main : Control {
 	}
 
 	public static void EmitEvent(EventType name, params JsValue[] values) {
-		try {
-			_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]);
-		} catch (Exception e) {
-			CatchExceptions(e);
-		}
+		JsPost(() => {
+			try {
+				_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]).UnwrapIfPromise();
+				CurrentEngine?.Advanced.ProcessTasks();
+			} catch (Exception e) {
+				CatchExceptions(e);
+			}
+		});
 	}
 
 	static private Variant GetSaveValue(string section, string key) {

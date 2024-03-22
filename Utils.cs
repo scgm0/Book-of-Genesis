@@ -133,13 +133,17 @@ public static partial class Utils {
 	}
 
 	public static void SetRichText(RichTextLabel label, string text) {
-		LoadRichTextImg(ref text);
-		label.CallDeferred(RichTextLabel.MethodName.ParseBbcode, text);
+		LoadRichTextImg(ref text); 
+		Tree.Root.SyncSend(_ => {
+			label.ParseBbcode(text);
+		});
 	}
 
 	public static void AddRichText(RichTextLabel label, string text) {
 		LoadRichTextImg(ref text);
-		label.CallDeferred(RichTextLabel.MethodName.AppendText, text);
+		Tree.Root.SyncSend(_ => {
+			label.AppendText(text);
+		});
 	}
 
 	public static void LoadRichTextImg(ref string text) {
@@ -162,8 +166,7 @@ public static partial class Utils {
 	}
 
 	public static CanvasTexture? LoadImageFile(string path, FilterType filter = FilterType.Linear) {
-		ArgumentNullException.ThrowIfNull(Main.CurrentWorldInfo);
-		return LoadImageFile(Main.CurrentWorldInfo, path, (CanvasItem.TextureFilterEnum)filter);
+		return Main.CurrentWorldInfo is null ? null : LoadImageFile(Main.CurrentWorldInfo, path, (CanvasItem.TextureFilterEnum)filter);
 	}
 
 	public static CanvasTexture? LoadImageFile(
