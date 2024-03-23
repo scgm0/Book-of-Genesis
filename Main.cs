@@ -44,7 +44,7 @@ public sealed partial class Main : Control {
 	private World _world;
 
 	static private readonly DateTime StartTime = DateTime.Now;
-	static private BlockingCollection<Action> JsEventQueue = new();
+	static private readonly BlockingCollection<Action> JsEventQueue = new();
 
 	public override void _Ready() {
 		if (!DirAccess.DirExistsAbsolute(Utils.UserWorldsPath)) {
@@ -86,8 +86,6 @@ public sealed partial class Main : Control {
 			Log.Debug("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());
 			_readyBar.CallDeferred(CanvasItem.MethodName.Hide);
 			Utils.Tree.AutoAcceptQuit = false;
-		});
-		Task.Factory.StartNew(() => {
 			foreach (var action in JsEventQueue.GetConsumingEnumerable()) {
 				if (CurrentEngine is null) continue;
 				try {
@@ -224,7 +222,7 @@ public sealed partial class Main : Control {
 			this.SyncPost(_ => {
 				using var tween = _world.CreateTween();
 				tween.SetEase(Tween.EaseType.Out);
-				tween.TweenProperty(_background, "modulate:a", 1.5, 1.5);
+				tween.TweenProperty(_background, "modulate:a", 1, 1.5);
 				tween.TweenCallback(new Callable(this, nameof(ReadyWorld)));
 			});
 
@@ -236,13 +234,11 @@ public sealed partial class Main : Control {
 		});
 	}
 
-	private void ReadyWorld() {
+	private async void ReadyWorld() {
 		if (CurrentWorldInfo == null) return;
 		Log.Debug("进入世界:", CurrentWorldInfo.JsonString);
+		await EmitEvent(EventType.Ready);
 		_world.GetNode<Control>("Main").Show();
-		_currentWorldEvent = CurrentEngine!.GetValue("World").Get("event").As<JsObject>()!;
-		EmitEvent(EventType.Ready);
-		_currentWorld = (JsObject)CurrentEngine.GetValue("World");
 	}
 
 	private void InitWorld() {
@@ -363,6 +359,10 @@ public sealed partial class Main : Control {
 				JsValue.FromObject(CurrentEngine, _world.AddCenterText));
 			currentWorld.Set("addRightText",
 				JsValue.FromObject(CurrentEngine, _world.AddRightText));
+			currentWorld.Set("getParagraphCount",
+				JsValue.FromObject(CurrentEngine, _world.GetParagraphCount));
+			currentWorld.Set("removeParagraph",
+				JsValue.FromObject(CurrentEngine, _world.RemoveParagraph));
 
 			currentWorld.Set("setLeftStretchRatio",
 				JsValue.FromObject(CurrentEngine, _world.SetLeftStretchRatio));
@@ -430,6 +430,8 @@ public sealed partial class Main : Control {
 				JsValue.FromObject(CurrentEngine, ExitWorld));
 
 			CurrentEngine.SetValue("World", currentWorld);
+			_currentWorld = currentWorld;
+			_currentWorldEvent = (JsObject)worldEvent;
 		} catch (Exception e) {
 			Log.Error(e.ToString());
 		}
@@ -460,9 +462,9 @@ public sealed partial class Main : Control {
 				return;
 			}
 
-			this.SyncSend(_ => {
+			this.SyncPost(_ => {
 				try {
-					lock (_currentWorldEvent!) {
+					lock (CurrentEngine) {
 						callback.Call(thisObj: JsValue.Undefined, values ?? []);
 						CurrentEngine.Advanced.ProcessTasks();
 					}
@@ -565,8 +567,8 @@ public sealed partial class Main : Control {
 		EmitEvent(EventType.TextUrlClick, value, index);
 	}
 
-	public static void EmitEvent(EventType name, params JsValue[] values) {
-		JsPost(() => {
+	public static Task EmitEvent(EventType name, params JsValue[] values) {
+		return JsAsync(() => {
 			try {
 				_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]).UnwrapIfPromise();
 				CurrentEngine?.Advanced.ProcessTasks();

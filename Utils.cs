@@ -43,6 +43,7 @@ public static partial class Utils {
 #endif
 
 	public static readonly string LogPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
+	public static readonly GodotSynchronizationContext SyncCtx = Dispatcher.SynchronizationContext;
 	
 	public static JsonParser? JsonParser;
 	public static JsonSerializer? JsonSerializer;

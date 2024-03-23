@@ -75,6 +75,55 @@ public partial class World : Control {
 	public void SetRightStretchRatio(float ratio) => this.SyncSend(_ => RightText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
 	public void SetCommandPlaceholderText(string text) => this.SyncSend(_ => CommandEdit.PlaceholderText = text);
 
+	public int GetParagraphCount(TextType type) {
+		var count = 0;
+		this.SyncSend(_ => {
+			switch (type) {
+				case TextType.Title:
+					count = Title.GetParagraphCount();
+					break;
+				case TextType.LeftText:
+					count = LeftText.GetParagraphCount();
+					break;
+				case TextType.CenterText:
+					count = CenterText.GetParagraphCount();
+					break;
+				case TextType.RightText:
+					count = RightText.GetParagraphCount();
+					break;
+				case TextType.All:
+				default: return;
+			}
+		});
+		return count;
+	}
+
+	public bool RemoveParagraph(TextType type, int index) {
+		var result = false;
+		if (index < 0) {
+			index = GetParagraphCount(type) + index;
+		}
+		this.SyncSend(_ => {
+			switch (type) {
+				case TextType.Title:
+					result = Title.RemoveParagraph(index);
+					break;
+				case TextType.LeftText:
+					result = LeftText.RemoveParagraph(index);
+					break;
+				case TextType.CenterText:
+					result = CenterText.RemoveParagraph(index);
+					break;
+				case TextType.RightText:
+					result = RightText.RemoveParagraph(index);
+					break;
+				case TextType.All:
+				default: return;
+			}
+		});
+		return result;
+	}
+
 	public void SetText(TextType textType, string text, TextType? exclude = null) {
 		switch (textType) {
 			case TextType.All:
@@ -134,13 +183,13 @@ public partial class World : Control {
 				AddTitle(text);
 				break;
 			case TextType.LeftText:
-				SetLeftText(text);
+				AddLeftText(text);
 				break;
 			case TextType.CenterText:
-				SetCenterText(text);
+				AddCenterText(text);
 				break;
 			case TextType.RightText:
-				SetRightText(text);
+				AddRightText(text);
 				break;
 			default: return;
 		}

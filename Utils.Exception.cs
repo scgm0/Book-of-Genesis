@@ -13,9 +13,9 @@ namespace 创世记;
 
 public static partial class Utils {
 
-	public static void SyncSend(this Node node, SendOrPostCallback action) => Dispatcher.SynchronizationContext.Send(action, node);
+	public static void SyncSend(this Node node, SendOrPostCallback action) => SyncCtx.Send(action, node);
 
-	public static void SyncPost(this Node node, SendOrPostCallback action) => Dispatcher.SynchronizationContext.Post(action, node);
+	public static void SyncPost(this Node node, SendOrPostCallback action) => SyncCtx.Post(action, node);
 
 	public static uint Peek(this FileAccess file) {
 		var pos = file.GetPosition();
