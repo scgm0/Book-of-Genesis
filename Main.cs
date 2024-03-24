@@ -10,6 +10,7 @@ using Jint.Native.Json;
 using Jint.Runtime;
 using Jint.Runtime.Descriptors;
 using Jint.Runtime.Interop;
+using Puerts;
 using SourceMaps;
 using World;
 using Engine = Jint.Engine;
@@ -22,6 +23,11 @@ using Timer = System.Timers.Timer;
 
 namespace 创世记;
 
+class Test {
+	public async Task TestFunc() {
+		await Task.Delay(50);
+	}
+}
 public sealed partial class Main : Control {
 	[GetNode("../BootSplash")] private BootSplash _bootSplash;
 	[GetNode("%ChooseWorldButton")] private Button _chooseWorldButton;
@@ -81,6 +87,18 @@ public sealed partial class Main : Control {
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
 		_bootSplash.TreeExited += _readyBar.Show;
+		try {
+			var env = new JsEnv(new GodotDefaultLoader());
+			Log.Debug(env.Eval<string>(@"
+let t = new CS.创世记.Test().TestFunc();
+t.GetAwaiter().UnsafeOnCompleted(() => {
+CS.创世记.Log.Debug(t.Result);
+});'hello world'"));
+		} catch (Exception e) {
+			CatchExceptions(e);
+		}
+
+		// env.Dispose();
 		Task.Run(() => {
 			TsTransform.Prepare();
 			Log.Debug("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());

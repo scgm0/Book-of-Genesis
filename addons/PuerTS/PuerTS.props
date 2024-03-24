@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);PUERTS_GENERAL</DefineConstants>
+    
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug'">
+    <None Condition="$([MSBuild]::IsOSPlatform('Linux'))" Include="addons/PuerTS/Plugins/x86_64/libpuerts.so" Link="libpuerts.so" CopyToOutputDirectory="PreserveNewest" />
+    <None Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="addons/PuerTS/Plugins/x86_64/puerts.dll" Link="puerts.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'ExportRelease' OR '$(Configuration)' == 'ExportDebug'">
+    <None Condition=" '$(GodotTargetPlatform)' == 'linuxbsd'" Include="addons/PuerTS/Plugins/x86_64/libpuerts.so" Link="libpuerts.so" CopyToOutputDirectory="PreserveNewest" />
+    <None Condition=" '$(GodotTargetPlatform)' == 'android'" Include="addons/PuerTS/Plugins/Android/libs/arm64-v8a/libpuerts.so" Link="libpuerts.so" CopyToOutputDirectory="PreserveNewest" />
+    <None Condition=" '$(GodotTargetPlatform)' == 'Windows'" Include="addons/PuerTS/Plugins/x86_64/puerts.dll" Link="puerts.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

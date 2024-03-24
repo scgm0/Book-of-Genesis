@@ -6,7 +6,6 @@
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <TieredPGO>true</TieredPGO>
     <PublishAot>true</PublishAot>
-    <PublishTrimmed>true</PublishTrimmed>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -63,6 +62,9 @@
     <PackageReference Include="SourceMaps" Version="0.3.1"/>
     <PackageReference Include="SourceMaps.StackTraces" Version="0.3.0"/>
     <TrimmerRootAssembly Include="GodotSharp"/>
+    <TrimmerRootAssembly Include="System"/>
     <TrimmerRootAssembly Include="$(TargetName)"/>
   </ItemGroup>
+  
+  <Import Project="addons/PuerTS/PuerTS.props" />
 </Project>
