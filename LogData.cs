@@ -1,3 +1,4 @@
+#nullable enable
 namespace 创世记;
 
 public static partial class Log {

@@ -1,3 +1,4 @@
+#nullable enable
 using Godot;
 
 // ReSharper disable MemberCanBePrivate.Global

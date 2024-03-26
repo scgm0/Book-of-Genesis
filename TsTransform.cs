@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using Jint;
 using Jint.Native;

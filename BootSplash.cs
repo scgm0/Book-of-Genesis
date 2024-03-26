@@ -8,7 +8,7 @@ public partial class BootSplash : Control {
 	[Export(PropertyHint.File, "*.tscn")] private string _scenePath;
 
 	public override void _Ready() {
-		Control? instancedScene = null;
+		Control instancedScene = null;
 		_logo.Modulate = _logo.Modulate with { A = 0 };
 		var tween = CreateTween();
 		tween.SetTrans(Tween.TransitionType.Cubic);
