@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using Godot;
+using Puerts;
 using World;
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -22,6 +23,7 @@ public partial class World : Control {
 	private StyleBoxFlat _centerTextStyle;
 	private StyleBoxFlat _rightTextStyle;
 	private Tween? _toastTween;
+	private JsEnv? _jsEnv;
 
 
 	public override void _Ready() {

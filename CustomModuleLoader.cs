@@ -216,7 +216,7 @@ sealed class CustomModuleLoader : IModuleLoader {
 		DirAccess.MakeDirRecursiveAbsolute($"{cachePath}".GetBaseDir());
 		var tsSha256 = FileAccess.GetSha256(fileName);
 		var res = TsTransform.Compile(FileAccess.GetFileAsString(fileName), resolved.Key);
-		code = res["outputText"].AsString();
+		code = res.Get<string>("outputText");
 		var jsFile =
 			_worldInfo.IsEncrypt
 				? FileAccess.OpenEncryptedWithPass(jsPath,

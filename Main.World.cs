@@ -14,7 +14,7 @@ public sealed partial class Main {
 	public static Engine? CurrentEngine { get; private set; }
 	public static WorldInfo? CurrentWorldInfo { get; private set; }
 
-	static private void LoadWorldInfos(string worldsPath, bool loadPackage = false) {
+	public static void LoadWorldInfos(string worldsPath, bool loadPackage = false) {
 		worldsPath = worldsPath.SimplifyPath();
 		using var dir = DirAccess.Open(worldsPath);
 		if (dir == null) return;
