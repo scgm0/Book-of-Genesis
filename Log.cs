@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Godot;
+using Puerts;
 // ReSharper disable HeuristicUnreachableCode
 #pragma warning disable CS0162 // 检测到不可到达的代码
 
@@ -26,7 +28,6 @@ public static partial class Log {
 		var str = data.LogText;
 		switch (data.Severity) {
 			case Severity.Warn:
-				GD.PushWarning(str);
 				GD.PrintRich($"[color=orange]{str}[/color]");
 				break;
 			case Severity.Error:
@@ -66,5 +67,17 @@ public static partial class Log {
 		_log(m.Join(" "), Severity.Error);
 		if (Utils.Tree.CurrentScene is not Main main) return;
 		main.ExitWorld(1);
+	}
+
+	public static void Error(Exception e) {
+		var str = e.Message;
+		const string errorPattern = ".*.Error:.*";
+		var match = Regex.Match(str, errorPattern);
+		Error($"{match.Value.Trim()}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, str)}");
+	}
+
+	public static void Assert(bool condition, params string[] m) {
+		if (condition) return;
+		Error(m);
 	}
 }

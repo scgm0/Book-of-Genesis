@@ -1,10 +1,8 @@
-#nullable enable
 using System;
 using System.Diagnostics;
 using System.IO;
 using Esprima;
 using Godot;
-using Jint;
 using Jint.Native;
 using Jint.Native.Json;
 using Jint.Runtime;

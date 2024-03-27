@@ -33,7 +33,7 @@ public static partial class Utils {
 		return index > -1 ? str.Remove(index, oldValue.Length).Insert(index, newValue) : str;
 	}
 
-	enum Js2DicType {
+	private enum Js2DicType {
 		BigInt,
 		Date
 	}

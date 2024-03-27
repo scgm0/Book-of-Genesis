@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -11,7 +10,6 @@ using Jint.Native.Json;
 using Jint.Runtime;
 using Jint.Runtime.Descriptors;
 using Jint.Runtime.Interop;
-using Puerts;
 using SourceMaps;
 using World;
 using Engine = Jint.Engine;
@@ -24,11 +22,6 @@ using Timer = System.Timers.Timer;
 
 namespace 创世记;
 
-partial class Test {
-	public async Task TestFunc() {
-		await Task.Delay(50);
-	}
-}
 public sealed partial class Main : Control {
 	[GetNode("%ChooseWorldButton")] private Button _chooseWorldButton;
 	[GetNode("%Home")] private Control _home;
@@ -85,7 +78,7 @@ public sealed partial class Main : Control {
 		_logButton.Pressed += Log.LogWindow.ToggleVisible;
 		_back.Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
-		
+
 		Task.Run(() => {
 			TsTransform.Prepare();
 			Log.Debug("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());

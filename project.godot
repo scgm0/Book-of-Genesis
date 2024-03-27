@@ -23,10 +23,6 @@ boot_splash/show_image=false
 config/icon="res://Assets/icon.png"
 run/disable_stderr.release=true
 
-[autoload]
-
-PuerTS="*res://addons/PuerTS/Godot/PuerTSMenu.cs"
-
 [debug]
 
 file_logging/enable_file_logging=true
@@ -45,7 +41,7 @@ project/assembly_name="创世记"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/PuerTS/plugin.cfg")
+enabled=PackedStringArray("res://addons/PuerTs/plugin.cfg")
 
 [gui]
 

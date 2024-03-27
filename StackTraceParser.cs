@@ -6,7 +6,7 @@ namespace 创世记;
 
 public static class StackTraceParser {
 
-	public static string ReTrace(SourceMapCollection sourceMaps, string stacktrace, string sourceRoot = null) {
+	public static string ReTrace(SourceMapCollection sourceMaps, string stacktrace, string? sourceRoot = null) {
 		if (string.IsNullOrEmpty(stacktrace)) return string.Empty;
 		// 解析堆栈跟踪
 		var trace = SourceMaps.StackTraces.StackTraceParser.Parse(stacktrace);

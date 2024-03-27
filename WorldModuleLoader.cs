@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Godot;
 using Puerts;
@@ -6,13 +8,18 @@ using SourceMaps;
 
 namespace 创世记;
 
-public class WorldModuleLoader(WorldInfo worldInfo) : ILoader, IBuiltinLoadedListener {
-
-	private readonly bool _isRes = worldInfo?.GlobalPath?.StartsWith("res://") ?? false;
+public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoader, IBuiltinLoadedListener {
+	private readonly bool _isRes = worldInfo?.GlobalPath.StartsWith("res://") ?? false;
 	private bool _isLoaded;
+	private readonly GodotDefaultLoader _defaultLoader = new();
 
 	public string Resolve(string specifier, string referrer) {
+		if (!_isLoaded) return specifier;
+
+		if (specifier.StartsWith("创世记:")) return specifier.ReplaceOnce("创世记:", "");
+
 		var fullPath = specifier;
+
 		if (_isLoaded && specifier.IsRelativePath()) {
 			fullPath = referrer.GetBaseDir().PathJoin(specifier);
 		}
@@ -21,45 +28,52 @@ public class WorldModuleLoader(WorldInfo worldInfo) : ILoader, IBuiltinLoadedLis
 	}
 
 	public bool FileExists(string filePath) {
-		if (!_isLoaded) {
-			return FileAccess.FileExists("res://addons/PuerTS/Runtime/Resources/" + filePath) ||
-				FileAccess.FileExists("res://addons/PuerTS/Editor/Resources/" + filePath);
+		if (!_isLoaded && _defaultLoader.FileExists(filePath)) {
+			return true;
 		}
+
+		if (Utils.Polyfill.ContainsKey(filePath)) {
+			return true;
+		}
+
+		if (worldInfo is null) return false;
 
 		var fullPath = worldInfo.GlobalPath.PathJoin(filePath).SimplifyPath();
 		return Utils.Polyfill.ContainsKey(filePath) || FileAccess.FileExists(fullPath);
 	}
 
 	public string ReadFile(string filePath, out string debugPath) {
-		if (!_isLoaded) {
-			if (FileAccess.FileExists("res://addons/PuerTS/Runtime/Resources/" + filePath)) {
-				debugPath = "res://addons/PuerTS/Runtime/Resources/" + filePath;
-			} else if (FileAccess.FileExists("res://addons/PuerTS/Editor/Resources/" + filePath)) {
-				debugPath = "res://addons/PuerTS/Editor/Resources/" + filePath;
-			} else {
-				throw new Exception("file not found: " + filePath);
-			}
+		debugPath = string.Empty;
+		string code;
+		if (!_isLoaded && _defaultLoader.FileExists(filePath)) {
+			code = _defaultLoader.ReadFile(filePath, out debugPath);
+			return code;
+		}
 
-			return FileAccess.GetFileAsString(debugPath);
-		} else if (Utils.Polyfill.TryGetValue(filePath.ReplaceOnce("/", ""), out var value)) {
-			debugPath = filePath.ReplaceOnce("/", "");
+		if (Utils.Polyfill.TryGetValue(filePath, out var value)) {
+			debugPath = $"创世记:{filePath}";
 			return value;
 		}
 
+		if (worldInfo is null) return string.Empty;
+
 		debugPath = worldInfo.Path.PathJoin(filePath).SimplifyPath();
 		var fullPath = worldInfo.GlobalPath.PathJoin(filePath).SimplifyPath();
-		var code = fullPath.GetExtension() == "ts" ? ReadTs2Js(fullPath, debugPath) : FileAccess.GetFileAsString(fullPath);
+		code = fullPath.EndsWith(".ts") ? ReadTs2Js(fullPath, debugPath) : FileAccess.GetFileAsString(fullPath);
 		RegisterSourceMap(in code, debugPath);
 		return code;
 	}
 
 	public void OnBuiltinLoaded(JsEnv env) {
+		_defaultLoader.OnBuiltinLoaded(env);
 		_isLoaded = true;
+		env.Eval("global.World = {};");
+		env.ExecuteModule("创世记:console");
 	}
 
 	private string ReadTs2Js(string fullPath, string filePath) {
 		string code;
-		var cachePath = Utils.TsGenPath.PathJoin(filePath.ReplaceOnce(worldInfo.Path, $"/{worldInfo.WorldKey}/")).SimplifyPath();
+		var cachePath = Utils.TsGenPath.PathJoin(filePath.ReplaceOnce(worldInfo!.Path, $"/{worldInfo.WorldKey}/")).SimplifyPath();
 		var jsPath = $"{cachePath}{(worldInfo.IsEncrypt ? ".encrypt" : "")}.js";
 		var metaPath = $"{cachePath}{(worldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
 		if (FileAccess.FileExists(jsPath) &&
@@ -94,7 +108,7 @@ public class WorldModuleLoader(WorldInfo worldInfo) : ILoader, IBuiltinLoadedLis
 	}
 
 	private void TsGen(out string code, string fullPath, string filePath, string cachePath) {
-		var jsPath = $"{cachePath}{(worldInfo.IsEncrypt ? ".encrypt" : "")}.js";
+		var jsPath = $"{cachePath}{(worldInfo!.IsEncrypt ? ".encrypt" : "")}.js";
 		var metaPath = $"{cachePath}{(worldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
 		DirAccess.MakeDirRecursiveAbsolute($"{cachePath}".GetBaseDir());
 		var tsSha256 = FileAccess.GetSha256(fullPath);
