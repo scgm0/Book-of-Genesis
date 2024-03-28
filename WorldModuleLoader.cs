@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using Godot;
 using Puerts;
@@ -65,8 +62,9 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 	}
 
 	public void OnBuiltinLoaded(JsEnv env) {
-		_defaultLoader.OnBuiltinLoaded(env);
+		env.SetDefaultBindingMode(BindingMode.DontBinding);
 		_isLoaded = true;
+		if (worldInfo is null) return;
 		env.Eval("global.World = {};");
 		env.ExecuteModule("创世记:console");
 	}

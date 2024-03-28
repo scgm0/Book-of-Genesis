@@ -11,7 +11,8 @@ public static partial class Utils {
 	public static IEnumerable<Type> Bindings {
 		get => new List<Type> {
 			typeof(Task),
-			typeof(Log)
+			typeof(Log),
+			typeof(World)
 		};
 	}
 }

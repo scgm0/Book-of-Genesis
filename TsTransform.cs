@@ -6,12 +6,13 @@ using Puerts;
 namespace 创世记;
 
 public static class TsTransform {
-	static private Func<string, object?, string, object> _compiler = null!;
+	public static string? TypeScriptVersion { get; private set; }
+	static private Func<string, object?, string, JSObject> _compiler = null!;
 
 	public static JSObject Compile(string code, string fileName) {
 		JSObject? res = null;
 		Utils.Tree.Root.SyncSend(_ => {
-			res = (JSObject)_compiler.Invoke(code, null, fileName);
+			res = _compiler.Invoke(code, null, fileName);
 		});
 		return res!;
 	}
@@ -20,6 +21,8 @@ public static class TsTransform {
 		var env = new JsEnv(new WorldModuleLoader(default));
 		env.Eval("const exports = {};");
 		env.Eval("console.log = CS.创世记.Log.Debug");
-		_compiler = env.ExecuteModule("创世记:typescript").Get<Func<string, object?, string, object>>("transform");
+		var ts = env.ExecuteModule("创世记:typescript");
+		_compiler = ts.Get<Func<string, object?, string, JSObject>>("transform");
+		TypeScriptVersion = ts.Get<string>("version")!;
 	}
 }

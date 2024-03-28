@@ -69,6 +69,4 @@ if (Log) {
     }
 
     global.console = console;
-    World.console = console;
-
 }

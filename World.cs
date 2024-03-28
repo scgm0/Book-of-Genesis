@@ -4,18 +4,19 @@ using Godot;
 using Puerts;
 using World;
 // ReSharper disable MemberCanBePrivate.Global
+#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
 namespace 创世记;
 
 public partial class World : Control {
-	[GetNode("%Title")] public RichTextLabel Title;
-	[GetNode("%LeftButtonList")] public Control LeftButtonList;
-	[GetNode("%RightButtonList")] public Control RightButtonList;
-	[GetNode("%LeftText")] public RichTextLabel LeftText;
-	[GetNode("%CenterText")] public RichTextLabel CenterText;
-	[GetNode("%RightText")] public RichTextLabel RightText;
-	[GetNode("%CommandEdit")] public LineEdit CommandEdit;
-	[GetNode("%Toast")] public Label Toast;
+	[Export] public RichTextLabel Title { get; set; }
+	[Export] public Control LeftButtonList { get; set; }
+	[Export] public Control RightButtonList { get; set; }
+	[Export] public RichTextLabel LeftText { get; set; }
+	[Export] public RichTextLabel CenterText { get; set; }
+	[Export] public RichTextLabel RightText { get; set; }
+	[Export] public LineEdit CommandEdit { get; set; }
+	[Export] public Label Toast;
 
 	private StyleBoxFlat _titleStyle;
 	private StyleBoxFlat _leftTextStyle;
@@ -23,7 +24,13 @@ public partial class World : Control {
 	private StyleBoxFlat _rightTextStyle;
 	private Tween? _toastTween;
 	private JsEnv? _jsEnv;
+	
+	public static World Instance { get; private set; }
 
+	public World() {
+		Instance = this;
+		_jsEnv = new JsEnv(new WorldModuleLoader(Main.CurrentWorldInfo));
+	}
 
 	public override void _Ready() {
 		_titleStyle = (StyleBoxFlat)Title.GetThemeStylebox("normal");

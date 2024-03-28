@@ -76,7 +76,7 @@ content_margin_left = 160.0
 content_margin_right = 160.0
 texture = SubResource("GradientTexture1D_6fyxh")
 
-[node name="World" type="Control"]
+[node name="World" type="Control" node_paths=PackedStringArray("Title", "LeftButtonList", "RightButtonList", "LeftText", "CenterText", "RightText", "CommandEdit", "Toast")]
 custom_minimum_size = Vector2(1152, 648)
 layout_mode = 3
 anchors_preset = 8
@@ -92,6 +92,14 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_mjgsx")
 script = ExtResource("4_2mjxf")
+Title = NodePath("Main/Control/VBoxContainer/HBoxContainer/Title")
+LeftButtonList = NodePath("Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer/MarginContainer/LeftButtonList")
+RightButtonList = NodePath("Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer2/MarginContainer/RightButtonList")
+LeftText = NodePath("Main/Control/VBoxContainer/HBoxContainer2/LeftPanel/MarginContainer/LeftText")
+CenterText = NodePath("Main/Control/VBoxContainer/HBoxContainer2/CenterPanel/MarginContainer/CenterText")
+RightText = NodePath("Main/Control/VBoxContainer/HBoxContainer2/RightPanel/MarginContainer/RightText")
+CommandEdit = NodePath("Main/Control/VBoxContainer/HBoxContainer3/CommandEdit")
+Toast = NodePath("Main/Control/Toast")
 
 [node name="Main" type="MarginContainer" parent="."]
 layout_mode = 1
