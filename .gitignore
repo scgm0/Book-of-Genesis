@@ -2,6 +2,7 @@
 .godot/
 .idea/
 GameExports/
+addons/PuerTs/Gen/
 android/build/.gradle/
 android/build/assets/
 android/build/build/

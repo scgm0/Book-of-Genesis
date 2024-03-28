@@ -5,7 +5,7 @@ using System.Threading;
 using Godot;
 using Jint.Native.Json;
 using Jint.Runtime;
-using World;
+using Timer = System.Threading.Timer;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -44,15 +44,15 @@ public static partial class Utils {
 
 	public static readonly string LogPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
 	public static readonly GodotSynchronizationContext SyncCtx = Dispatcher.SynchronizationContext;
-	
+
 	public static JsonParser? JsonParser;
 	public static JsonSerializer? JsonSerializer;
 
-	static private System.Threading.Timer? _debounceTimer;
+	static private Timer? _debounceTimer;
 
 	public static void Debounce(Action action, int delay) {
 		_debounceTimer?.Dispose();
-		_debounceTimer = new System.Threading.Timer(_ => {
+		_debounceTimer = new Timer(_ => {
 			action.Invoke();
 		}, null, delay, Timeout.Infinite);
 	}
@@ -134,10 +134,8 @@ public static partial class Utils {
 	}
 
 	public static void SetRichText(RichTextLabel label, string text) {
-		LoadRichTextImg(ref text); 
-		Tree.Root.SyncSend(_ => {
-			label.ParseBbcode(text);
-		});
+		LoadRichTextImg(ref text);
+		label.ParseBbcode(text);
 	}
 
 	public static void AddRichText(RichTextLabel label, string text) {

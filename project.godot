@@ -41,7 +41,7 @@ project/assembly_name="创世记"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/PuerTs/plugin.cfg")
 
 [gui]
 

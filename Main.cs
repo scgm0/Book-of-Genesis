@@ -11,7 +11,6 @@ using Jint.Runtime;
 using Jint.Runtime.Descriptors;
 using Jint.Runtime.Interop;
 using SourceMaps;
-using World;
 using Engine = Jint.Engine;
 using Environment = System.Environment;
 using Timer = System.Timers.Timer;
@@ -23,7 +22,6 @@ using Timer = System.Timers.Timer;
 namespace 创世记;
 
 public sealed partial class Main : Control {
-	[GetNode("../BootSplash")] private BootSplash _bootSplash;
 	[GetNode("%ChooseWorldButton")] private Button _chooseWorldButton;
 	[GetNode("%Home")] private Control _home;
 	[GetNode("%GameVersion")] private Label _gameVersion;
@@ -43,8 +41,12 @@ public sealed partial class Main : Control {
 
 	private World _world;
 
-	static private readonly DateTime StartTime = DateTime.Now;
+	static private readonly DateTime StartTime;
 	static private readonly BlockingCollection<Action> JsEventQueue = new();
+
+	static Main() {
+		StartTime = DateTime.Now;
+	}
 
 	public override void _Ready() {
 		if (!DirAccess.DirExistsAbsolute(Utils.UserWorldsPath)) {
@@ -61,14 +63,6 @@ public sealed partial class Main : Control {
 
 		ProjectSettings.LoadResourcePack(Utils.TemplateZipPath);
 
-		Log.Debug("启动游戏",
-			"\nPlatform:",
-			OS.GetName(),
-			"\nGameVersion:",
-			Utils.GameVersion,
-			"\nDotNetVersion:",
-			Environment.Version.ToString());
-
 		_gameVersion.Text = $"v{Utils.GameVersion}";
 		_dotNetVersion.Text = $"dotnet: {Environment.Version}";
 		_worldsPathHint.Text += ProjectSettings.GlobalizePath(Utils.UserWorldsPath);
@@ -80,11 +74,19 @@ public sealed partial class Main : Control {
 		_back.Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
-		_bootSplash.TreeExited += _readyBar.Show;
+		
 		Task.Run(() => {
 			TsTransform.Prepare();
 			Log.Debug("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());
-			_readyBar.CallDeferred(CanvasItem.MethodName.Hide);
+			Log.Debug("游戏信息:",
+				"\nPlatform:",
+				OS.GetName(),
+				"\nGameVersion:",
+				Utils.GameVersion,
+				"\nDotNetVersion:",
+				Environment.Version.ToString(),
+				"\nTypeScriptVersion:",
+				TsTransform.TypeScriptVersion!);
 			Utils.Tree.AutoAcceptQuit = false;
 			foreach (var action in JsEventQueue.GetConsumingEnumerable()) {
 				if (CurrentEngine is null) continue;
@@ -132,11 +134,12 @@ public sealed partial class Main : Control {
 		}
 	}
 
-	private void ChooseWorld() {
+	private async void ChooseWorld() {
 		Log.Debug("加载世界列表");
 		ClearCache();
 		LoadWorldInfos(Utils.UserWorldsPath, true);
 		LoadWorldInfos(Utils.ResWorldsPath);
+		_chooseWorldButton.ReleaseFocus();
 		_chooseWorld.Show();
 		var list = GetNode<VBoxContainer>("%WorldList");
 		foreach (var child in list.GetChildren()) {
@@ -156,17 +159,22 @@ public sealed partial class Main : Control {
 
 			worldItem.GetNode<Button>("%Choose").Pressed += () => LoadWorld(worldInfo);
 			worldItem.GetNode<Button>("%Choose").Text = "进入\n世界";
+			worldItem.Set("modulate", Colors.Transparent);
 			list.AddChild(worldItem);
+			using var tween = worldItem.CreateTween();
+			tween.TweenProperty(worldItem, "modulate:a", 1, 0.25f);
+			await ToSignal(tween, Tween.SignalName.Finished);
 		}
 
 		Log.Debug("世界列表加载完成");
 	}
 
-	private void ChooseTemplate() {
+	private async void ChooseTemplate() {
 		Log.Debug("加载模版列表");
 		ClearCache();
 		LoadWorldInfos(Utils.ResTemplatesPath);
 		_home.Hide();
+		_templateWorldButton.ReleaseFocus();
 		_chooseWorld.Show();
 		var list = GetNode<VBoxContainer>("%WorldList");
 		foreach (var child in list.GetChildren()) {
@@ -192,7 +200,11 @@ public sealed partial class Main : Control {
 				GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 			};
 			worldItem.GetNode<Button>("%Choose").Text = "导出\n模版";
+			worldItem.Set("modulate", Colors.Transparent);
 			list.AddChild(worldItem);
+			using var tween = worldItem.CreateTween();
+			tween.TweenProperty(worldItem, "modulate:a", 1, 0.25f);
+			await ToSignal(tween, Tween.SignalName.Finished);
 		}
 
 		Log.Debug("模版列表加载完成");
@@ -217,6 +229,11 @@ public sealed partial class Main : Control {
 
 	private void RunWorld() {
 		InitWorld();
+		using var tween = _world.CreateTween();
+		tween.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(_background, "modulate:a", 1, 1.5);
+		tween.TweenCallback(new Callable(this, nameof(ReadyWorld)));
+		/*
 		Task.Run(() => {
 			InitEngine();
 			this.SyncPost(_ => {
@@ -231,13 +248,14 @@ public sealed partial class Main : Control {
 			} catch (Exception e) {
 				CatchExceptions(e);
 			}
-		});
+		});*/
 	}
 
 	private async void ReadyWorld() {
 		if (CurrentWorldInfo == null) return;
 		Log.Debug("进入世界:", CurrentWorldInfo.JsonString);
-		await EmitEvent(EventType.Ready);
+		// await EmitEvent(EventType.Ready);
+		_world.JsEventEmit(EventType.Ready, null);
 		_world.GetNode<Control>("Main").Show();
 	}
 
@@ -267,11 +285,6 @@ public sealed partial class Main : Control {
 		_world.GetNode<Button>("%Encrypt").Pressed += () => {
 			Utils.ExportEncryptionWorldPck(CurrentWorldInfo);
 			ExitWorld();
-		};
-
-		_world.CommandEdit.TextSubmitted += text => {
-			_world.CommandEdit.Text = "";
-			EmitEvent(EventType.Command, text);
 		};
 	}
 
@@ -306,7 +319,7 @@ public sealed partial class Main : Control {
 						value.Dispose();
 					});
 
-			CurrentEngine.Modules.Add("events", builder => builder.AddModule(Utils.Polyfill.Events));
+			CurrentEngine.Modules.Add("events", builder => builder.AddSource(Utils.Polyfill["events"]));
 			CurrentEngine.Modules.Add("audio",
 				builder => builder.ExportType<AudioPlayer>().ExportType<AudioPlayer>("default"));
 

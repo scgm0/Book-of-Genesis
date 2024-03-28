@@ -1,31 +1,27 @@
 using System;
-using Jint;
-using Jint.Native;
-using Engine = Jint.Engine;
-
+using Puerts;
 #pragma warning disable IL2026
 #pragma warning disable IL2111
 
 namespace 创世记;
 
 public static class TsTransform {
-	static private readonly Engine Engine = new(options => options.DebugMode(false));
-	static private JsValue _compiler = null!;
-	public static JsObject Compile(string code, string fileName) {
-		JsObject? res = null;
+	public static string? TypeScriptVersion { get; private set; }
+	static private Func<string, object?, string, JSObject> _compiler = null!;
+
+	public static JSObject Compile(string code, string fileName) {
+		JSObject? res = null;
 		Utils.Tree.Root.SyncSend(_ => {
-			res = (JsObject)_compiler.Call(code, JsValue.Undefined, fileName);
+			res = _compiler.Invoke(code, null, fileName);
 		});
 		return res!;
 	}
 
 	public static void Prepare() {
-		Engine.SetValue("log", new Action<string[]>(Log.Debug));
-		Engine.Execute("const global = this;");
-		Engine.Execute("const exports = {};");
-
-		Engine.Execute(Utils.Polyfill.Tsc);
-
-		_compiler = Engine.Evaluate("exports.transform");
+		var env = new JsEnv(new WorldModuleLoader());
+		env.Eval("console.log = CS.创世记.Log.Debug");
+		var ts = env.ExecuteModule("创世记:typescript");
+		_compiler = ts.Get<Func<string, object?, string, JSObject>>("transform");
+		TypeScriptVersion = ts.Get<string>("version")!;
 	}
 }
