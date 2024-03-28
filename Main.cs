@@ -11,7 +11,6 @@ using Jint.Runtime;
 using Jint.Runtime.Descriptors;
 using Jint.Runtime.Interop;
 using SourceMaps;
-using World;
 using Engine = Jint.Engine;
 using Environment = System.Environment;
 using Timer = System.Timers.Timer;
@@ -230,6 +229,11 @@ public sealed partial class Main : Control {
 
 	private void RunWorld() {
 		InitWorld();
+		using var tween = _world.CreateTween();
+		tween.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(_background, "modulate:a", 1, 1.5);
+		tween.TweenCallback(new Callable(this, nameof(ReadyWorld)));
+		/*
 		Task.Run(() => {
 			InitEngine();
 			this.SyncPost(_ => {
@@ -244,13 +248,14 @@ public sealed partial class Main : Control {
 			} catch (Exception e) {
 				CatchExceptions(e);
 			}
-		});
+		});*/
 	}
 
 	private async void ReadyWorld() {
 		if (CurrentWorldInfo == null) return;
 		Log.Debug("进入世界:", CurrentWorldInfo.JsonString);
-		await EmitEvent(EventType.Ready);
+		// await EmitEvent(EventType.Ready);
+		_world.JsEventEmit(EventType.Ready, null);
 		_world.GetNode<Control>("Main").Show();
 	}
 
@@ -280,11 +285,6 @@ public sealed partial class Main : Control {
 		_world.GetNode<Button>("%Encrypt").Pressed += () => {
 			Utils.ExportEncryptionWorldPck(CurrentWorldInfo);
 			ExitWorld();
-		};
-
-		_world.CommandEdit.TextSubmitted += text => {
-			_world.CommandEdit.Text = "";
-			EmitEvent(EventType.Command, text);
 		};
 	}
 

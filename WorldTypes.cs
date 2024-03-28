@@ -1,5 +1,4 @@
-// ReSharper disable once CheckNamespace
-namespace World;
+namespace 创世记;
 
 public enum FilterType {
 	Linear,

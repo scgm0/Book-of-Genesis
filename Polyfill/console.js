@@ -1,15 +1,16 @@
 var global = global || globalThis || (function () { return this; }());
 
-const Log = puer.loadType('创世记.Log');
+const Log = World.Log;
 
 if (Log) {
-
-    var console = {}
+    delete World.Log;
+    var console = {};
+    var getSourceMapStack = World.getSourceMapStack;
 
     function toString(args) {
         return Array.prototype.map.call(args, x => {
             try {
-                return x instanceof Error ? x.stack : x + '';
+                return x instanceof Error ? `${x}\n${getSourceMapStack(getStack(x))}` : x.toString();
             } catch (err) {
                 return err;
             }
@@ -18,9 +19,13 @@ if (Log) {
 
     function getStack(error) {
         let stack = error.stack;
+        stack = stack.replace(error.message, "");
         stack = stack.substring(stack.indexOf("\n")+1);
-        stack = stack.replace(/^ {4}/gm, "");
-        return stack
+        return stack;
+    }
+
+    console.debug = function() {
+        Log.Debug(toString(arguments));
     }
 
     console.log = function() {

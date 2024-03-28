@@ -5,7 +5,6 @@ using System.Threading;
 using Godot;
 using Jint.Native.Json;
 using Jint.Runtime;
-using World;
 using Timer = System.Threading.Timer;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -136,9 +135,7 @@ public static partial class Utils {
 
 	public static void SetRichText(RichTextLabel label, string text) {
 		LoadRichTextImg(ref text);
-		Tree.Root.SyncSend(_ => {
-			label.ParseBbcode(text);
-		});
+		label.ParseBbcode(text);
 	}
 
 	public static void AddRichText(RichTextLabel label, string text) {

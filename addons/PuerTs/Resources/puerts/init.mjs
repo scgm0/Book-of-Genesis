@@ -37,3 +37,5 @@ function loadFile(path) {
 puer.loadFile = loadFile;
 
 puer.fileExists = loader.FileExists.bind(loader);
+
+puer.loader = loader;

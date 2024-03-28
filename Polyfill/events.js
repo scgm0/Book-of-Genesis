@@ -175,4 +175,10 @@ class EventEmitter {
 		return [...listeners];
 	}
 }
-export default EventEmitter;
+
+World.event = new EventEmitter();
+puer.on('unhandledRejection', (error, promise) => {
+	if (World.event.emit('unhandledRejection', error, promise)) return;
+	console.error('unhandledRejection', error);
+});
+global.EventEmitter = EventEmitter;

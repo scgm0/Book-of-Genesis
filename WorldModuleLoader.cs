@@ -9,6 +9,16 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 	private readonly bool _isRes = worldInfo?.GlobalPath.StartsWith("res://") ?? false;
 	private bool _isLoaded;
 	private readonly GodotDefaultLoader _defaultLoader = new();
+	private readonly SourceMapCollection _sourceMapCollection = new();
+
+	public World? World { get; set; }
+	public WorldInfo? WorldInfo { get; } = worldInfo;
+
+	public WorldModuleLoader(World? world) : this(Main.CurrentWorldInfo) {
+		World = world;
+	}
+
+	public WorldModuleLoader() : this(worldInfo: null) { }
 
 	public string Resolve(string specifier, string referrer) {
 		if (!_isLoaded) return specifier;
@@ -33,9 +43,9 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 			return true;
 		}
 
-		if (worldInfo is null) return false;
+		if (WorldInfo is null) return false;
 
-		var fullPath = worldInfo.GlobalPath.PathJoin(filePath).SimplifyPath();
+		var fullPath = WorldInfo.GlobalPath.PathJoin(filePath).SimplifyPath();
 		return Utils.Polyfill.ContainsKey(filePath) || FileAccess.FileExists(fullPath);
 	}
 
@@ -52,10 +62,10 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 			return value;
 		}
 
-		if (worldInfo is null) return string.Empty;
+		if (WorldInfo is null) return string.Empty;
 
-		debugPath = worldInfo.Path.PathJoin(filePath).SimplifyPath();
-		var fullPath = worldInfo.GlobalPath.PathJoin(filePath).SimplifyPath();
+		debugPath = WorldInfo.Path.PathJoin(filePath).SimplifyPath();
+		var fullPath = WorldInfo.GlobalPath.PathJoin(filePath).SimplifyPath();
 		code = fullPath.EndsWith(".ts") ? ReadTs2Js(fullPath, debugPath) : FileAccess.GetFileAsString(fullPath);
 		RegisterSourceMap(in code, debugPath);
 		return code;
@@ -64,23 +74,29 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 	public void OnBuiltinLoaded(JsEnv env) {
 		env.SetDefaultBindingMode(BindingMode.DontBinding);
 		_isLoaded = true;
-		if (worldInfo is null) return;
-		env.Eval("global.World = {};");
+		env.ClearModuleCache();
+		if (WorldInfo is null) return;
+		env.ExecuteModule("创世记:world_init");
+		env.ExecuteModule("创世记:events");
 		env.ExecuteModule("创世记:console");
+	}
+
+	public string GetSourceMapStack(string stack) {
+		return StackTraceParser.ReTrace(_sourceMapCollection, stack);
 	}
 
 	private string ReadTs2Js(string fullPath, string filePath) {
 		string code;
-		var cachePath = Utils.TsGenPath.PathJoin(filePath.ReplaceOnce(worldInfo!.Path, $"/{worldInfo.WorldKey}/")).SimplifyPath();
-		var jsPath = $"{cachePath}{(worldInfo.IsEncrypt ? ".encrypt" : "")}.js";
-		var metaPath = $"{cachePath}{(worldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
+		var cachePath = Utils.TsGenPath.PathJoin(filePath.ReplaceOnce(WorldInfo!.Path, $"/{WorldInfo.WorldKey}/")).SimplifyPath();
+		var jsPath = $"{cachePath}{(WorldInfo.IsEncrypt ? ".encrypt" : "")}.js";
+		var metaPath = $"{cachePath}{(WorldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
 		if (FileAccess.FileExists(jsPath) &&
 			FileAccess.FileExists(metaPath)) {
 			var tsSha256 = FileAccess.GetSha256(fullPath);
-			using var metaFile = worldInfo.IsEncrypt
+			using var metaFile = WorldInfo.IsEncrypt
 				? FileAccess.OpenEncryptedWithPass(metaPath,
 					FileAccess.ModeFlags.Read,
-					$"{Utils.ScriptAes256EncryptionKey}_{worldInfo.WorldKey}")
+					$"{Utils.ScriptAes256EncryptionKey}_{WorldInfo.WorldKey}")
 				: FileAccess.Open(metaPath, FileAccess.ModeFlags.Read);
 			var tsMetaJson = metaFile.GetAsText();
 
@@ -89,10 +105,10 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 				SourceGenerationContext.Default.TsMeta);
 			var jsSha256 = FileAccess.GetSha256(jsPath);
 			if (jsSha256 == tsMeta.JsSha256 && tsSha256 == tsMeta.TsSha256) {
-				using var jsFile = worldInfo.IsEncrypt
+				using var jsFile = WorldInfo.IsEncrypt
 					? FileAccess.OpenEncryptedWithPass(jsPath,
 						FileAccess.ModeFlags.Read,
-						$"{Utils.ScriptAes256EncryptionKey}_{worldInfo.WorldKey}")
+						$"{Utils.ScriptAes256EncryptionKey}_{WorldInfo.WorldKey}")
 					: FileAccess.Open(jsPath, FileAccess.ModeFlags.Read);
 				code = jsFile.GetAsText();
 			} else {
@@ -106,26 +122,26 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 	}
 
 	private void TsGen(out string code, string fullPath, string filePath, string cachePath) {
-		var jsPath = $"{cachePath}{(worldInfo!.IsEncrypt ? ".encrypt" : "")}.js";
-		var metaPath = $"{cachePath}{(worldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
+		var jsPath = $"{cachePath}{(WorldInfo!.IsEncrypt ? ".encrypt" : "")}.js";
+		var metaPath = $"{cachePath}{(WorldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
 		DirAccess.MakeDirRecursiveAbsolute($"{cachePath}".GetBaseDir());
 		var tsSha256 = FileAccess.GetSha256(fullPath);
 		var res = TsTransform.Compile(FileAccess.GetFileAsString(fullPath), filePath);
 		code = res.Get<string>("outputText");
 		var jsFile =
-			worldInfo.IsEncrypt
+			WorldInfo.IsEncrypt
 				? FileAccess.OpenEncryptedWithPass(jsPath,
 					FileAccess.ModeFlags.Write,
-					$"{Utils.ScriptAes256EncryptionKey}_{worldInfo.WorldKey}")
+					$"{Utils.ScriptAes256EncryptionKey}_{WorldInfo.WorldKey}")
 				: FileAccess.Open(jsPath, FileAccess.ModeFlags.Write);
 		jsFile.StoreString(code);
 		jsFile.Dispose();
 		var jsSha256 = FileAccess.GetSha256(jsPath);
 		var tsMetaFile =
-			worldInfo.IsEncrypt
+			WorldInfo.IsEncrypt
 				? FileAccess.OpenEncryptedWithPass(metaPath,
 					FileAccess.ModeFlags.Write,
-					$"{Utils.ScriptAes256EncryptionKey}_{worldInfo.WorldKey}")
+					$"{Utils.ScriptAes256EncryptionKey}_{WorldInfo.WorldKey}")
 				: FileAccess.Open(metaPath, FileAccess.ModeFlags.Write);
 		tsMetaFile.StoreString($"{{\"ts_sha256\":\"{tsSha256}\",\"js_sha256\":\"{jsSha256}\"}}");
 		tsMetaFile.Dispose();
@@ -135,14 +151,14 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 		if (!Utils.SourceMapPathRegex().IsMatch(code)) return;
 		var sourceMappingUrl = Utils.SourceMapPathRegex().Match(code).Value;
 		if (sourceMappingUrl.StartsWith("data:application/json;base64,")) {
-			Utils.SourceMapCollection?.Register(path,
+			_sourceMapCollection.Register(path,
 				SourceMapParser.Parse(sourceMappingUrl.Replace("data:application/json;base64,", "").UnEnBase64()));
 		} else {
 			var sourceFile =
 				$"{(_isRes ? Utils.ResWorldsPath : Utils.UserWorldsPath)}{path.PathJoin(sourceMappingUrl)}".SimplifyPath();
 			if (!FileAccess.FileExists(sourceFile)) return;
 			var sourceMap = SourceMapParser.Parse(FileAccess.GetFileAsString(sourceFile));
-			Utils.SourceMapCollection?.Register(path, sourceMap);
+			_sourceMapCollection.Register(path, sourceMap);
 		}
 	}
 }

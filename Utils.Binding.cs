@@ -9,10 +9,12 @@ namespace 创世记;
 public static partial class Utils {
 	[Binding]
 	public static IEnumerable<Type> Bindings {
-		get => new List<Type> {
+		get => [
 			typeof(Task),
 			typeof(Log),
-			typeof(World)
-		};
+			typeof(World),
+			typeof(TextType),
+			typeof(WorldModuleLoader),
+		];
 	}
 }

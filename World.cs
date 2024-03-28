@@ -1,8 +1,8 @@
 using System;
+using System.Collections;
 using System.Linq;
 using Godot;
 using Puerts;
-using World;
 // ReSharper disable MemberCanBePrivate.Global
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
@@ -23,13 +23,13 @@ public partial class World : Control {
 	private StyleBoxFlat _centerTextStyle;
 	private StyleBoxFlat _rightTextStyle;
 	private Tween? _toastTween;
-	private JsEnv? _jsEnv;
-	
+	private readonly JsEnv _jsEnv;
+	public Action<EventType, object[]?> JsEventEmit { get; set; }
 	public static World Instance { get; private set; }
 
 	public World() {
 		Instance = this;
-		_jsEnv = new JsEnv(new WorldModuleLoader(Main.CurrentWorldInfo));
+		_jsEnv = new JsEnv(new WorldModuleLoader(this));
 	}
 
 	public override void _Ready() {
@@ -38,10 +38,15 @@ public partial class World : Control {
 		_centerTextStyle = (StyleBoxFlat)CenterText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
 		_rightTextStyle = (StyleBoxFlat)RightText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
 
-		LeftText.MetaClicked += meta => Main.OnMetaClickedEventHandler(meta, 0);
-		CenterText.MetaClicked += meta => Main.OnMetaClickedEventHandler(meta, 1);
-		RightText.MetaClicked += meta => Main.OnMetaClickedEventHandler(meta, 2);
+		LeftText.MetaClicked += meta => OnMetaClickedEventHandler(meta, TextType.LeftText);
+		CenterText.MetaClicked += meta => OnMetaClickedEventHandler(meta, TextType.CenterText);
+		RightText.MetaClicked += meta => OnMetaClickedEventHandler(meta, TextType.RightText);
 
+		CommandEdit.TextSubmitted += text => {
+			CommandEdit.Text = "";
+			JsEventEmit(EventType.Command, [text]);
+		};
+		
 		LeftButtonList.Resized += async () => {
 			if (LeftButtonList.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
@@ -63,6 +68,19 @@ public partial class World : Control {
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 			RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
+
+		_jsEnv.ExecuteModule(Main.CurrentWorldInfo?.Main);
+	}
+
+	public override void _Process(double delta) {
+		base._Process(delta);
+		_jsEnv.Tick();
+	}
+
+	public void OnMetaClickedEventHandler(Variant meta, TextType type) {
+		var json = new Json();
+		var value = json.Parse(meta.AsString()) == Error.Ok ? json.Data : meta.AsString();
+		JsEventEmit(EventType.TextUrlClick, [value, type]);
 	}
 
 	public void ShowToast(string text) {
@@ -112,6 +130,7 @@ public partial class World : Control {
 		if (index < 0) {
 			index = GetParagraphCount(type) + index;
 		}
+
 		this.SyncSend(_ => {
 			switch (type) {
 				case TextType.Title:

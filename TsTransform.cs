@@ -18,8 +18,7 @@ public static class TsTransform {
 	}
 
 	public static void Prepare() {
-		var env = new JsEnv(new WorldModuleLoader(default));
-		env.Eval("const exports = {};");
+		var env = new JsEnv(new WorldModuleLoader());
 		env.Eval("console.log = CS.创世记.Log.Debug");
 		var ts = env.ExecuteModule("创世记:typescript");
 		_compiler = ts.Get<Func<string, object?, string, JSObject>>("transform");

@@ -27,7 +27,7 @@ public static partial class Log {
 		var str = data.LogText;
 		switch (data.Severity) {
 			case Severity.Warn:
-				GD.PrintRich($"[color=orange]{str}[/color]");
+				GD.PrintRich($"[color=yellow]{str}[/color]");
 				break;
 			case Severity.Error:
 				GD.PrintRich($"[color=red]{str}[/color]");

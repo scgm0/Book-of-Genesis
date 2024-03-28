@@ -16,6 +16,7 @@ global.__tgjsSetPromiseRejectCallback(promiseRejectHandler)
 delete global.__tgjsSetPromiseRejectCallback;
 
 const maybeUnhandledRejection = new WeakMap();
+const puer = global.puer;
 
 function promiseRejectHandler(type, promise, reason) {
     switch (type) {
