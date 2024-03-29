@@ -12,6 +12,7 @@ public partial class PuerTsPlugin : EditorPlugin {
 				.Instantiate<PuerTsMenu>()
 		);
 	}
+
 	public override void _EnablePlugin() {
 		AddToolSubmenuItem("PuerTs",
 			GD.Load<PackedScene>("res://addons/PuerTs/Godot/PuerTsMenu.tscn")

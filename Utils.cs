@@ -3,8 +3,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Godot;
-using Jint.Native.Json;
-using Jint.Runtime;
 using Timer = System.Threading.Timer;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -26,27 +24,19 @@ public static partial class Utils {
 
 #if GODOT_ANDROID
 	public static readonly string GameUserDataPath = $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{GameName}";
+#else
+	public static readonly string GameUserDataPath = ProjectSettings.GlobalizePath("user://");
+#endif
 
 	public static readonly string SavesPath = $"{GameUserDataPath}/Saves";
 
 	public static readonly string UserWorldsPath = $"{GameUserDataPath}/Worlds";
 
 	public static readonly string TsGenPath = $"{GameUserDataPath}/TsGen";
-#else
-	public static readonly string GameUserDataPath = ProjectSettings.GlobalizePath("user://");
-
-	public const string SavesPath = "user://Saves";
-
-	public const string UserWorldsPath = "user://Worlds";
-
-	public const string TsGenPath = "user://TsGen";
-#endif
 
 	public static readonly string LogPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
-	public static readonly GodotSynchronizationContext SyncCtx = Dispatcher.SynchronizationContext;
 
-	public static JsonParser? JsonParser;
-	public static JsonSerializer? JsonSerializer;
+	public static readonly GodotSynchronizationContext SyncCtx = Dispatcher.SynchronizationContext;
 
 	static private Timer? _debounceTimer;
 
@@ -140,9 +130,7 @@ public static partial class Utils {
 
 	public static void AddRichText(RichTextLabel label, string text) {
 		LoadRichTextImg(ref text);
-		Tree.Root.SyncSend(_ => {
-			label.AppendText(text);
-		});
+		label.AppendText(text);
 	}
 
 	public static void LoadRichTextImg(ref string text) {
@@ -215,7 +203,7 @@ public static partial class Utils {
 				break;
 			case ImageFormat.Unknown:
 			default:
-				throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
+				throw new Exception("不支持的图像格式，仅支持png、jpg、bmp与webp");
 		}
 
 		return img;

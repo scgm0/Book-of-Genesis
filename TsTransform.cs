@@ -10,11 +10,7 @@ public static class TsTransform {
 	static private Func<string, object?, string, JSObject> _compiler = null!;
 
 	public static JSObject Compile(string code, string fileName) {
-		JSObject? res = null;
-		Utils.Tree.Root.SyncSend(_ => {
-			res = _compiler.Invoke(code, null, fileName);
-		});
-		return res!;
+		return _compiler(code, null, fileName);
 	}
 
 	public static void Prepare() {

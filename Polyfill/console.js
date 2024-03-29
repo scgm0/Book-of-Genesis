@@ -4,8 +4,8 @@ const Log = World.Log;
 
 if (Log) {
     delete World.Log;
-    var console = {};
-    var getSourceMapStack = World.getSourceMapStack;
+    const console = {};
+    const getSourceMapStack = World.getSourceMapStack;
 
     function toString(args) {
         return Array.prototype.map.call(args, x => {
@@ -19,7 +19,7 @@ if (Log) {
 
     function getStack(error) {
         let stack = error.stack;
-        stack = stack.replace(error.message, "");
+        stack = stack.replace(error.toString(), "");
         stack = stack.substring(stack.indexOf("\n")+1);
         return stack;
     }

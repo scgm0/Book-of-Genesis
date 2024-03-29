@@ -1,9 +1,5 @@
 using System;
 using Godot;
-using Jint;
-using Jint.Native;
-using Jint.Native.Function;
-using Jint.Runtime;
 using 创世记;
 using FileAccess = Godot.FileAccess;
 
@@ -20,7 +16,7 @@ public sealed class AudioPlayer {
 	private AudioStream? _audioStream;
 	private string? _audioStreamPath;
 
-	public JsValue? FinishedCallback;
+	public Action? FinishedCallback;
 
 	public double Duration { get => _audioStream?.GetLength() ?? 0; }
 
@@ -31,67 +27,59 @@ public sealed class AudioPlayer {
 	public bool Loop { set => _player.Set("parameters/looping", value); get => _player.Get("parameters/looping").AsBool(); }
 
 	public AudioPlayer() {
-		_player.SyncSend(_ => {
-			Utils.Tree.Root.AddChild(_player);
-			_player.Finished += () => {
-				if (FinishedCallback is not Function function) return;
-				try {
-					function.Call(thisObj: JsValue.FromObject(Main.CurrentEngine!, this), []);
-				} catch (Exception e) {
-					Main.CatchExceptions(e);
-				}
-			};
-			Utils.AudioPlayerCache.Add(this);
-		});
+		Utils.Tree.Root.AddChild(_player);
+		_player.Finished += () => {
+			if (FinishedCallback is null) return;
+			FinishedCallback();
+		};
+		Utils.AudioPlayerCache.Add(this);
 	}
 
 	public AudioPlayer SetAudioPath(string path) {
-		_player.SyncSend(_ => {
-			path = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
-			_audioStream?.Dispose();
+		path = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
+		_audioStream?.Dispose();
 
-			if (!FileAccess.FileExists(path)) {
-				throw new JavaScriptException($"{path}文件不存在");
-			}
+		if (!FileAccess.FileExists(path)) {
+			throw new Exception($"{path}文件不存在");
+		}
 
-			using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+		using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 
-			switch (AudioFileFormatFinder.GetAudioFormat(file.Get32())) {
-				case AudioFormat.Ogg:
-					_audioStream = AudioStreamOggVorbis.LoadFromFile(path);
-					break;
-				case AudioFormat.Mp3:
-					_audioStream = new AudioStreamMP3();
-					((AudioStreamMP3)_audioStream).Data = FileAccess.GetFileAsBytes(path);
-					break;
-				case AudioFormat.Wav:
-					_audioStream = new AudioStreamWav();
-					var wav = (AudioStreamWav)_audioStream;
-					var header = WavFileHeader.CreateFromFileAccess(file);
-					wav.Format = header.BitsPerSample switch {
-						8 => AudioStreamWav.FormatEnum.Format8Bits, 16 => AudioStreamWav.FormatEnum.Format16Bits, _ => wav.Format
-					};
-					wav.Data = file.GetBuffer((long)(file.GetLength() - (ulong)header.HeaderSize));
-					break;
-				case AudioFormat.Unknown:
-				default:
-					throw new JavaScriptException("不支持的音频格式，仅支持ogg、mp3与wav");
-			}
+		switch (AudioFileFormatFinder.GetAudioFormat(file.Get32())) {
+			case AudioFormat.Ogg:
+				_audioStream = AudioStreamOggVorbis.LoadFromFile(path);
+				break;
+			case AudioFormat.Mp3:
+				_audioStream = new AudioStreamMP3();
+				((AudioStreamMP3)_audioStream).Data = FileAccess.GetFileAsBytes(path);
+				break;
+			case AudioFormat.Wav:
+				_audioStream = new AudioStreamWav();
+				var wav = (AudioStreamWav)_audioStream;
+				var header = WavFileHeader.CreateFromFileAccess(file);
+				wav.Format = header.BitsPerSample switch {
+					8 => AudioStreamWav.FormatEnum.Format8Bits, 16 => AudioStreamWav.FormatEnum.Format16Bits, _ => wav.Format
+				};
+				wav.Data = file.GetBuffer((long)(file.GetLength() - (ulong)header.HeaderSize));
+				break;
+			case AudioFormat.Unknown:
+			default:
+				throw new Exception("不支持的音频格式，仅支持ogg、mp3与wav");
+		}
 
-			if (_audioStream?.InstantiatePlayback() == null) {
-				_audioStream = null;
-				throw new JavaScriptException("不支持的音频格式，仅支持ogg、mp3与wav");
-			}
+		if (_audioStream?.InstantiatePlayback() == null) {
+			_audioStream = null;
+			throw new Exception("不支持的音频格式，仅支持ogg、mp3与wav");
+		}
 
-			_audioStreamPath = path;
-			_player.Stream = _audioStream;
-		});
+		_audioStreamPath = path;
+		_player.Stream = _audioStream;
 		return this;
 	}
 
 	public AudioPlayer Pause() {
 		if (_audioStream == null) {
-			throw new JavaScriptException("未设置音频文件");
+			throw new Exception("未设置音频文件");
 		}
 
 		_player.StreamPaused = true;
@@ -100,7 +88,7 @@ public sealed class AudioPlayer {
 
 	public AudioPlayer Play(float? fromPosition = null) {
 		if (_audioStream == null) {
-			throw new JavaScriptException("未设置音频文件");
+			throw new Exception("未设置音频文件");
 		}
 
 		if (IsPlaying) {
@@ -113,36 +101,30 @@ public sealed class AudioPlayer {
 		}
 
 		_player.StreamPaused = false;
-		_player.SyncSend(_ => {
-			_player.Play(fromPosition ?? CurrentPosition);
-		});
+		_player.Play(fromPosition ?? CurrentPosition);
 		return this;
 	}
 
 	public AudioPlayer Seek(float pos) {
 		if (_audioStream == null) {
-			throw new JavaScriptException("未设置音频文件");
+			throw new Exception("未设置音频文件");
 		}
 
-		_player.SyncSend(_ => {
-			_player.Seek(pos);
-		});
+		_player.Seek(pos);
 		return this;
 	}
 
 	public AudioPlayer Stop() {
 
 		if (_audioStream == null) {
-			throw new JavaScriptException("未设置音频文件");
+			throw new Exception("未设置音频文件");
 		}
 
 		if (!IsPlaying) {
 			return this;
 		}
 
-		_player.SyncSend(_ => {
-			_player.Stop();
-		});
+		_player.Stop();
 		return this;
 	}
 
@@ -156,7 +138,7 @@ public sealed class AudioPlayer {
 		string path,
 		bool loop = false,
 		float? fromPosition = null,
-		JsValue? finishCallback = null) {
+		Action? finishCallback = null) {
 		var audioPlayer = new AudioPlayer {
 			FinishedCallback = finishCallback
 		};

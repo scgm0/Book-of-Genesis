@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Linq;
 using Godot;
 using Puerts;
@@ -23,9 +22,17 @@ public partial class World : Control {
 	private StyleBoxFlat _centerTextStyle;
 	private StyleBoxFlat _rightTextStyle;
 	private Tween? _toastTween;
-	private readonly JsEnv _jsEnv;
-	public Action<EventType, object[]?> JsEventEmit { get; set; }
-	public static World Instance { get; private set; }
+	private JsEnv? _jsEnv;
+	public JSObject JsEvent { get; set; }
+	public static World? Instance { get; private set; }
+
+	public static void ExitWorld() {
+
+		if (Instance == null) return;
+		Instance._jsEnv?.Dispose();
+		Instance._jsEnv = null;
+		Instance = null;
+	}
 
 	public World() {
 		Instance = this;
@@ -44,9 +51,9 @@ public partial class World : Control {
 
 		CommandEdit.TextSubmitted += text => {
 			CommandEdit.Text = "";
-			JsEventEmit(EventType.Command, [text]);
+			EventEmit(EventType.Command, text);
 		};
-		
+
 		LeftButtonList.Resized += async () => {
 			if (LeftButtonList.GetChildCount() <= 0) return;
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
@@ -68,60 +75,65 @@ public partial class World : Control {
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 			RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
-
-		_jsEnv.ExecuteModule(Main.CurrentWorldInfo?.Main);
+		try {
+			_jsEnv?.ExecuteModule(Main.CurrentWorldInfo?.Main);
+		} catch (Exception e) {
+			_jsEnv?.Eval("console.error(World.getLastException())");
+		}
 	}
 
 	public override void _Process(double delta) {
-		base._Process(delta);
-		_jsEnv.Tick();
+		_jsEnv?.Tick();
 	}
 
-	public void OnMetaClickedEventHandler(Variant meta, TextType type) {
-		var json = new Json();
-		var value = json.Parse(meta.AsString()) == Error.Ok ? json.Data : meta.AsString();
-		JsEventEmit(EventType.TextUrlClick, [value, type]);
+	private void OnMetaClickedEventHandler(Variant meta, TextType type) {
+		try {
+			EventEmit(EventType.TextUrlClick, meta.ToString(), type);
+		} catch (Exception) {
+			_jsEnv?.Eval("console.error(World.getLastException())");
+		}
 	}
 
+	public void EventEmit(EventType type, params object[]? args) {
+		_jsEnv?.UsingAction<EventType, object[]?>();
+		JsEvent.Get<Action<EventType, object[]?>>("emit")?.Invoke(type, args);
+	}
 	public void ShowToast(string text) {
-		this.SyncSend(_ => {
-			Toast.Text = text;
-			_toastTween?.Kill();
-			_toastTween = CreateTween();
-			_toastTween.TweenProperty(Toast, "modulate:a", 1, 0.5f);
-			_toastTween.TweenProperty(Toast, "modulate:a", 0, 0.5f)
-				.SetDelay(2.5);
-		});
+		Toast.Text = text;
+		_toastTween?.Kill();
+		_toastTween = CreateTween();
+		_toastTween.TweenProperty(Toast, "modulate:a", 1, 0.5f);
+		_toastTween.TweenProperty(Toast, "modulate:a", 0, 0.5f)
+			.SetDelay(2.5);
 	}
 
 	public void SetTitle(string title) => Utils.SetRichText(Title, title);
-	public void SetLeftStretchRatio(float ratio) => this.SyncSend(_ => LeftText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
+	public void SetLeftStretchRatio(float ratio) => LeftText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
 
-	public void SetCenterStretchRatio(float ratio) => this.SyncSend(_ => CenterText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
+	public void SetCenterStretchRatio(float ratio) => CenterText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
 
-	public void SetRightStretchRatio(float ratio) => this.SyncSend(_ => RightText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio);
-	public void SetCommandPlaceholderText(string text) => this.SyncSend(_ => CommandEdit.PlaceholderText = text);
+	public void SetRightStretchRatio(float ratio) => RightText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
+	public void SetCommandPlaceholderText(string text) => CommandEdit.PlaceholderText = text;
 
 	public int GetParagraphCount(TextType type) {
-		var count = 0;
-		this.SyncSend(_ => {
-			switch (type) {
-				case TextType.Title:
-					count = Title.GetParagraphCount();
-					break;
-				case TextType.LeftText:
-					count = LeftText.GetParagraphCount();
-					break;
-				case TextType.CenterText:
-					count = CenterText.GetParagraphCount();
-					break;
-				case TextType.RightText:
-					count = RightText.GetParagraphCount();
-					break;
-				case TextType.All:
-				default: return;
-			}
-		});
+		var count = -1;
+		switch (type) {
+			case TextType.Title:
+				count = Title.GetParagraphCount();
+				break;
+			case TextType.LeftText:
+				count = LeftText.GetParagraphCount();
+				break;
+			case TextType.CenterText:
+				count = CenterText.GetParagraphCount();
+				break;
+			case TextType.RightText:
+				count = RightText.GetParagraphCount();
+				break;
+			case TextType.All:
+			default: break;
+		}
+
 		return count;
 	}
 
@@ -131,24 +143,23 @@ public partial class World : Control {
 			index = GetParagraphCount(type) + index;
 		}
 
-		this.SyncSend(_ => {
-			switch (type) {
-				case TextType.Title:
-					result = Title.RemoveParagraph(index);
-					break;
-				case TextType.LeftText:
-					result = LeftText.RemoveParagraph(index);
-					break;
-				case TextType.CenterText:
-					result = CenterText.RemoveParagraph(index);
-					break;
-				case TextType.RightText:
-					result = RightText.RemoveParagraph(index);
-					break;
-				case TextType.All:
-				default: return;
-			}
-		});
+		switch (type) {
+			case TextType.Title:
+				result = Title.RemoveParagraph(index);
+				break;
+			case TextType.LeftText:
+				result = LeftText.RemoveParagraph(index);
+				break;
+			case TextType.CenterText:
+				result = CenterText.RemoveParagraph(index);
+				break;
+			case TextType.RightText:
+				result = RightText.RemoveParagraph(index);
+				break;
+			case TextType.All:
+			default: break;
+		}
+
 		return result;
 	}
 
@@ -179,23 +190,17 @@ public partial class World : Control {
 
 	public void SetLeftText(string text) {
 		Utils.SetRichText(LeftText, text);
-		this.SyncSend(_ => {
-			LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-		});
+		LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public void SetCenterText(string text) {
 		Utils.SetRichText(CenterText, text);
-		this.SyncSend(_ => {
-			CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-		});
+		CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public void SetRightText(string text) {
 		Utils.SetRichText(RightText, text);
-		this.SyncSend(_ => {
-			RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-		});
+		RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public void AddText(TextType textType, string text, TextType? exclude = null) {
@@ -227,112 +232,92 @@ public partial class World : Control {
 
 	public void AddLeftText(string text) {
 		Utils.AddRichText(LeftText, text);
-		this.SyncSend(_ => {
-			LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-		});
+
+		LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
+
 	}
 
 	public void AddCenterText(string text) {
 		Utils.AddRichText(CenterText, text);
-		this.SyncSend(_ => {
-			CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-		});
+		CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public void AddRightText(string text) {
 		Utils.AddRichText(RightText, text);
-		this.SyncSend(_ => {
-			RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-		});
+		RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public ulong[] SetLeftButtons(string[] names) {
-		ulong[] buttons = [];
-		this.SyncSend(_ => {
-			if (LeftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-				buttons = LeftButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
-				return;
-			}
+		ulong[] buttons;
+		if (LeftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
+			buttons = LeftButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
+			return buttons;
+		}
 
-			foreach (var node in LeftButtonList.GetChildren()) {
-				LeftButtonList.RemoveChild(node);
-				node.QueueFree();
-			}
+		foreach (var node in LeftButtonList.GetChildren()) {
+			LeftButtonList.RemoveChild(node);
+			node.QueueFree();
+		}
 
-			buttons = names.Select(AddLeftButton).ToArray();
-		});
+		buttons = names.Select(AddLeftButton).ToArray();
 
 		return buttons;
 	}
 
 	public ulong AddLeftButton(string str) {
-		ulong id = 0;
-		this.SyncSend(_ => {
-			var button = new Button();
-			LeftButtonList.AddChild(button);
-			button.MouseFilter = MouseFilterEnum.Pass;
-			button.Text = str;
-			button.Pressed += () =>
-				Main.EmitEvent(EventType.LeftButtonClick, str, button.GetIndex(), button.GetInstanceId());
-			id = button.GetInstanceId();
-		});
+		var button = new Button();
+		LeftButtonList.AddChild(button);
+		button.MouseFilter = MouseFilterEnum.Pass;
+		button.Text = str;
+		button.Pressed += () =>
+			EventEmit(EventType.LeftButtonClick, str, button.GetIndex(), button.GetInstanceId());
+		var id = button.GetInstanceId();
 		return id;
 	}
 
 	public void RemoveLeftButtonByIndex(int index) {
-		this.SyncSend(_ => {
-			if (index >= 0 ? index > LeftButtonList.GetChildCount() - 1 : index < -LeftButtonList.GetChildCount()) return;
-			var node = LeftButtonList.GetChild(index);
-			node.QueueFree();
-		});
+		if (index >= 0 ? index > LeftButtonList.GetChildCount() - 1 : index < -LeftButtonList.GetChildCount()) return;
+		var node = LeftButtonList.GetChild(index);
+		node.QueueFree();
 	}
 
 	public ulong[] SetRightButtons(string[] names) {
-		ulong[] buttons = [];
-		this.SyncSend(_ => {
-			if (RightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
-				buttons = RightButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
-				return;
-			}
+		ulong[] buttons;
+		if (RightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
+			buttons = RightButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
+			return buttons;
+		}
 
-			foreach (var node in RightButtonList.GetChildren()) {
-				RightButtonList.RemoveChild(node);
-				node.QueueFree();
-			}
+		foreach (var node in RightButtonList.GetChildren()) {
+			RightButtonList.RemoveChild(node);
+			node.QueueFree();
+		}
 
-			buttons = names.Select(AddRightButton).ToArray();
-		});
+		buttons = names.Select(AddRightButton).ToArray();
 
 		return buttons;
 	}
 
 	public ulong AddRightButton(string str) {
-		ulong id = 0;
-		this.SyncSend(_ => {
-			var button = new Button();
-			RightButtonList.AddChild(button);
-			button.MouseFilter = MouseFilterEnum.Pass;
-			button.Text = str;
-			button.Pressed += () =>
-				Main.EmitEvent(EventType.RightButtonClick, str, button.GetIndex(), button.GetInstanceId());
-			id = button.GetInstanceId();
-		});
+		var button = new Button();
+		RightButtonList.AddChild(button);
+		button.MouseFilter = MouseFilterEnum.Pass;
+		button.Text = str;
+		button.Pressed += () =>
+			EventEmit(EventType.RightButtonClick, str, button.GetIndex(), button.GetInstanceId());
+		var id = button.GetInstanceId();
 		return id;
 	}
 
 	public void RemoveRightButtonByIndex(int index) {
-		this.SyncSend(_ => {
-			if (index >= 0 ? index > RightButtonList.GetChildCount() - 1 : index < -RightButtonList.GetChildCount()) return;
-			var node = RightButtonList.GetChild(index);
-			node.QueueFree();
-		});
+		if (index >= 0 ? index > RightButtonList.GetChildCount() - 1 : index < -RightButtonList.GetChildCount()) return;
+		var node = RightButtonList.GetChild(index);
+		node.QueueFree();
 	}
 
 	public static void RemoveButtonById(ulong id) {
-		Utils.Tree.Root.SyncSend(_ => {
-			var button = InstanceFromId(id) as Button;
-			button?.QueueFree();
-		});
+		var button = InstanceFromId(id) as Button;
+		button?.QueueFree();
 	}
 
 	public void SetTextBackgroundColor(TextType type, string colorHex, TextType? exclude = null) {
@@ -349,28 +334,26 @@ public partial class World : Control {
 
 	private void SetTextBackgroundColor(TextType type, Color color) {
 		var modulate = color.A > 0 ? Colors.White : Colors.Transparent;
-		this.SyncSend(_ => {
-			switch (type) {
-				case TextType.Title:
-					_titleStyle.BgColor = color;
-					Title.Modulate = modulate;
-					break;
-				case TextType.LeftText:
-					_leftTextStyle.BgColor = color;
-					LeftText.GetParent().GetParent<Panel>().Modulate = modulate;
-					break;
-				case TextType.CenterText:
-					_centerTextStyle.BgColor = color;
-					CenterText.GetParent().GetParent<Panel>().Modulate = modulate;
-					break;
-				case TextType.RightText:
-					_rightTextStyle.BgColor = color;
-					RightText.GetParent().GetParent<Panel>().Modulate = modulate;
-					break;
-				case TextType.All:
-				default: return;
-			}
-		});
+		switch (type) {
+			case TextType.Title:
+				_titleStyle.BgColor = color;
+				Title.Modulate = modulate;
+				break;
+			case TextType.LeftText:
+				_leftTextStyle.BgColor = color;
+				LeftText.GetParent().GetParent<Panel>().Modulate = modulate;
+				break;
+			case TextType.CenterText:
+				_centerTextStyle.BgColor = color;
+				CenterText.GetParent().GetParent<Panel>().Modulate = modulate;
+				break;
+			case TextType.RightText:
+				_rightTextStyle.BgColor = color;
+				RightText.GetParent().GetParent<Panel>().Modulate = modulate;
+				break;
+			case TextType.All:
+			default: return;
+		}
 	}
 
 	public void SetTextFontColor(TextType type, string colorHex, TextType? exclude = null) {
@@ -386,23 +369,21 @@ public partial class World : Control {
 	}
 
 	private void SetTextFontColor(TextType type, Color color) {
-		this.SyncSend(_ => {
-			switch (type) {
-				case TextType.Title:
-					Title.AddThemeColorOverride("default_color", color);
-					break;
-				case TextType.LeftText:
-					LeftText.AddThemeColorOverride("default_color", color);
-					break;
-				case TextType.CenterText:
-					CenterText.AddThemeColorOverride("default_color", color);
-					break;
-				case TextType.RightText:
-					RightText.AddThemeColorOverride("default_color", color);
-					break;
-				case TextType.All:
-				default: return;
-			}
-		});
+		switch (type) {
+			case TextType.Title:
+				Title.AddThemeColorOverride("default_color", color);
+				break;
+			case TextType.LeftText:
+				LeftText.AddThemeColorOverride("default_color", color);
+				break;
+			case TextType.CenterText:
+				CenterText.AddThemeColorOverride("default_color", color);
+				break;
+			case TextType.RightText:
+				RightText.AddThemeColorOverride("default_color", color);
+				break;
+			case TextType.All:
+			default: return;
+		}
 	}
 }

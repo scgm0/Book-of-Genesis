@@ -5,9 +5,13 @@ let World = global.World = global.World || {};
 const loader = puer.loader;
 const world = loader.World;
 const worldInfo = loader.WorldInfo;
+const getLastException = puerts.getLastException;
+const GetSourceMapStack = loader.GetSourceMapStack.bind(loader);
 
-World.getSourceMapStack = (stack) => {
-    return loader.GetSourceMapStack(stack);
+World.getLastException = () => getLastException();
+
+World.getSourceMapStack = stack => {
+    return GetSourceMapStack(stack);
 }
 
 const Log = puer.loadType('创世记.Log');
@@ -47,26 +51,38 @@ World.info = {
     
 }
 
-World.delay = (n) => new Promise(resolve => setTimeout(resolve, n));
-World.toast = world.Toast;
-World.setTitle = (...args) => world.SetTitle(...args);
-World.setCenterText = (...args) => world.SetCenterText(...args);
-World.setText = (...args) => world.SetText(...args);
-World.addText = (...args) => world.AddText(...args);
-World.setCommandPlaceholderText = (...args) => world.SetCommandPlaceholderText(...args);
-World.removeParagraph = (...args) => world.RemoveParagraph(...args);
+World.delay = n => new Promise(resolve => setTimeout(resolve, n));
+World.toast = text => world.ShowToast(text);
+World.setTitle = text => world.SetTitle(text);
+World.setCenterText = text => world.SetCenterText(text);
+World.setText = (type, text, exclude = null) => world.SetText(type, text, exclude);
+World.addText = (type, text, exclude = null) => world.AddText(type, text, exclude);
+World.setCommandPlaceholderText = text => world.SetCommandPlaceholderText(text);
+World.removeParagraph = (type, index) => world.RemoveParagraph(type, index);
 
-World.setTextBackgroundColor = (...args) => world.SetTextBackgroundColor(...args);
+World.setTextBackgroundColor = (type, colorHex, exclude = null) => world.SetTextBackgroundColor(type, colorHex, exclude);
 
-world.JsEventEmit = (event, args) => {
-    if (args !=null) {
-        let a = [];
-        for(let i = 0; i < args.Length; i++) {
-            a.push(args[i])
+world.JsEvent = {
+    emit(event, args){
+        if (args !=null) {
+            let array = [];
+            for(let i = 0; i < args.Length; i++) {
+                array.push(args.GetValue(i));
+            }
+            World.event.emit(event, ...array);
+        } else {
+            World.event.emit(event);
         }
-        console.log(a);
-        World.event.emit(event, ...a);
-    } else {
-        World.event.emit(event);
     }
 }
+// world.SetEventEmit((event, args) => {
+//     if (args !=null) {
+//         let array = [];
+//         for(let i = 0; i < args.Length; i++) {
+//             array.push(args.GetValue(i));
+//         }
+//         World.event.emit(event, ...array);
+//     } else {
+//         World.event.emit(event);
+//     }
+// });

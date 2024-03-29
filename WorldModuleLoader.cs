@@ -16,12 +16,13 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 
 	public WorldModuleLoader(World? world) : this(Main.CurrentWorldInfo) {
 		World = world;
+		JsEnv.ClearAllModuleCaches();
 	}
 
 	public WorldModuleLoader() : this(worldInfo: null) { }
 
 	public string Resolve(string specifier, string referrer) {
-		if (!_isLoaded) return specifier;
+		if (!_isLoaded || Utils.Polyfill.ContainsKey(specifier)) return specifier;
 
 		if (specifier.StartsWith("创世记:")) return specifier.ReplaceOnce("创世记:", "");
 
@@ -74,7 +75,6 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 	public void OnBuiltinLoaded(JsEnv env) {
 		env.SetDefaultBindingMode(BindingMode.DontBinding);
 		_isLoaded = true;
-		env.ClearModuleCache();
 		if (WorldInfo is null) return;
 		env.ExecuteModule("创世记:world_init");
 		env.ExecuteModule("创世记:events");

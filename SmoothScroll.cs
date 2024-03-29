@@ -628,7 +628,7 @@ public partial class SmoothScroll : ScrollContainer {
 	}
 
 	public bool ShouldScrollVertical() {
-		var disableScroll = _contentNode.Size.Y - Size.Y < 1 || (!AllowVerticalScroll && AutoAllowScroll) ||
+		var disableScroll = _contentNode.Size.Y - Size.Y < 1 || !AllowVerticalScroll && AutoAllowScroll ||
 			!AllowVerticalScroll;
 		if (!disableScroll) return true;
 		_velocity.Y = 0.0f;
@@ -636,7 +636,7 @@ public partial class SmoothScroll : ScrollContainer {
 	}
 
 	public bool ShouldScrollHorizontal() {
-		var disableScroll = _contentNode.Size.X - Size.X < 1 || (!AllowHorizontalScroll && AutoAllowScroll) ||
+		var disableScroll = _contentNode.Size.X - Size.X < 1 || !AllowHorizontalScroll && AutoAllowScroll ||
 			!AllowHorizontalScroll;
 		if (!disableScroll) return true;
 		_velocity.X = 0.0f;

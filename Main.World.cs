@@ -1,16 +1,10 @@
 using System;
 using System.Text.Json;
 using Godot;
-using Jint.Native;
-using Engine = Jint.Engine;
 
 namespace 创世记;
 
 public sealed partial class Main {
-
-	static private JsObject? _currentWorld;
-	static private JsObject? _currentWorldEvent;
-	public static Engine? CurrentEngine { get; private set; }
 	public static WorldInfo? CurrentWorldInfo { get; private set; }
 
 	public static void LoadWorldInfos(string worldsPath, bool loadPackage = false) {

@@ -38,7 +38,7 @@ public static partial class Log {
 			}
 		}
 
-		internal static void Launch() {
+		static private void Launch() {
 			if (_instance != null) return;
 
 			_instance = CreateInstance();

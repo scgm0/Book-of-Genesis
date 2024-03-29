@@ -17,6 +17,7 @@ public partial class PuerTsMenu : PopupMenu {
 		if (!Engine.IsEditorHint()) {
 			QueueFree();
 		}
+
 		IdPressed += id => {
 			switch (id) {
 				case 0:

@@ -1,19 +1,6 @@
 using System;
-using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
 using Godot;
-using Jint;
-using Jint.Constraints;
-using Jint.Native;
-using Jint.Native.Json;
-using Jint.Runtime;
-using Jint.Runtime.Descriptors;
-using Jint.Runtime.Interop;
-using SourceMaps;
-using Engine = Jint.Engine;
 using Environment = System.Environment;
-using Timer = System.Timers.Timer;
 
 #pragma warning disable CS8974 // 将方法组转换为非委托类型
 #pragma warning disable IL2026
@@ -42,7 +29,6 @@ public sealed partial class Main : Control {
 	private World _world;
 
 	static private readonly DateTime StartTime;
-	static private readonly BlockingCollection<Action> JsEventQueue = new();
 
 	static Main() {
 		StartTime = DateTime.Now;
@@ -74,29 +60,18 @@ public sealed partial class Main : Control {
 		_back.Pressed +=
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
-		
-		Task.Run(() => {
-			TsTransform.Prepare();
-			Log.Debug("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());
-			Log.Debug("游戏信息:",
-				"\nPlatform:",
-				OS.GetName(),
-				"\nGameVersion:",
-				Utils.GameVersion,
-				"\nDotNetVersion:",
-				Environment.Version.ToString(),
-				"\nTypeScriptVersion:",
-				TsTransform.TypeScriptVersion!);
-			Utils.Tree.AutoAcceptQuit = false;
-			foreach (var action in JsEventQueue.GetConsumingEnumerable()) {
-				if (CurrentEngine is null) continue;
-				try {
-					action();
-				} catch (Exception e) {
-					CatchExceptions(e);
-				}
-			}
-		});
+		TsTransform.Prepare();
+		Log.Debug("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());
+		Log.Debug("游戏信息:",
+			"\nPlatform:",
+			OS.GetName(),
+			"\nGameVersion:",
+			Utils.GameVersion,
+			"\nDotNetVersion:",
+			Environment.Version.ToString(),
+			"\nTypeScriptVersion:",
+			TsTransform.TypeScriptVersion!);
+		Utils.Tree.AutoAcceptQuit = false;
 	}
 
 	public override void _Input(InputEvent @event) {
@@ -113,7 +88,7 @@ public sealed partial class Main : Control {
 
 	public override void _Notification(int what) {
 		if (what == NotificationWMCloseRequest) {
-			if (CurrentEngine != null) {
+			if (World.Instance != null) {
 				ExitWorld();
 			}
 
@@ -233,29 +208,12 @@ public sealed partial class Main : Control {
 		tween.SetEase(Tween.EaseType.Out);
 		tween.TweenProperty(_background, "modulate:a", 1, 1.5);
 		tween.TweenCallback(new Callable(this, nameof(ReadyWorld)));
-		/*
-		Task.Run(() => {
-			InitEngine();
-			this.SyncPost(_ => {
-				using var tween = _world.CreateTween();
-				tween.SetEase(Tween.EaseType.Out);
-				tween.TweenProperty(_background, "modulate:a", 1, 1.5);
-				tween.TweenCallback(new Callable(this, nameof(ReadyWorld)));
-			});
-
-			try {
-				CurrentEngine!.Modules.Import(CurrentWorldInfo!.Main);
-			} catch (Exception e) {
-				CatchExceptions(e);
-			}
-		});*/
 	}
 
-	private async void ReadyWorld() {
+	private void ReadyWorld() {
 		if (CurrentWorldInfo == null) return;
 		Log.Debug("进入世界:", CurrentWorldInfo.JsonString);
-		// await EmitEvent(EventType.Ready);
-		_world.JsEventEmit(EventType.Ready, null);
+		_world.EventEmit(EventType.Ready);
 		_world.GetNode<Control>("Main").Show();
 	}
 
@@ -264,9 +222,6 @@ public sealed partial class Main : Control {
 		var oldWorld = _world ?? GetNode("%World");
 		_world = _worldScene.Instantiate<World>();
 		_world.GetNode<Control>("Main").Hide();
-		oldWorld.AddSibling(_world);
-		oldWorld.QueueFree();
-
 		_world.SetTitle($"{CurrentWorldInfo!.Name}-{CurrentWorldInfo.Version}");
 		_world.GetNode<Button>("%Encrypt").Disabled = CurrentWorldInfo.IsEncrypt;
 		_world.GetNode<Button>("%Log").Pressed += Log.LogWindow.ToggleVisible;
@@ -286,225 +241,11 @@ public sealed partial class Main : Control {
 			Utils.ExportEncryptionWorldPck(CurrentWorldInfo);
 			ExitWorld();
 		};
-	}
-
-	private void InitEngine() {
-		try {
-			Utils.SourceMapCollection = new SourceMapCollection();
-			Utils.Tcs = new CancellationTokenSource();
-			CurrentEngine = new Engine(options => {
-				options.CancellationToken(new CancellationToken(true));
-				options.EnableModules(new CustomModuleLoader(CurrentWorldInfo!));
-			});
-			Utils.JsonParser = new JsonParser(CurrentEngine);
-			Utils.JsonSerializer = new JsonSerializer(CurrentEngine);
-			var constraint = CurrentEngine.Constraints.Find<CancellationConstraint>();
-			constraint?.Reset(Utils.Tcs.Token);
-
-			CurrentEngine.SetValue("print", Log.Info)
-				.SetValue("setTimeout", SetTimeout)
-				.SetValue("setInterval", SetInterval)
-				.SetValue("clearTimeout",
-					(int id) => {
-						if (!Utils.Timers.TryGetValue(id, out var value)) return;
-						value.Stop();
-						Utils.Timers.Remove(id);
-						value.Dispose();
-					})
-				.SetValue("clearInterval",
-					(int id) => {
-						if (!Utils.Timers.TryGetValue(id, out var value)) return;
-						value.Stop();
-						Utils.Timers.Remove(id);
-						value.Dispose();
-					});
-
-			CurrentEngine.Modules.Add("events", builder => builder.AddSource(Utils.Polyfill["events"]));
-			CurrentEngine.Modules.Add("audio",
-				builder => builder.ExportType<AudioPlayer>().ExportType<AudioPlayer>("default"));
-
-			var currentWorld = new JsObject(CurrentEngine);
-			var worldEvent = CurrentEngine.Construct(CurrentEngine.Modules.Import("events").Get("default"));
-
-			currentWorld.Set("FilterType", TypeReference.CreateTypeReference(CurrentEngine, typeof(FilterType)));
-			currentWorld.Set("EventType", TypeReference.CreateTypeReference(CurrentEngine, typeof(EventType)));
-			currentWorld.Set("TextType", TypeReference.CreateTypeReference(CurrentEngine, typeof(TextType)));
-
-			currentWorld.DefineOwnProperty("gameVersion",
-				new GetSetPropertyDescriptor(
-					JsValue.FromObject(CurrentEngine, () => Utils.GameVersion),
-					null));
-
-			currentWorld.DefineOwnProperty("info",
-				new GetSetPropertyDescriptor(
-					JsValue.FromObject(CurrentEngine,
-						() => Utils.JsonParser.Parse(CurrentWorldInfo!.JsonString)),
-					null));
-			currentWorld.DefineOwnProperty("event",
-				new GetSetPropertyDescriptor(
-					JsValue.FromObject(CurrentEngine, () => worldEvent),
-					null));
-
-			currentWorld.Set("setBackgroundColor",
-				JsValue.FromObject(CurrentEngine,
-					(string colorHex) => this.SyncSend(_ => _backgroundColorRect.Color = Color.FromString(colorHex, Color.Color8(74, 74, 74)))));
-			currentWorld.Set("setBackgroundTexture",
-				JsValue.FromObject(CurrentEngine,
-					(string path, FilterType filter = FilterType.Linear) => this.SyncSend(_ => _backgroundTextureRect.Texture = Utils.LoadImageFile(path, filter))));
-
-			currentWorld.Set("setText",
-				JsValue.FromObject(CurrentEngine, _world.SetText));
-			currentWorld.Set("setTitle",
-				JsValue.FromObject(CurrentEngine, _world.SetTitle));
-			currentWorld.Set("setLeftText",
-				JsValue.FromObject(CurrentEngine, _world.SetLeftText));
-			currentWorld.Set("setCenterText",
-				JsValue.FromObject(CurrentEngine, _world.SetCenterText));
-			currentWorld.Set("setRightText",
-				JsValue.FromObject(CurrentEngine, _world.SetRightText));
-			currentWorld.Set("addText",
-				JsValue.FromObject(CurrentEngine, _world.AddText));
-			currentWorld.Set("addTitle",
-				JsValue.FromObject(CurrentEngine, _world.AddTitle));
-			currentWorld.Set("addLeftText",
-				JsValue.FromObject(CurrentEngine, _world.AddLeftText));
-			currentWorld.Set("addCenterText",
-				JsValue.FromObject(CurrentEngine, _world.AddCenterText));
-			currentWorld.Set("addRightText",
-				JsValue.FromObject(CurrentEngine, _world.AddRightText));
-			currentWorld.Set("getParagraphCount",
-				JsValue.FromObject(CurrentEngine, _world.GetParagraphCount));
-			currentWorld.Set("removeParagraph",
-				JsValue.FromObject(CurrentEngine, _world.RemoveParagraph));
-
-			currentWorld.Set("setLeftStretchRatio",
-				JsValue.FromObject(CurrentEngine, _world.SetLeftStretchRatio));
-			currentWorld.Set("setCenterStretchRatio",
-				JsValue.FromObject(CurrentEngine, _world.SetCenterStretchRatio));
-			currentWorld.Set("setRightStretchRatio",
-				JsValue.FromObject(CurrentEngine, _world.SetRightStretchRatio));
-
-			currentWorld.Set("addLeftButton",
-				JsValue.FromObject(CurrentEngine, _world.AddLeftButton));
-			currentWorld.Set("addRightButton",
-				JsValue.FromObject(CurrentEngine, _world.AddRightButton));
-			currentWorld.Set("setLeftButtons",
-				JsValue.FromObject(CurrentEngine, _world.SetLeftButtons));
-			currentWorld.Set("setRightButtons",
-				JsValue.FromObject(CurrentEngine, _world.SetRightButtons));
-			currentWorld.Set("removeLeftButtonByIndex",
-				JsValue.FromObject(CurrentEngine, _world.RemoveLeftButtonByIndex));
-			currentWorld.Set("removeRightButtonByIndex",
-				JsValue.FromObject(CurrentEngine, _world.RemoveRightButtonByIndex));
-			currentWorld.Set("removeButtonById",
-				JsValue.FromObject(CurrentEngine, World.RemoveButtonById));
-
-			currentWorld.Set("setCommandPlaceholderText",
-				JsValue.FromObject(CurrentEngine, _world.SetCommandPlaceholderText));
-
-			currentWorld.Set("setTextBackgroundColor",
-				JsValue.FromObject(CurrentEngine,
-					(TextType type, string colorHex) => _world.SetTextBackgroundColor(type, colorHex)));
-			currentWorld.Set("setTextFontColor",
-				JsValue.FromObject(CurrentEngine,
-					(TextType type, string colorHex) => _world.SetTextFontColor(type, colorHex)));
-
-			currentWorld.Set("print", CurrentEngine.GetValue("print"));
-			currentWorld.Set("toast", JsValue.FromObject(CurrentEngine, _world.ShowToast));
-			currentWorld.Set("getSaveValue",
-				JsValue.FromObject(CurrentEngine,
-					(string section, string key, JsValue? defaultValue = null) => {
-						var value = GetSaveValue(section, key).VariantToJsValue();
-						return value == JsValue.Undefined ? defaultValue ?? JsValue.Undefined : value;
-					}));
-			currentWorld.Set("setSaveValue",
-				JsValue.FromObject(CurrentEngine, SetSaveValue));
-			currentWorld.Set("getGlobalSaveValue",
-				JsValue.FromObject(CurrentEngine,
-					(string section, string key, JsValue? defaultValue = null) => {
-						var variant = Utils.GlobalConfig.GetValue(section, key, new RefCounted());
-						var value = variant.VariantToJsValue();
-						return value == JsValue.Undefined ? defaultValue ?? JsValue.Undefined : value;
-					}));
-			currentWorld.Set("setGlobalSaveValue",
-				JsValue.FromObject(CurrentEngine,
-					(string section, string key, JsValue value) => {
-						Utils.GlobalConfig.SetValue(section, key, value.JsValueToVariant());
-						Utils.GlobalConfig.SaveEncryptedPass($"{Utils.SavesPath}/global.save", "global");
-					}));
-
-			currentWorld.Set("delay",
-				JsValue.FromObject(CurrentEngine, (int delay) => Task.Delay(delay)));
-
-			currentWorld.Set("versionCompare",
-				JsValue.FromObject(CurrentEngine, Utils.VersionCompare));
-
-			currentWorld.Set("exit",
-				JsValue.FromObject(CurrentEngine, ExitWorld));
-
-			CurrentEngine.SetValue("World", currentWorld);
-			_currentWorld = currentWorld;
-			_currentWorldEvent = (JsObject)worldEvent;
-		} catch (Exception e) {
-			Log.Error(e.ToString());
-		}
-	}
-
-	private int SetTimeout(JsValue callback, int delay, params JsValue[]? values) {
-		return AddTimer(false, callback, delay, values);
-	}
-
-	private int SetInterval(JsValue callback, int delay, params JsValue[]? values) {
-		return AddTimer(true, callback, delay, values);
-	}
-
-	private int AddTimer(bool autoReset, JsValue callback, int delay, params JsValue[]? values) {
-		if (delay <= 0) {
-			callback.Call(thisObj: JsValue.Undefined, values ?? []);
-			CurrentEngine!.Advanced.ProcessTasks();
-			return 0;
-		}
-
-		var timer = new Timer(delay);
-		var id = timer.GetHashCode();
-		Utils.Timers[id] = timer;
-		timer.AutoReset = autoReset;
-		timer.Elapsed += (_, _) => {
-			if (!Utils.Timers.ContainsKey(id) || CurrentEngine is null) {
-				timer.Dispose();
-				return;
-			}
-
-			this.SyncPost(_ => {
-				try {
-					lock (CurrentEngine) {
-						callback.Call(thisObj: JsValue.Undefined, values ?? []);
-						CurrentEngine.Advanced.ProcessTasks();
-					}
-				} catch (Exception e) {
-					CatchExceptions(e);
-				}
-			});
-
-			if (autoReset) return;
-			Utils.Timers.Remove(id);
-			timer.Dispose();
-		};
-		timer.Enabled = true;
-		return id;
+		oldWorld.AddSibling(_world);
+		oldWorld.QueueFree();
 	}
 
 	private void ClearCache() {
-		foreach (var (_, timer) in Utils.Timers) {
-			timer.Stop();
-			timer.Dispose();
-		}
-
-		Utils.Timers.Clear();
-		Utils.Tcs?.Dispose();
-		Utils.Tcs = null;
-		Utils.SourceMapCollection = null;
-
 		foreach (var audioPlayer in Utils.AudioPlayerCache) {
 			audioPlayer.Dispose();
 		}
@@ -531,73 +272,24 @@ public sealed partial class Main : Control {
 		_background.GetNode<TextureRect>("TextureRect").Texture = null;
 	}
 
-	public static void JsPost(Action callback) {
-		JsEventQueue.Add(callback);
-	}
-
-	public static Task JsAsync(Action callback) {
-		var tsc = new TaskCompletionSource();
-		JsEventQueue.Add(() => {
-			callback();
-			tsc.SetResult();
-		});
-		return tsc.Task;
-	}
-
 
 	public void ExitWorld(int exitCode = 0) {
-		if (CurrentEngine is null || CurrentWorldInfo is null) return;
-		EmitEvent(EventType.Exit, exitCode);
-		Utils.Tcs?.Cancel();
+		if (CurrentWorldInfo is null) return;
+		_world.EventEmit(EventType.Exit, exitCode);
 		Log.Debug("退出世界:", exitCode.ToString(), CurrentWorldInfo.JsonString);
-		CurrentEngine.Dispose();
-		CurrentEngine = null;
-		_currentWorldEvent = null;
-		_currentWorld = null;
 		CurrentWorldInfo = null;
-		this.SyncSend(_ => {
-			ClearCache();
-			_home.Show();
-			_world.Hide();
-		});
+		ClearCache();
+		_home.Show();
+		_world.Hide();
 	}
 
-	public static void CatchExceptions(Exception exception) {
-		if (exception is ExecutionCanceledException) return;
-		string str;
-		if (exception is JavaScriptException javaScriptException) {
-			str = $"{javaScriptException.Error}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, javaScriptException.JavaScriptStackTrace ?? string.Empty)}";
-		} else {
-			str = exception.ToString();
-		}
-
-		Log.Error(str);
-	}
-
-	public static void OnMetaClickedEventHandler(Variant meta, int index) {
-		var json = new Json();
-		var value = json.Parse(meta.AsString()) == Error.Ok ? json.Data.VariantToJsValue() : meta.VariantToJsValue();
-		EmitEvent(EventType.TextUrlClick, value, index);
-	}
-
-	public static Task EmitEvent(EventType name, params JsValue[] values) {
-		return JsAsync(() => {
-			try {
-				_currentWorldEvent?["emit"].Call(thisObj: _currentWorldEvent, [(int)name, ..values]).UnwrapIfPromise();
-				CurrentEngine?.Advanced.ProcessTasks();
-			} catch (Exception e) {
-				CatchExceptions(e);
-			}
-		});
-	}
-
-	static private Variant GetSaveValue(string section, string key) {
-		var value = CurrentWorldInfo!.Config.GetValue(section, key, new RefCounted());
+	static private string GetSaveValue(string section, string key) {
+		var value = CurrentWorldInfo!.Config.GetValue(section, key, new RefCounted()).ToString();
 		return value;
 	}
 
-	static private void SetSaveValue(string section, string key, JsValue value) {
-		CurrentWorldInfo!.Config.SetValue(section, key, value.JsValueToVariant());
+	static private void SetSaveValue(string section, string key, string value) {
+		CurrentWorldInfo!.Config.SetValue(section, key, value);
 		CurrentWorldInfo.Config.SaveEncryptedPass(
 			$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
 			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Godot;
 // ReSharper disable HeuristicUnreachableCode
 #pragma warning disable CS0162 // 检测到不可到达的代码
@@ -12,7 +11,7 @@ public static partial class Log {
 		Debug = -1,
 		Info = 0,
 		Warn = 1,
-		Error = 2,
+		Error = 2
 	}
 
 	public const Severity LogSeverity = Severity.Debug;
@@ -47,7 +46,7 @@ public static partial class Log {
 	static private void _log(string m, Severity s) {
 		ArgumentNullException.ThrowIfNull(m);
 		var data = new LogData(m, s, DateTime.Now.ToString("MM-dd HH:mm:ss.fff"), Main.CurrentWorldInfo?.Name);
-		Utils.Tree.Root.SyncPost(_ => _log(data));
+		_log(data);
 	}
 
 	public static void Debug(params string[] m) {
@@ -66,13 +65,6 @@ public static partial class Log {
 		_log(m.Join(" "), Severity.Error);
 		if (Utils.Tree.CurrentScene is not Main main) return;
 		main.ExitWorld(1);
-	}
-
-	public static void Error(Exception e) {
-		var str = e.Message;
-		const string errorPattern = ".*.Error:.*";
-		var match = Regex.Match(str, errorPattern);
-		Error($"{match.Value.Trim()}\n{StackTraceParser.ReTrace(Utils.SourceMapCollection!, str)}");
 	}
 
 	public static void Assert(bool condition, params string[] m) {
