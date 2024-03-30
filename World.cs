@@ -56,7 +56,7 @@ public partial class World : Control {
 
 		CommandEdit.TextSubmitted += text => {
 			CommandEdit.Text = "";
-			EventEmit(EventType.Command, text);
+			EventEmit(EventType.Command, string.IsNullOrEmpty(text) ? null : text);
 		};
 
 		LeftButtonList.Resized += async () => {
@@ -82,7 +82,7 @@ public partial class World : Control {
 		};
 		try {
 			_jsEnv?.ExecuteModule(Main.CurrentWorldInfo?.Main);
-		} catch (Exception e) {
+		} catch (Exception) {
 			_jsEnv?.Eval("console.error(World.getLastException())");
 		}
 	}
@@ -99,9 +99,9 @@ public partial class World : Control {
 		}
 	}
 
-	public void EventEmit(EventType type, params object[]? args) {
-		_jsEnv?.UsingAction<EventType, object[]?>();
-		JsEvent.Get<Action<EventType, object[]?>>("emit")?.Invoke(type, args);
+	public void EventEmit(EventType type, params object?[]? args) {
+		_jsEnv?.UsingAction<EventType, object?[]?>();
+		JsEvent.Get<Action<EventType, object?[]?>>("emit")?.Invoke(type, args);
 	}
 
 	public void ShowToast(string text) {

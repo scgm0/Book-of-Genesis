@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Godot;
 using Environment = System.Environment;
 

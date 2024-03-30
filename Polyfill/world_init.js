@@ -67,7 +67,7 @@ world.JsEvent = {
         if (args !=null) {
             let array = [];
             for(let i = 0; i < args.Length; i++) {
-                array.push(args.GetValue(i));
+                array.push(args.GetValue(i) ?? undefined);
             }
             World.event.emit(event, ...array);
         } else {
