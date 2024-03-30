@@ -34,6 +34,11 @@ public partial class World : Control {
 		Instance = null;
 	}
 
+	public static void ThrowException(string message) {
+		if (Instance?._jsEnv == null) return;
+		PuertsDLL.ThrowException(Instance._jsEnv.Isolate, message);
+	}
+
 	public World() {
 		Instance = this;
 		_jsEnv = new JsEnv(new WorldModuleLoader(this));
@@ -98,6 +103,7 @@ public partial class World : Control {
 		_jsEnv?.UsingAction<EventType, object[]?>();
 		JsEvent.Get<Action<EventType, object[]?>>("emit")?.Invoke(type, args);
 	}
+
 	public void ShowToast(string text) {
 		Toast.Text = text;
 		_toastTween?.Kill();

@@ -36,23 +36,12 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 	}
 
 	public bool FileExists(string filePath) {
-		if (!_isLoaded && _defaultLoader.FileExists(filePath)) {
-			return true;
-		}
-
-		if (Utils.Polyfill.ContainsKey(filePath)) {
-			return true;
-		}
-
-		if (WorldInfo is null) return false;
-
-		var fullPath = WorldInfo.GlobalPath.PathJoin(filePath).SimplifyPath();
-		return Utils.Polyfill.ContainsKey(filePath) || FileAccess.FileExists(fullPath);
+		return true;
 	}
 
 	public string ReadFile(string filePath, out string debugPath) {
 		debugPath = string.Empty;
-		string code;
+		var code = " ";
 		if (!_isLoaded && _defaultLoader.FileExists(filePath)) {
 			code = _defaultLoader.ReadFile(filePath, out debugPath);
 			return code;
@@ -67,6 +56,12 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 
 		debugPath = WorldInfo.Path.PathJoin(filePath).SimplifyPath();
 		var fullPath = WorldInfo.GlobalPath.PathJoin(filePath).SimplifyPath();
+		if (WorldInfo is null) return code;
+		if (!FileAccess.FileExists(fullPath)) {
+			World.ThrowException($"import {filePath} failed: module not found");
+			return code;
+		}
+
 		code = fullPath.EndsWith(".ts") ? ReadTs2Js(fullPath, debugPath) : FileAccess.GetFileAsString(fullPath);
 		RegisterSourceMap(in code, debugPath);
 		return code;

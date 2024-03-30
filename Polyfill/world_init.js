@@ -75,14 +75,3 @@ world.JsEvent = {
         }
     }
 }
-// world.SetEventEmit((event, args) => {
-//     if (args !=null) {
-//         let array = [];
-//         for(let i = 0; i < args.Length; i++) {
-//             array.push(args.GetValue(i));
-//         }
-//         World.event.emit(event, ...array);
-//     } else {
-//         World.event.emit(event);
-//     }
-// });
