@@ -12,12 +12,12 @@ public static partial class Log {
 	public sealed partial class LogWindow : ControlWindow {
 		static private LogWindow? _instance;
 
-		static private readonly Dictionary<string, Texture2D> LogSeverityIcons = new() {
-			{ "Debug", GD.Load<Texture2D>("res://Assets/Debug.svg") },
-			{ "Info", GD.Load<Texture2D>("res://Assets/Info.svg") },
-			{ "Warn", GD.Load<Texture2D>("res://Assets/Warn.svg") },
-			{ "Error", GD.Load<Texture2D>("res://Assets/Error.svg") }
-		};
+		static private readonly Texture2D DebugIcon = GD.Load<Texture2D>("res://Assets/Debug.svg");
+		static private readonly Texture2D InfoIcon = GD.Load<Texture2D>("res://Assets/Info.svg");
+		static private readonly Texture2D WarnIcon = GD.Load<Texture2D>("res://Assets/Warn.svg");
+		static private readonly Texture2D ErrorIcon = GD.Load<Texture2D>("res://Assets/Error.svg");
+		static private readonly Texture2D TraceIcon = GD.Load<Texture2D>("res://Assets/Trace.svg");
+
 
 		public static void ToggleVisible() => ToggleVisible(null);
 
@@ -152,24 +152,29 @@ public static partial class Log {
 			treeItem.SetText(3, logData.Message.Replace("\n", string.Empty));
 			switch (logData.Severity) {
 				case Severity.Debug:
-					treeItem.SetIcon(2, LogSeverityIcons["Debug"]);
+					treeItem.SetIcon(2, DebugIcon);
 					treeItem.SetIconModulate(2, Colors.Gray);
 					treeItem.SetCustomColor(3, Colors.Gray);
 					break;
 				case Severity.Info:
-					treeItem.SetIcon(2, LogSeverityIcons["Info"]);
+					treeItem.SetIcon(2, InfoIcon);
 					treeItem.SetIconModulate(2, Colors.White);
 					treeItem.SetCustomColor(3, Colors.White);
 					break;
 				case Severity.Warn:
-					treeItem.SetIcon(2, LogSeverityIcons["Warn"]);
+					treeItem.SetIcon(2, WarnIcon);
 					treeItem.SetIconModulate(2, Colors.Orange);
 					treeItem.SetCustomColor(3, Colors.Orange);
 					break;
 				case Severity.Error:
-					treeItem.SetIcon(2, LogSeverityIcons["Error"]);
+					treeItem.SetIcon(2, ErrorIcon);
 					treeItem.SetIconModulate(2, Colors.Red);
 					treeItem.SetCustomColor(3, Colors.Red);
+					break;
+				case Severity.Trace:
+					treeItem.SetIcon(2, TraceIcon);
+					treeItem.SetIconModulate(2, Colors.Green);
+					treeItem.SetCustomColor(3, Colors.Green);
 					break;
 				default: throw new ArgumentOutOfRangeException();
 			}
@@ -178,6 +183,7 @@ public static partial class Log {
 		static private LogWindow CreateInstance() {
 			using var monoFont = GD.Load<Font>("res://Assets/Font/Mono.tres");
 			var tree = new Tree {
+				Name = "Tree",
 				SizeFlagsHorizontal = SizeFlags.Fill,
 				SizeFlagsVertical = SizeFlags.Fill,
 				SelectMode = Tree.SelectModeEnum.Row,
@@ -188,12 +194,31 @@ public static partial class Log {
 			tree.AddThemeFontOverride("font", monoFont);
 			tree.AddThemeFontOverride("title_button_font", monoFont);
 			var textEdit = new TextEdit {
+				Name = "Message",
 				Editable = false,
 				DrawTabs = true,
 				DrawSpaces = true
 			};
 			textEdit.AddThemeFontOverride("font", monoFont);
 			textEdit.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
+			textEdit.AddThemeStyleboxOverride("normal", new StyleBoxFlat {
+				BgColor = Color.FromHtml("#1a1a1a99"),
+				CornerRadiusTopRight = 3,
+				CornerRadiusBottomRight = 3,
+				CornerRadiusTopLeft = 3,
+				CornerRadiusBottomLeft = 3,
+				ContentMarginLeft = 8,
+				ContentMarginRight = 8,
+				ContentMarginTop = 8,
+				ContentMarginBottom = 8
+			});
+			textEdit.AddThemeStyleboxOverride("read_only", new StyleBoxFlat {
+				DrawCenter = false,
+				ContentMarginLeft = 8,
+				ContentMarginRight = 8,
+				ContentMarginTop = 8,
+				ContentMarginBottom = 8
+			});
 
 			var instance = new LogWindow(tree, textEdit) {
 				Title = "创世记 日志",
@@ -203,15 +228,26 @@ public static partial class Log {
 				Size = new Vector2(800, 580),
 				CustomMinimumSize = new Vector2(282, 316)
 			};
+			instance.DecorationsStyle.BgColor = new Color(0.113725f, 0.133333f, 0.160784f);
+			instance.DecorationsStyle.CornerRadiusTopLeft = 8;
+			instance.DecorationsStyle.CornerRadiusTopRight = 8;
+			instance.DecorationsStyle.CornerRadiusBottomLeft = 8;
+			instance.DecorationsStyle.CornerRadiusBottomRight = 8;
+			instance.DecorationsStyle.BorderColor = new Color(1, 1, 1, 0.5f);
+			instance.DecorationsStyle.BorderWidthLeft = 1;
+			instance.DecorationsStyle.BorderWidthRight = 1;
+			instance.DecorationsStyle.BorderWidthTop = 1;
+			instance.DecorationsStyle.BorderWidthBottom = 1;
 			{
 				var panelContainer = new PanelContainer {
 					SizeFlagsHorizontal = SizeFlags.ExpandFill,
 					SizeFlagsVertical = SizeFlags.ExpandFill
 				};
+				panelContainer.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
 				{
 					var marginContainer = new MarginContainer();
 					const int margin = 10;
-					marginContainer.AddThemeConstantOverride("margin_top", margin);
+					// marginContainer.AddThemeConstantOverride("margin_top", margin);
 					marginContainer.AddThemeConstantOverride("margin_left", margin);
 					marginContainer.AddThemeConstantOverride("margin_bottom", margin);
 					marginContainer.AddThemeConstantOverride("margin_right", margin);
@@ -234,7 +270,11 @@ public static partial class Log {
 								};
 
 								searchButton.Pressed += () => SearchLog(searchBox.Text);
-								searchBox.TextChanged += SearchLog;
+								searchBox.TextChanged += text => {
+									if (string.IsNullOrEmpty(text)) {
+										SearchLog(text);
+									}
+								};
 								searchBox.TextSubmitted += SearchLog;
 								searchBox.VisibilityChanged += () => {
 									if (!instance.Visible) {

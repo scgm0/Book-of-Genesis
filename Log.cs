@@ -11,7 +11,8 @@ public static partial class Log {
 		Debug = -1,
 		Info = 0,
 		Warn = 1,
-		Error = 2
+		Error = 2,
+		Trace = 3
 	}
 
 	public const Severity LogSeverity = Severity.Debug;
@@ -25,13 +26,16 @@ public static partial class Log {
 		if (LogSeverity > data.Severity) return;
 		var str = data.LogText;
 		switch (data.Severity) {
-			case Severity.Warn:
-				GD.PrintRich($"[color=yellow]{str}[/color]");
+			case Severity.Trace:
+				GD.PrintRich($"[color=green]{str}[/color]");
 				break;
 			case Severity.Error:
 				GD.PrintRich($"[color=red]{str}[/color]");
 				LogWindow.ToggleVisible(true);
 				LogWindow.ScrollLog(data);
+				break;
+			case Severity.Warn:
+				GD.PrintRich($"[color=yellow]{str}[/color]");
 				break;
 			case Severity.Info:
 				GD.Print(str);
@@ -65,6 +69,10 @@ public static partial class Log {
 		_log(m.Join(" "), Severity.Error);
 		if (Utils.Tree.CurrentScene is not Main main) return;
 		main.ExitWorld(1);
+	}
+
+	public static void Trace(params string[] m) {
+		_log(m.Join(" "), Severity.Trace);
 	}
 
 	public static void Assert(bool condition, params string[] m) {

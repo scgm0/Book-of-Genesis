@@ -40,16 +40,7 @@ World.Log = Log;
     TextType[TextType["RightText"] = 4] = "RightText";
 })(World.TextType = {});
 
-World.info = {
-    get name() {
-        return worldInfo.Name;
-    },
-
-    get version() {
-        return worldInfo.Version;
-    }
-    
-}
+World.info = JSON.parse(worldInfo.JsonString);
 
 World.delay = n => new Promise(resolve => setTimeout(resolve, n));
 World.toast = text => world.ShowToast(text);

@@ -15,8 +15,6 @@ public partial class ControlWindow : PanelContainer {
 		Bottom = 1 << 4
 	}
 
-	private StyleBoxFlat _decorationsStyle;
-
 	private Panel _decorations;
 	private MarginContainer _tabBar;
 	private Label _title;
@@ -25,13 +23,14 @@ public partial class ControlWindow : PanelContainer {
 	private bool _dragging;
 	private bool _resizable;
 	[Export] public string Title { get => _title.Text; set => _title.Text = value; }
-	[Export] public int DecorationsWidth = 8;
-	[Export] public int TabBarHeight = 24;
-	[Export] public int ResizeGripExtra = 2;
+	[Export] public int DecorationsWidth { get; set; } = 8;
+	[Export] public int TabBarHeight { get; set; } = 24;
+	[Export] public int ResizeGripExtra { get; set; } = 2;
+	[Export] public StyleBoxFlat DecorationsStyle { get; set; }
 
 	public ControlWindow() {
 		var defaultTheme = ThemeDB.GetDefaultTheme();
-		_decorationsStyle = new StyleBoxFlat {
+		DecorationsStyle = new StyleBoxFlat {
 			BgColor = Color.Color8(56, 56, 56),
 			CornerRadiusTopLeft = 3,
 			CornerRadiusTopRight = 3,
@@ -48,13 +47,13 @@ public partial class ControlWindow : PanelContainer {
 			ShowBehindParent = true
 		};
 
-		_decorations.AddThemeStyleboxOverride("panel", _decorationsStyle);
+		_decorations.AddThemeStyleboxOverride("panel", DecorationsStyle);
 
 		{
 			_tabBar = new MarginContainer {
 				Name = "TabBar",
 				AnchorRight = 1,
-				OffsetTop = -_decorationsStyle.ExpandMarginTop,
+				OffsetTop = -DecorationsStyle.ExpandMarginTop,
 				GrowHorizontal = GrowDirection.Begin,
 				FocusMode = FocusModeEnum.Click
 			};

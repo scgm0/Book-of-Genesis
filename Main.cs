@@ -62,16 +62,7 @@ public sealed partial class Main : Control {
 			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
 		TsTransform.Prepare();
-		Log.Debug("初始化完成，耗时:", (DateTime.Now - StartTime).ToString());
-		Log.Debug("游戏信息:",
-			"\nPlatform:",
-			OS.GetName(),
-			"\nGameVersion:",
-			Utils.GameVersion,
-			"\nDotNetVersion:",
-			Environment.Version.ToString(),
-			"\nTypeScriptVersion:",
-			TsTransform.TypeScriptVersion!);
+		Log.Debug($"初始化完成，耗时: {(DateTime.Now - StartTime).ToString()}\nPlatform: {OS.GetName()}\nGameVersion: {Utils.GameVersion}\nDotNetVersion: {Environment.Version}\nTypeScriptVersion: {TsTransform.TypeScriptVersion}");
 		Utils.Tree.AutoAcceptQuit = false;
 	}
 
