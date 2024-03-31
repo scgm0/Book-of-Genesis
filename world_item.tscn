@@ -1,8 +1,8 @@
 [gd_scene load_steps=8 format=3 uid="uid://kbkbbjhef0jq"]
 
-[ext_resource type="Shader" path="res://Assets/CornerRadius.gdshader" id="1_p3pka"]
-[ext_resource type="Texture2D" uid="uid://e36v3vq5a0bb" path="res://Assets/icon.png" id="2_fu85d"]
-[ext_resource type="Texture2D" uid="uid://bc2ybhg5fqgyb" path="res://Assets/LockViewport.svg" id="2_gnsyh"]
+[ext_resource type="Shader" path="res://Assets/Shader/CornerRadius.gdshader" id="1_p3pka"]
+[ext_resource type="Texture2D" uid="uid://e36v3vq5a0bb" path="res://Assets/Icon/icon.png" id="2_fu85d"]
+[ext_resource type="Texture2D" uid="uid://bc2ybhg5fqgyb" path="res://Assets/Icon/LockViewport.svg" id="2_gnsyh"]
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="4_34lqs"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8neca"]

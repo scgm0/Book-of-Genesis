@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bqxh6dpwhoraa"
-path="res://.godot/imported/Trace.svg-f1808bbb2b2cb83ad17672b42673c91b.ctex"
+uid="uid://cew10ou1knq03"
+path="res://.godot/imported/Warn.svg-6fd3ea0bb7180af55e63d86eebfbdc1b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Trace.svg"
-dest_files=["res://.godot/imported/Trace.svg-f1808bbb2b2cb83ad17672b42673c91b.ctex"]
+source_file="res://Assets/Icon/Warn.svg"
+dest_files=["res://.godot/imported/Warn.svg-6fd3ea0bb7180af55e63d86eebfbdc1b.ctex"]
 
 [params]
 
@@ -32,6 +32,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=10.0
+svg/scale=5.0
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false

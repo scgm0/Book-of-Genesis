@@ -12,11 +12,11 @@ public static partial class Log {
 	public sealed partial class LogWindow : ControlWindow {
 		static private LogWindow? _instance;
 
-		static private readonly Texture2D DebugIcon = GD.Load<Texture2D>("res://Assets/Debug.svg");
-		static private readonly Texture2D InfoIcon = GD.Load<Texture2D>("res://Assets/Info.svg");
-		static private readonly Texture2D WarnIcon = GD.Load<Texture2D>("res://Assets/Warn.svg");
-		static private readonly Texture2D ErrorIcon = GD.Load<Texture2D>("res://Assets/Error.svg");
-		static private readonly Texture2D TraceIcon = GD.Load<Texture2D>("res://Assets/Trace.svg");
+		static private readonly Texture2D DebugIcon = GD.Load<Texture2D>("res://Assets/Icon/Debug.svg");
+		static private readonly Texture2D InfoIcon = GD.Load<Texture2D>("res://Assets/Icon/Info.svg");
+		static private readonly Texture2D WarnIcon = GD.Load<Texture2D>("res://Assets/Icon/Warn.svg");
+		static private readonly Texture2D ErrorIcon = GD.Load<Texture2D>("res://Assets/Icon/Error.svg");
+		static private readonly Texture2D TraceIcon = GD.Load<Texture2D>("res://Assets/Icon/Trace.svg");
 
 
 		public static void ToggleVisible() => ToggleVisible(null);

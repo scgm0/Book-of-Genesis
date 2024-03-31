@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://cu8l826gm6uuj"]
 
 [ext_resource type="Script" path="res://BootSplash.cs" id="1_hx584"]
-[ext_resource type="Texture2D" uid="uid://dsbof7pumacm5" path="res://Assets/GodotLogo.svg" id="2_lgm7e"]
+[ext_resource type="Texture2D" uid="uid://dsbof7pumacm5" path="res://Assets/Icon/GodotLogo.svg" id="2_lgm7e"]
 
 [node name="BootSplash" type="Control"]
 layout_mode = 3
