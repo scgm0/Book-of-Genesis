@@ -24,6 +24,7 @@ public partial class World : Control {
 	private Tween? _toastTween;
 	private JsEnv? _jsEnv;
 	public JSObject JsEvent { get; set; }
+	public Action<EventType, object?[]?>? Emit { get; set; }
 	public static World? Instance { get; private set; }
 
 	public static void ExitWorld() {
@@ -100,8 +101,12 @@ public partial class World : Control {
 	}
 
 	public void EventEmit(EventType type, params object?[]? args) {
-		_jsEnv?.UsingAction<EventType, object?[]?>();
-		JsEvent.Get<Action<EventType, object?[]?>>("emit")?.Invoke(type, args);
+		if (Emit is null) {
+			_jsEnv?.UsingAction<EventType, object?[]?>();
+			Emit ??= JsEvent.Get<Action<EventType, object?[]?>>("emit");
+		}
+
+		Emit?.Invoke(type, args);
 	}
 
 	public void ShowToast(string text) {

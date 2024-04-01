@@ -586,7 +586,7 @@ if (Log) {
     function argsToString(args) {
         return Array.prototype.map.call(args, x => {
             try {
-                return x instanceof Error ? `${x}\n${getSourceMapStack(getStack(x))}` : format(x);
+                return typeof x ==="string" ? x : x instanceof Error ? `${x}\n${getSourceMapStack(getStack(x))}` : format(x);
             } catch (err) {
                 return err;
             }
