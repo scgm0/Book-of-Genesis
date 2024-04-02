@@ -77,7 +77,7 @@ public static partial class Log {
 			SortLog(LogList);
 		}
 
-		static private void SortLog(IEnumerable<LogData> logDatas) {
+		static private void SortLog(IEnumerable<LogInfo> logDatas) {
 			_instance!._tree.DeselectAll();
 			_instance._textEdit.Text = "";
 			TreeItem? lastItem = null;
@@ -93,10 +93,10 @@ public static partial class Log {
 			}
 		}
 
-		internal static void ScrollLog(LogData data, bool focus = true) {
+		internal static void ScrollLog(LogInfo info, bool focus = true) {
 			if (_instance is null) return;
-			if (!_instance._logDataMap.TryGetValue(data, out var item)) {
-				item = TryAddItem(data);
+			if (!_instance._logDataMap.TryGetValue(info, out var item)) {
+				item = TryAddItem(info);
 			}
 
 			_instance._tree.ScrollToItem(item);
@@ -105,7 +105,7 @@ public static partial class Log {
 			_instance._tree.GrabFocus();
 		}
 
-		internal static TreeItem TryAddItem(LogData logData) {
+		internal static TreeItem TryAddItem(LogInfo logInfo) {
 			if (_instance is null) {
 				Launch();
 			}
@@ -113,7 +113,7 @@ public static partial class Log {
 			var logDataMap = _instance!._logDataMap;
 			var treeItemMap = _instance._treeItemMap;
 			var tree = _instance._tree;
-			if (!logDataMap.TryGetValue(logData, out var treeItem)) {
+			if (!logDataMap.TryGetValue(logInfo, out var treeItem)) {
 				treeItem = tree.CreateItem(_instance._rootTreeItem);
 
 				treeItem.SetTextAlignment(1, HorizontalAlignment.Center);
@@ -126,31 +126,31 @@ public static partial class Log {
 
 				treeItem.SetIconMaxWidth(2, 24);
 
-				logDataMap.Add(logData, treeItem);
-				treeItemMap.Add(treeItem, logData);
+				logDataMap.Add(logInfo, treeItem);
+				treeItemMap.Add(treeItem, logInfo);
 			}
 
-			UpdateTreeItem(logData, treeItem);
+			UpdateTreeItem(logInfo, treeItem);
 			return treeItem;
 		}
 
-		internal static void TryRemoveItem(LogData logData) {
+		internal static void TryRemoveItem(LogInfo logInfo) {
 			if (_instance is null) return;
 			var logDataMap = _instance._logDataMap;
 			var treeItemMap = _instance._treeItemMap;
 
-			if (!logDataMap.Remove(logData, out var treeItem)) return;
+			if (!logDataMap.Remove(logInfo, out var treeItem)) return;
 			treeItemMap.Remove(treeItem);
 
 			treeItem.Free();
 		}
 
-		static private void UpdateTreeItem(LogData logData, TreeItem treeItem) {
-			treeItem.SetText(0, logData.Time);
-			treeItem.SetText(1, logData.WorldName ?? string.Empty);
-			treeItem.SetTooltipText(2, logData.Severity.ToString());
-			treeItem.SetText(3, logData.Message.Replace("\n", string.Empty));
-			switch (logData.Severity) {
+		static private void UpdateTreeItem(LogInfo logInfo, TreeItem treeItem) {
+			treeItem.SetText(0, logInfo.Time);
+			treeItem.SetText(1, logInfo.WorldName ?? string.Empty);
+			treeItem.SetTooltipText(2, logInfo.Severity.ToString());
+			treeItem.SetText(3, logInfo.Message.Replace("\n", string.Empty));
+			switch (logInfo.Severity) {
 				case Severity.Debug:
 					treeItem.SetIcon(2, DebugIcon);
 					treeItem.SetIconModulate(2, Colors.Gray);
@@ -349,8 +349,8 @@ public static partial class Log {
 		private readonly Tree _tree;
 		private readonly TreeItem _rootTreeItem;
 		private readonly TextEdit _textEdit;
-		private readonly Dictionary<LogData, TreeItem> _logDataMap = new();
-		private readonly Dictionary<TreeItem, LogData> _treeItemMap = new();
+		private readonly Dictionary<LogInfo, TreeItem> _logDataMap = new();
+		private readonly Dictionary<TreeItem, LogInfo> _treeItemMap = new();
 
 		private LogWindow(Tree tree, TextEdit textEdit) {
 			_tree = tree;

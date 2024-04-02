@@ -16,23 +16,23 @@ public static partial class Log {
 	}
 
 	public const Severity LogSeverity = Severity.Debug;
-	public static readonly List<LogData> LogList = [];
+	public static readonly List<LogInfo> LogList = [];
 
-	static private void _log(LogData data) {
+	static private void _log(LogInfo info) {
 
-		LogList.Add(data);
-		LogWindow.TryAddItem(data);
+		LogList.Add(info);
+		LogWindow.TryAddItem(info);
 
-		if (LogSeverity > data.Severity) return;
-		var str = data.LogText;
-		switch (data.Severity) {
+		if (LogSeverity > info.Severity) return;
+		var str = info.LogText;
+		switch (info.Severity) {
 			case Severity.Trace:
 				GD.PrintRich($"[color=green]{str}[/color]");
 				break;
 			case Severity.Error:
 				GD.PrintRich($"[color=red]{str}[/color]");
 				LogWindow.ToggleVisible(true);
-				LogWindow.ScrollLog(data);
+				LogWindow.ScrollLog(info);
 				break;
 			case Severity.Warn:
 				GD.PrintRich($"[color=yellow]{str}[/color]");
@@ -49,7 +49,7 @@ public static partial class Log {
 
 	static private void _log(string m, Severity s) {
 		ArgumentNullException.ThrowIfNull(m);
-		var data = new LogData(m, s, DateTime.Now.ToString("MM-dd HH:mm:ss.fff"), Main.CurrentWorldInfo?.Name);
+		var data = new LogInfo(m, s, DateTime.Now.ToString("MM-dd HH:mm:ss.fff"), Main.CurrentWorldInfo?.Name);
 		_log(data);
 	}
 
