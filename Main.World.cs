@@ -5,7 +5,7 @@ using Godot;
 namespace 创世记;
 
 public sealed partial class Main {
-	public static WorldInfo? CurrentWorldInfo { get; private set; }
+	public static WorldInfo? CurrentWorldInfo { get; set; }
 
 	public static void LoadWorldInfos(string worldsPath, bool loadPackage = false) {
 		worldsPath = worldsPath.SimplifyPath();

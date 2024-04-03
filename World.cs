@@ -8,6 +8,8 @@ using Puerts;
 namespace 创世记;
 
 public partial class World : Control {
+	[Export] public ColorRect BackgroundColor { get; set; }
+	[Export] public TextureRect BackgroundTexture { get; set; }
 	[Export] public RichTextLabel Title { get; set; }
 	[Export] public Control LeftButtonList { get; set; }
 	[Export] public Control RightButtonList { get; set; }
@@ -26,14 +28,6 @@ public partial class World : Control {
 	public JSObject JsEvent { get; set; }
 	public Action<EventType, object?[]?>? Emit { get; set; }
 	public static World? Instance { get; private set; }
-
-	public static void ExitWorld() {
-
-		if (Instance == null) return;
-		Instance._jsEnv?.Dispose();
-		Instance._jsEnv = null;
-		Instance = null;
-	}
 
 	public static void ThrowException(string message) {
 		if (Instance?._jsEnv == null) return;
@@ -81,14 +75,26 @@ public partial class World : Control {
 			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 			RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
+
+		SetTitle($"{Main.CurrentWorldInfo!.Name}-{Main.CurrentWorldInfo.Version}");
+		GetNode<Control>("Main").Hide();
+		GetNode<Button>("%Encrypt").Disabled = Main.CurrentWorldInfo.IsEncrypt;
+		GetNode<Button>("%Log").Pressed += Log.LogWindow.ToggleVisible;
+		GetNode<Button>("%Exit").Pressed += () => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
+		GetNode<Button>("%Encrypt").Pressed += () => {
+			Utils.ExportEncryptionWorldPck(Main.CurrentWorldInfo);
+			Exit();
+		};
+
 		try {
-			_jsEnv?.ExecuteModule(Main.CurrentWorldInfo?.Main);
+			_jsEnv?.ExecuteModule(Main.CurrentWorldInfo.Main);
 		} catch (Exception) {
 			_jsEnv?.Eval("console.error(World.getLastException())");
 		}
 	}
 
 	public override void _Process(double delta) {
+		if (Instance is null) return;
 		_jsEnv?.Tick();
 	}
 
@@ -109,6 +115,22 @@ public partial class World : Control {
 		Emit?.Invoke(type, args);
 	}
 
+	public void Exit(int exitCode = 0) {
+		if (Main.CurrentWorldInfo is null) return;
+		EventEmit(EventType.Exit, exitCode);
+		Log.Debug("退出世界:", exitCode.ToString(), Main.CurrentWorldInfo.JsonString);
+		Main.CurrentWorldInfo = null;
+		Main.ClearCache();
+		Instance = null;
+		Hide();
+		SetProcess(false);
+		SetPhysicsProcess(false);
+		ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame).OnCompleted(() => {
+			_jsEnv?.Dispose();
+			_jsEnv = null;
+		});
+	}
+
 	public void ShowToast(string text) {
 		Toast.Text = text;
 		_toastTween?.Kill();
@@ -118,7 +140,30 @@ public partial class World : Control {
 			.SetDelay(2.5);
 	}
 
+	public void SetBackgroundColor(string colorHex) {
+		BackgroundColor.Color = Color.FromHtml(colorHex);
+	}
+
+	public void SetBackgroundTexture(string texturePath, FilterType filter = FilterType.Linear) {
+		BackgroundTexture.Texture = Utils.LoadImageFile(texturePath, filter);
+	}
+
 	public void SetTitle(string title) => Utils.SetRichText(Title, title);
+
+	public void SetStretchRatio(TextType type, float ratio) {
+		if ((type & TextType.LeftText) > 0) {
+			SetLeftStretchRatio(ratio);
+		}
+
+		if ((type & TextType.CenterText) > 0) {
+			SetCenterStretchRatio(ratio);
+		}
+
+		if ((type & TextType.RightText) > 0) {
+			SetRightStretchRatio(ratio);
+		}
+	}
+
 	public void SetLeftStretchRatio(float ratio) => LeftText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
 
 	public void SetCenterStretchRatio(float ratio) => CenterText.GetParent().GetParent<Panel>().SizeFlagsStretchRatio = ratio;
@@ -127,23 +172,13 @@ public partial class World : Control {
 	public void SetCommandPlaceholderText(string text) => CommandEdit.PlaceholderText = text;
 
 	public int GetParagraphCount(TextType type) {
-		var count = -1;
-		switch (type) {
-			case TextType.Title:
-				count = Title.GetParagraphCount();
-				break;
-			case TextType.LeftText:
-				count = LeftText.GetParagraphCount();
-				break;
-			case TextType.CenterText:
-				count = CenterText.GetParagraphCount();
-				break;
-			case TextType.RightText:
-				count = RightText.GetParagraphCount();
-				break;
-			case TextType.All:
-			default: break;
-		}
+		var count = type switch {
+			TextType.Title => Title.GetParagraphCount(),
+			TextType.LeftText => LeftText.GetParagraphCount(),
+			TextType.CenterText => CenterText.GetParagraphCount(),
+			TextType.RightText => RightText.GetParagraphCount(),
+			_ => -1
+		};
 
 		return count;
 	}
@@ -154,48 +189,32 @@ public partial class World : Control {
 			index = GetParagraphCount(type) + index;
 		}
 
-		switch (type) {
-			case TextType.Title:
-				result = Title.RemoveParagraph(index);
-				break;
-			case TextType.LeftText:
-				result = LeftText.RemoveParagraph(index);
-				break;
-			case TextType.CenterText:
-				result = CenterText.RemoveParagraph(index);
-				break;
-			case TextType.RightText:
-				result = RightText.RemoveParagraph(index);
-				break;
-			case TextType.All:
-			default: break;
-		}
+		result = type switch {
+			TextType.Title => Title.RemoveParagraph(index),
+			TextType.LeftText => LeftText.RemoveParagraph(index),
+			TextType.CenterText => CenterText.RemoveParagraph(index),
+			TextType.RightText => RightText.RemoveParagraph(index),
+			_ => result
+		};
 
 		return result;
 	}
 
-	public void SetText(TextType textType, string text, TextType? exclude = null) {
-		switch (textType) {
-			case TextType.All:
-				foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
-					if (t is TextType.All || t == exclude) continue;
-					SetText(t, text);
-				}
+	public void SetText(TextType textType, string text) {
+		if ((textType & TextType.Title) > 0) {
+			SetTitle(text);
+		}
 
-				break;
-			case TextType.Title:
-				SetTitle(text);
-				break;
-			case TextType.LeftText:
-				SetLeftText(text);
-				break;
-			case TextType.CenterText:
-				SetCenterText(text);
-				break;
-			case TextType.RightText:
-				SetRightText(text);
-				break;
-			default: return;
+		if ((textType & TextType.LeftText) > 0) {
+			SetLeftText(text);
+		}
+
+		if ((textType & TextType.CenterText) > 0) {
+			SetCenterText(text);
+		}
+
+		if ((textType & TextType.RightText) > 0) {
+			SetRightText(text);
 		}
 	}
 
@@ -214,28 +233,21 @@ public partial class World : Control {
 		RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
-	public void AddText(TextType textType, string text, TextType? exclude = null) {
-		switch (textType) {
-			case TextType.All:
-				foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
-					if (t is TextType.All || t == exclude) continue;
-					AddText(t, text);
-				}
+	public void AddText(TextType textType, string text) {
+		if ((textType & TextType.Title) > 0) {
+			AddTitle(text);
+		}
 
-				break;
-			case TextType.Title:
-				AddTitle(text);
-				break;
-			case TextType.LeftText:
-				AddLeftText(text);
-				break;
-			case TextType.CenterText:
-				AddCenterText(text);
-				break;
-			case TextType.RightText:
-				AddRightText(text);
-				break;
-			default: return;
+		if ((textType & TextType.LeftText) > 0) {
+			AddLeftText(text);
+		}
+
+		if ((textType & TextType.CenterText) > 0) {
+			AddCenterText(text);
+		}
+
+		if ((textType & TextType.RightText) > 0) {
+			AddRightText(text);
 		}
 	}
 
@@ -331,70 +343,54 @@ public partial class World : Control {
 		button?.QueueFree();
 	}
 
-	public void SetTextBackgroundColor(TextType type, string colorHex, TextType? exclude = null) {
+	public void SetTextBackgroundColor(TextType type, string colorHex) {
 		var color = Color.FromString(colorHex, Color.Color8(0, 0, 0, 96));
-		if (type != TextType.All) {
-			SetTextBackgroundColor(type, color);
-		} else {
-			foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
-				if (t == exclude) continue;
-				SetTextBackgroundColor(t, color);
-			}
-		}
+		SetTextBackgroundColor(type, color);
 	}
 
 	private void SetTextBackgroundColor(TextType type, Color color) {
 		var modulate = color.A > 0 ? Colors.White : Colors.Transparent;
-		switch (type) {
-			case TextType.Title:
-				_titleStyle.BgColor = color;
-				Title.Modulate = modulate;
-				break;
-			case TextType.LeftText:
-				_leftTextStyle.BgColor = color;
-				LeftText.GetParent().GetParent<Panel>().Modulate = modulate;
-				break;
-			case TextType.CenterText:
-				_centerTextStyle.BgColor = color;
-				CenterText.GetParent().GetParent<Panel>().Modulate = modulate;
-				break;
-			case TextType.RightText:
-				_rightTextStyle.BgColor = color;
-				RightText.GetParent().GetParent<Panel>().Modulate = modulate;
-				break;
-			case TextType.All:
-			default: return;
+		if ((type & TextType.Title) > 0) {
+			_titleStyle.BgColor = color;
+			Title.Modulate = modulate;
+		}
+
+		if ((type & TextType.LeftText) > 0) {
+			_leftTextStyle.BgColor = color;
+			LeftText.GetParent().GetParent<Panel>().Modulate = modulate;
+		}
+
+		if ((type & TextType.CenterText) > 0) {
+			_centerTextStyle.BgColor = color;
+			CenterText.GetParent().GetParent<Panel>().Modulate = modulate;
+		}
+
+		if ((type & TextType.RightText) > 0) {
+			_rightTextStyle.BgColor = color;
+			RightText.GetParent().GetParent<Panel>().Modulate = modulate;
 		}
 	}
 
-	public void SetTextFontColor(TextType type, string colorHex, TextType? exclude = null) {
+	public void SetTextFontColor(TextType type, string colorHex) {
 		var color = Color.FromString(colorHex, Colors.White);
-		if (type != TextType.All) {
-			SetTextFontColor(type, color);
-		} else {
-			foreach (TextType t in Enum.GetValuesAsUnderlyingType<TextType>()) {
-				if (t == exclude) continue;
-				SetTextFontColor(t, color);
-			}
-		}
+		SetTextFontColor(type, color);
 	}
 
 	private void SetTextFontColor(TextType type, Color color) {
-		switch (type) {
-			case TextType.Title:
-				Title.AddThemeColorOverride("default_color", color);
-				break;
-			case TextType.LeftText:
-				LeftText.AddThemeColorOverride("default_color", color);
-				break;
-			case TextType.CenterText:
-				CenterText.AddThemeColorOverride("default_color", color);
-				break;
-			case TextType.RightText:
-				RightText.AddThemeColorOverride("default_color", color);
-				break;
-			case TextType.All:
-			default: return;
+		if ((type & TextType.Title) > 0) {
+			Title.AddThemeColorOverride("default_color", color);
+		}
+
+		if ((type & TextType.LeftText) > 0) {
+			LeftText.AddThemeColorOverride("default_color", color);
+		}
+
+		if ((type & TextType.CenterText) > 0) {
+			CenterText.AddThemeColorOverride("default_color", color);
+		}
+
+		if ((type & TextType.RightText) > 0) {
+			RightText.AddThemeColorOverride("default_color", color);
 		}
 	}
 }

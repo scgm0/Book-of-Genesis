@@ -9,10 +9,10 @@ public partial class ControlWindow : PanelContainer {
 #pragma warning restore CA1050
 	[Flags]
 	private enum ResizeDirection {
-		Left = 1 << 1,
-		Top = 1 << 2,
-		Right = 1 << 3,
-		Bottom = 1 << 4
+		Left = 1,
+		Top = 2,
+		Right = 4,
+		Bottom = 8
 	}
 
 	private Panel _decorations;
@@ -217,23 +217,23 @@ public partial class ControlWindow : PanelContainer {
 	}
 
 	private void ResizeWindow(ResizeDirection resizeDirection, Vector2 relative) {
-		if ((resizeDirection & ResizeDirection.Left) == ResizeDirection.Left) {
+		if ((resizeDirection & ResizeDirection.Left) > 0) {
 			var oldX = Size.X;
 			Size = Size with { X = Size.X - relative.X };
 			Position = Position with { X = Position.X + oldX - Size.X };
 		}
 
-		if ((resizeDirection & ResizeDirection.Top) == ResizeDirection.Top) {
+		if ((resizeDirection & ResizeDirection.Top) > 0) {
 			var oldY = Size.Y;
 			Size = Size with { Y = Size.Y - relative.Y };
 			Position = Position with { Y = Position.Y + oldY - Size.Y };
 		}
 
-		if ((resizeDirection & ResizeDirection.Right) == ResizeDirection.Right) {
+		if ((resizeDirection & ResizeDirection.Right) > 0) {
 			Size = Size with { X = Size.X + relative.X };
 		}
 
-		if ((resizeDirection & ResizeDirection.Bottom) == ResizeDirection.Bottom) {
+		if ((resizeDirection & ResizeDirection.Bottom) > 0) {
 			Size = Size with { Y = Size.Y + relative.Y };
 		}
 	}

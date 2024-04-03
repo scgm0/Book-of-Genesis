@@ -15,6 +15,7 @@ World.getSourceMapStack = stack => {
 }
 
 const Log = puer.loadType('创世记.Log');
+const Utils = puer.loadType('创世记.Utils');
 
 World.Log = Log;
 
@@ -33,25 +34,49 @@ World.Log = Log;
 })(World.EventType = {});
 
 (function (TextType) {
-    TextType[TextType["All"] = 0] = "All";
     TextType[TextType["Title"] = 1] = "Title";
     TextType[TextType["LeftText"] = 2] = "LeftText";
-    TextType[TextType["CenterText"] = 3] = "CenterText";
-    TextType[TextType["RightText"] = 4] = "RightText";
+    TextType[TextType["CenterText"] = 4] = "CenterText";
+    TextType[TextType["RightText"] = 8] = "RightText";
+    TextType[TextType["All"] = 15] = "All";
 })(World.TextType = {});
 
+World.gameVersion = Utils.GameVersion;
 World.info = JSON.parse(worldInfo.JsonString);
 
 World.delay = n => new Promise(resolve => setTimeout(resolve, n));
 World.toast = text => world.ShowToast(text);
+
+World.setText = (type, text) => world.SetText(type, text);
 World.setTitle = text => world.SetTitle(text);
+World.setLeftText = text => world.SetLeftText(text);
 World.setCenterText = text => world.SetCenterText(text);
-World.setText = (type, text, exclude = null) => world.SetText(type, text, exclude);
-World.addText = (type, text, exclude = null) => world.AddText(type, text, exclude);
+World.setSetRightText = text => world.SetRightText(text);
+
+World.addText = (type, text) => world.AddText(type, text);
+World.addTitle = text => world.AddTitle(text);
+World.addLeftText = text => world.AddLeftText(text);
+World.addCenterText = text => world.AddCenterText(text);
+World.addSetRightText = text => world.AddRightText(text);
+
 World.setCommandPlaceholderText = text => world.SetCommandPlaceholderText(text);
+
+World.getParagraphCount = (type) => world.GetParagraphCount(type);
 World.removeParagraph = (type, index) => world.RemoveParagraph(type, index);
 
-World.setTextBackgroundColor = (type, colorHex, exclude = null) => world.SetTextBackgroundColor(type, colorHex, exclude);
+World.setStretchRatio = (type, ratio) => world.SetStretchRatio(type, ratio);
+World.setLeftStretchRatio = (ratio) => world.SetLeftStretchRatio(ratio);
+World.setCenterStretchRatio = (ratio) => world.SetCenterStretchRatio(ratio);
+World.setRightStretchRatio = (ratio) => world.SetRightStretchRatio(ratio);
+
+World.setTextBackgroundColor = (type, colorHex) => world.SetTextBackgroundColor(type, colorHex);
+World.setTextFontColor = (type, colorHex) => world.SetTextFontColor(type, colorHex);
+
+World.setBackgroundColor = (colorHex) => world.SetTextBackgroundColor(colorHex);
+World.setBackgroundTexture = (path, filter = World.FilterType.Linear) => world.SetBackgroundTexture(path, filter);
+
+World.versionCompare = (version1, version2) => Utils.VersionCompare(version1, version2);
+World.exit = (exitCode = 1) => world.Exit(exitCode);
 
 world.JsEvent = {
     emit(event, args){

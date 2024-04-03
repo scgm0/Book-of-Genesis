@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using Godot;
 using Environment = System.Environment;
 
@@ -11,7 +10,6 @@ namespace 创世记;
 
 public sealed partial class Main : Control {
 	[GetNode("%ChooseWorldButton")] private Button _chooseWorldButton;
-	[GetNode("%Home")] private Control _home;
 	[GetNode("%GameVersion")] private Label _gameVersion;
 	[GetNode("%DotNetVersion")] private Label _dotNetVersion;
 	[GetNode("%ChooseWorld")] private Control _chooseWorld;
@@ -19,9 +17,6 @@ public sealed partial class Main : Control {
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
 	[GetNode("%LogButton")] private Button _logButton;
 	[GetNode("%WorldsPathHint")] private LinkButton _worldsPathHint;
-	[GetNode("%Background")] private Control _background;
-	[GetNode("%Background/ColorRect")] private ColorRect _backgroundColorRect;
-	[GetNode("%Background/TextureRect")] private TextureRect _backgroundTextureRect;
 	[GetNode("%Back")] private Button _back;
 
 	[Export] private PackedScene _worldScene;
@@ -81,7 +76,7 @@ public sealed partial class Main : Control {
 	public override void _Notification(int what) {
 		if (what == NotificationWMCloseRequest) {
 			if (World.Instance != null) {
-				ExitWorld();
+				World.Instance.Exit();
 			}
 
 			_worldScene.Dispose();
@@ -91,11 +86,10 @@ public sealed partial class Main : Control {
 			GetTree().Quit();
 		} else if (what == NotificationWMGoBackRequest) {
 			if (_world is { Visible: true }) {
-				ExitWorld();
+				World.Instance?.Exit();
 			} else if (_chooseWorld.Visible) {
-				_home.Show();
 				_chooseWorld.Hide();
-			} else if (_home.Visible) {
+			} else {
 				GetTree().Root.PropagateNotification((int)NotificationWMCloseRequest);
 			}
 		}
@@ -140,7 +134,6 @@ public sealed partial class Main : Control {
 		Log.Debug("加载模版列表");
 		ClearCache();
 		LoadWorldInfos(Utils.ResTemplatesPath);
-		_home.Hide();
 		_templateWorldButton.ReleaseFocus();
 		_chooseWorld.Show();
 		var list = GetNode<VBoxContainer>("%WorldList");
@@ -180,9 +173,7 @@ public sealed partial class Main : Control {
 	private void LoadWorld(WorldInfo worldInfo) {
 		CurrentWorldInfo = worldInfo;
 		Log.Debug("加载世界:", CurrentWorldInfo.JsonString);
-		_home.Hide();
 		_chooseWorld.Hide();
-		_background.Modulate = Color.FromHtml("#ffffff00");
 		CurrentWorldInfo.Config.LoadEncryptedPass(
 			$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
 			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
@@ -198,7 +189,7 @@ public sealed partial class Main : Control {
 		InitWorld();
 		using var tween = _world.CreateTween();
 		tween.SetEase(Tween.EaseType.Out);
-		tween.TweenProperty(_background, "modulate:a", 1, 1.5);
+		tween.TweenProperty(_world.BackgroundColor, "modulate:a", 1, 1.5).From(0);
 		tween.TweenCallback(new Callable(this, nameof(ReadyWorld)));
 	}
 
@@ -212,32 +203,24 @@ public sealed partial class Main : Control {
 	private void InitWorld() {
 		// ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 		var oldWorld = _world ?? GetNode("%World");
+
 		_world = _worldScene.Instantiate<World>();
-		_world.GetNode<Control>("Main").Hide();
-		_world.SetTitle($"{CurrentWorldInfo!.Name}-{CurrentWorldInfo.Version}");
-		_world.GetNode<Button>("%Encrypt").Disabled = CurrentWorldInfo.IsEncrypt;
-		_world.GetNode<Button>("%Log").Pressed += Log.LogWindow.ToggleVisible;
 		_world.GetNode<Button>("%Overload").Pressed += () => {
-			var worldKey = CurrentWorldInfo.WorldKey;
+			var worldKey = CurrentWorldInfo!.WorldKey;
 			var worldsPath = CurrentWorldInfo.GlobalPath.GetBaseDir();
 			var worldConfigPath = CurrentWorldInfo.GlobalPath.PathJoin("config.json");
 			var fileName = CurrentWorldInfo.GlobalPath.GetFile();
 			var encrypt = CurrentWorldInfo.IsEncrypt;
-			ExitWorld();
+			World.Instance?.Exit();
 			DeserializeWorldInfo(worldConfigPath, fileName, worldsPath, !encrypt);
 			LoadWorld(Utils.WorldInfos[worldKey]);
 		};
-		_world.GetNode<Button>("%Exit").Pressed +=
-			() => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
-		_world.GetNode<Button>("%Encrypt").Pressed += () => {
-			Utils.ExportEncryptionWorldPck(CurrentWorldInfo);
-			ExitWorld();
-		};
+
 		oldWorld.AddSibling(_world);
 		oldWorld.QueueFree();
 	}
 
-	private void ClearCache() {
+	public static void ClearCache() {
 		foreach (var audioPlayer in Utils.AudioPlayerCache) {
 			audioPlayer.Dispose();
 		}
@@ -258,21 +241,6 @@ public sealed partial class Main : Control {
 		}
 
 		Utils.TextureCache.Clear();
-
-		_background.Modulate = Colors.White;
-		_background.GetNode<ColorRect>("ColorRect").Color = Color.Color8(74, 74, 74);
-		_background.GetNode<TextureRect>("TextureRect").Texture = null;
-	}
-
-
-	public void ExitWorld(int exitCode = 0) {
-		if (CurrentWorldInfo is null) return;
-		_world.EventEmit(EventType.Exit, exitCode);
-		Log.Debug("退出世界:", exitCode.ToString(), CurrentWorldInfo.JsonString);
-		CurrentWorldInfo = null;
-		ClearCache();
-		_home.Show();
-		_world.Hide();
 	}
 
 	static private string GetSaveValue(string section, string key) {

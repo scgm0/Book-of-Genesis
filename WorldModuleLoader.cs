@@ -16,7 +16,6 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 
 	public WorldModuleLoader(World? world) : this(Main.CurrentWorldInfo) {
 		World = world;
-		JsEnv.ClearAllModuleCaches();
 	}
 
 	public WorldModuleLoader() : this(worldInfo: null) { }
@@ -71,6 +70,7 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 		env.ExecuteModule("创世记:world_init");
 		env.ExecuteModule("创世记:events");
 		env.ExecuteModule("创世记:console");
+		JsEnv.ClearAllModuleCaches();
 	}
 
 	public string GetSourceMapStack(string stack) {

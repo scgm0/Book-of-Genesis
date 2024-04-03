@@ -76,7 +76,7 @@ content_margin_left = 160.0
 content_margin_right = 160.0
 texture = SubResource("GradientTexture1D_6fyxh")
 
-[node name="World" type="Control" node_paths=PackedStringArray("Title", "LeftButtonList", "RightButtonList", "LeftText", "CenterText", "RightText", "CommandEdit", "Toast")]
+[node name="World" type="Control" node_paths=PackedStringArray("BackgroundColor", "BackgroundTexture", "Title", "LeftButtonList", "RightButtonList", "LeftText", "CenterText", "RightText", "CommandEdit", "Toast")]
 custom_minimum_size = Vector2(1152, 648)
 layout_mode = 3
 anchors_preset = 8
@@ -92,31 +92,69 @@ grow_horizontal = 2
 grow_vertical = 2
 theme = ExtResource("1_mjgsx")
 script = ExtResource("4_2mjxf")
-Title = NodePath("Main/Control/VBoxContainer/HBoxContainer/Title")
-LeftButtonList = NodePath("Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer/MarginContainer/LeftButtonList")
-RightButtonList = NodePath("Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer2/MarginContainer/RightButtonList")
-LeftText = NodePath("Main/Control/VBoxContainer/HBoxContainer2/LeftPanel/MarginContainer/LeftText")
-CenterText = NodePath("Main/Control/VBoxContainer/HBoxContainer2/CenterPanel/MarginContainer/CenterText")
-RightText = NodePath("Main/Control/VBoxContainer/HBoxContainer2/RightPanel/MarginContainer/RightText")
-CommandEdit = NodePath("Main/Control/VBoxContainer/HBoxContainer3/CommandEdit")
-Toast = NodePath("Main/Control/Toast")
+BackgroundColor = NodePath("BackgroundColor")
+BackgroundTexture = NodePath("BackgroundColor/BackgroundTexture")
+Title = NodePath("Main/MarginContainer/Control/VBoxContainer/HBoxContainer/Title")
+LeftButtonList = NodePath("Main/MarginContainer/Control/VBoxContainer/HBoxContainer3/ScrollContainer/MarginContainer/LeftButtonList")
+RightButtonList = NodePath("Main/MarginContainer/Control/VBoxContainer/HBoxContainer3/ScrollContainer2/MarginContainer/RightButtonList")
+LeftText = NodePath("Main/MarginContainer/Control/VBoxContainer/HBoxContainer2/LeftPanel/MarginContainer/LeftText")
+CenterText = NodePath("Main/MarginContainer/Control/VBoxContainer/HBoxContainer2/CenterPanel/MarginContainer/CenterText")
+RightText = NodePath("Main/MarginContainer/Control/VBoxContainer/HBoxContainer2/RightPanel/MarginContainer/RightText")
+CommandEdit = NodePath("Main/MarginContainer/Control/VBoxContainer/HBoxContainer3/CommandEdit")
+Toast = NodePath("Main/MarginContainer/Control/Toast")
 
-[node name="Main" type="MarginContainer" parent="."]
+[node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+unique_name_in_owner = true
+auto_translate_mode = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.219608, 0.219608, 0.219608, 1)
+
+[node name="BackgroundTexture" type="TextureRect" parent="BackgroundColor"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Main" type="AspectRatioContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+ratio = 1.7778
+
+[node name="MarginContainer" type="MarginContainer" parent="Main"]
+layout_mode = 2
 theme_override_constants/margin_left = 5
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="Control" type="Control" parent="Main"]
+[node name="Control" type="Control" parent="Main/MarginContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Main/Control"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Main/MarginContainer/Control"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -125,27 +163,27 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 5
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Main/Control/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Main/MarginContainer/Control/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 25
 alignment = 1
 
-[node name="HFlowContainer" type="HFlowContainer" parent="Main/Control/VBoxContainer/HBoxContainer"]
+[node name="HFlowContainer" type="HFlowContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 15
 
-[node name="Log" type="Button" parent="Main/Control/VBoxContainer/HBoxContainer/HFlowContainer"]
+[node name="Log" type="Button" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer/HFlowContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "日志"
 
-[node name="Overload" type="Button" parent="Main/Control/VBoxContainer/HBoxContainer/HFlowContainer"]
+[node name="Overload" type="Button" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer/HFlowContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "重载"
 
-[node name="Title" type="RichTextLabel" parent="Main/Control/VBoxContainer/HBoxContainer"]
+[node name="Title" type="RichTextLabel" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 75)
 layout_mode = 2
@@ -163,34 +201,33 @@ scroll_active = false
 autowrap_mode = 0
 meta_underlined = false
 
-[node name="HFlowContainer2" type="HFlowContainer" parent="Main/Control/VBoxContainer/HBoxContainer"]
+[node name="HFlowContainer2" type="HFlowContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 15
 alignment = 2
 
-[node name="Encrypt" type="Button" parent="Main/Control/VBoxContainer/HBoxContainer/HFlowContainer2"]
+[node name="Encrypt" type="Button" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer/HFlowContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "加密"
 
-[node name="Exit" type="Button" parent="Main/Control/VBoxContainer/HBoxContainer/HFlowContainer2"]
+[node name="Exit" type="Button" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer/HFlowContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "退出"
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="Main/Control/VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="Main/MarginContainer/Control/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="LeftPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
-visible = false
+[node name="LeftPanel" type="Panel" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_l2bod")
 
-[node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer2/LeftPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2/LeftPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -202,7 +239,7 @@ theme_override_constants/margin_top = 7
 theme_override_constants/margin_right = 7
 theme_override_constants/margin_bottom = 7
 
-[node name="LeftText" type="RichTextLabel" parent="Main/Control/VBoxContainer/HBoxContainer2/LeftPanel/MarginContainer"]
+[node name="LeftText" type="RichTextLabel" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2/LeftPanel/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -213,13 +250,12 @@ autowrap_mode = 1
 meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
-[node name="CenterPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
-visible = false
+[node name="CenterPanel" type="Panel" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_t8wjd")
 
-[node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer2/CenterPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2/CenterPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -231,7 +267,7 @@ theme_override_constants/margin_top = 7
 theme_override_constants/margin_right = 7
 theme_override_constants/margin_bottom = 7
 
-[node name="CenterText" type="RichTextLabel" parent="Main/Control/VBoxContainer/HBoxContainer2/CenterPanel/MarginContainer"]
+[node name="CenterText" type="RichTextLabel" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2/CenterPanel/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -242,13 +278,12 @@ autowrap_mode = 1
 meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
-[node name="RightPanel" type="Panel" parent="Main/Control/VBoxContainer/HBoxContainer2"]
-visible = false
+[node name="RightPanel" type="Panel" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_tg0ev")
 
-[node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer2/RightPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2/RightPanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -260,7 +295,7 @@ theme_override_constants/margin_top = 7
 theme_override_constants/margin_right = 7
 theme_override_constants/margin_bottom = 7
 
-[node name="RightText" type="RichTextLabel" parent="Main/Control/VBoxContainer/HBoxContainer2/RightPanel/MarginContainer"]
+[node name="RightText" type="RichTextLabel" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2/RightPanel/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -271,7 +306,7 @@ autowrap_mode = 1
 meta_underlined = false
 deselect_on_focus_loss_enabled = false
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="Main/Control/VBoxContainer"]
+[node name="HBoxContainer3" type="HBoxContainer" parent="Main/MarginContainer/Control/VBoxContainer"]
 clip_contents = true
 custom_minimum_size = Vector2(0, 55)
 layout_mode = 2
@@ -279,14 +314,14 @@ size_flags_vertical = 8
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Main/Control/VBoxContainer/HBoxContainer3"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer3"]
 layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 0
 script = ExtResource("4_d05cd")
 
-[node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer3/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -295,12 +330,12 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="LeftButtonList" type="HBoxContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer/MarginContainer"]
+[node name="LeftButtonList" type="HBoxContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer3/ScrollContainer/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="CommandEdit" type="LineEdit" parent="Main/Control/VBoxContainer/HBoxContainer3"]
+[node name="CommandEdit" type="LineEdit" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer3"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 45)
 layout_mode = 2
@@ -310,14 +345,14 @@ alignment = 1
 context_menu_enabled = false
 caret_blink = true
 
-[node name="ScrollContainer2" type="ScrollContainer" parent="Main/Control/VBoxContainer/HBoxContainer3"]
+[node name="ScrollContainer2" type="ScrollContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer3"]
 layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 3
 vertical_scroll_mode = 0
 script = ExtResource("4_d05cd")
 
-[node name="MarginContainer" type="MarginContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer2"]
+[node name="MarginContainer" type="MarginContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer3/ScrollContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -326,13 +361,13 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="RightButtonList" type="HBoxContainer" parent="Main/Control/VBoxContainer/HBoxContainer3/ScrollContainer2/MarginContainer"]
+[node name="RightButtonList" type="HBoxContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer3/ScrollContainer2/MarginContainer"]
 unique_name_in_owner = true
 layout_direction = 3
 layout_mode = 2
 alignment = 1
 
-[node name="Toast" type="Label" parent="Main/Control"]
+[node name="Toast" type="Label" parent="Main/MarginContainer/Control"]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(0, 40)

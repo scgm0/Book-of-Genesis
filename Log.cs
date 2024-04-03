@@ -67,8 +67,8 @@ public static partial class Log {
 
 	public static void Error(params string[] m) {
 		_log(m.Join(" "), Severity.Error);
-		if (Utils.Tree.CurrentScene is not Main main) return;
-		main.ExitWorld(1);
+		if (Utils.Tree.CurrentScene is not Main) return;
+		World.Instance?.Exit(1);
 	}
 
 	public static void Trace(params string[] m) {
