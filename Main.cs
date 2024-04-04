@@ -54,7 +54,7 @@ public sealed partial class Main : Control {
 		_templateWorldButton.Pressed += ChooseTemplate;
 		_logButton.Pressed += Log.LogWindow.ToggleVisible;
 		_back.Pressed +=
-			() => GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
+			() => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
 		TsTransform.Prepare();
 		Log.Debug($"初始化完成，耗时: {(DateTime.Now - StartTime).ToString()}\nPlatform: {OS.GetName()}\nGameVersion: {Utils.GameVersion}\nDotNetVersion: {Environment.Version}\nTypeScriptVersion: {TsTransform.TypeScriptVersion}");
@@ -62,15 +62,17 @@ public sealed partial class Main : Control {
 	}
 
 	public override void _Input(InputEvent @event) {
-		if (!@event.IsActionPressed("ui_select")) return;
-		using var pressedEvent = new InputEventMouseButton();
-		pressedEvent.ButtonIndex = MouseButton.Left;
-		pressedEvent.Pressed = true;
-		pressedEvent.Position = GetGlobalMousePosition();
-		Input.ParseInputEvent(pressedEvent);
-		using var releasedEvent = (InputEventMouseButton)pressedEvent.Duplicate(true);
-		releasedEvent.Pressed = false;
-		Input.Singleton.CallDeferred(Input.MethodName.ParseInputEvent, releasedEvent);
+		using (@event) {
+			if (!@event.IsActionPressed("ui_select")) return;
+			using var pressedEvent = new InputEventMouseButton();
+			pressedEvent.ButtonIndex = MouseButton.Left;
+			pressedEvent.Pressed = true;
+			pressedEvent.Position = GetGlobalMousePosition();
+			Input.ParseInputEvent(pressedEvent);
+			using var releasedEvent = (InputEventMouseButton)pressedEvent.Duplicate(true);
+			releasedEvent.Pressed = false;
+			Input.Singleton.CallDeferred(Input.MethodName.ParseInputEvent, releasedEvent);
+		}
 	}
 
 	public override void _Notification(int what) {
@@ -83,14 +85,14 @@ public sealed partial class Main : Control {
 			_worldItem.Dispose();
 			Utils.GlobalConfig.Dispose();
 			Log.Debug("退出游戏，运行时长:", (DateTime.Now - StartTime).ToString());
-			GetTree().Quit();
+			Utils.Tree.Quit();
 		} else if (what == NotificationWMGoBackRequest) {
 			if (_world is { Visible: true }) {
 				World.Instance?.Exit();
 			} else if (_chooseWorld.Visible) {
 				_chooseWorld.Hide();
 			} else {
-				GetTree().Root.PropagateNotification((int)NotificationWMCloseRequest);
+				Utils.Tree.Root.PropagateNotification((int)NotificationWMCloseRequest);
 			}
 		}
 	}
@@ -157,7 +159,7 @@ public sealed partial class Main : Control {
 				Log.Debug("导出模版:", worldInfo.JsonString);
 				Utils.CopyDir(worldInfo.GlobalPath, Utils.UserWorldsPath.PathJoin($"{worldInfo.Name}-{worldInfo.Version}"));
 				Log.Debug("导出模版完成:", exportPath);
-				GetTree().Root.PropagateNotification((int)NotificationWMGoBackRequest);
+				Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
 			};
 			worldItem.GetNode<Button>("%Choose").Text = "导出\n模版";
 			worldItem.Set("modulate", Colors.Transparent);

@@ -56,23 +56,23 @@ public partial class World : Control {
 
 		LeftButtonList.Resized += async () => {
 			if (LeftButtonList.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			await ToSignal(Utils.Tree, SceneTree.SignalName.ProcessFrame);
 			LeftButtonList.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
 		};
 		LeftButtonList.VisibilityChanged += async () => {
 			if (LeftButtonList.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			await ToSignal(Utils.Tree, SceneTree.SignalName.ProcessFrame);
 			LeftButtonList.GetNode<SmoothScroll>("../..").ScrollToLeft(0);
 		};
 
 		RightButtonList.Resized += async () => {
 			if (RightButtonList.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			await ToSignal(Utils.Tree, SceneTree.SignalName.ProcessFrame);
 			RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
 		RightButtonList.VisibilityChanged += async () => {
 			if (RightButtonList.GetChildCount() <= 0) return;
-			await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+			await ToSignal(Utils.Tree, SceneTree.SignalName.ProcessFrame);
 			RightButtonList.GetNode<SmoothScroll>("../..").ScrollToRight(0);
 		};
 
@@ -98,9 +98,20 @@ public partial class World : Control {
 		_jsEnv?.Tick();
 	}
 
+	public override void _ExitTree() {
+		base._ExitTree();
+		_titleStyle.Dispose();
+		_leftTextStyle.Dispose();
+		_centerTextStyle.Dispose();
+		_rightTextStyle.Dispose();
+		_toastTween?.Dispose();
+	}
+
 	private void OnMetaClickedEventHandler(Variant meta, TextType type) {
+		var str = meta.ToString();
+		meta.Dispose();
 		try {
-			EventEmit(EventType.TextUrlClick, meta.ToString(), type);
+			EventEmit(EventType.TextUrlClick, str, type);
 		} catch (Exception) {
 			_jsEnv?.Eval("console.error(World.getLastException())");
 		}
@@ -125,7 +136,7 @@ public partial class World : Control {
 		Hide();
 		SetProcess(false);
 		SetPhysicsProcess(false);
-		ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame).OnCompleted(() => {
+		ToSignal(Utils.Tree, SceneTree.SignalName.ProcessFrame).OnCompleted(() => {
 			_jsEnv?.Dispose();
 			_jsEnv = null;
 		});

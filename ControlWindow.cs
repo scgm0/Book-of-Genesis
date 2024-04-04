@@ -239,40 +239,45 @@ public partial class ControlWindow : PanelContainer {
 	}
 
 	private void OnTabBarGuiInput(InputEvent @event) {
-		switch (@event) {
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
-				_dragging = true;
-				_tabBar.MouseDefaultCursorShape = CursorShape.Drag;
-				_relativePos = mouseButton.Position;
-				break;
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
-				_dragging = false;
-				_tabBar.MouseDefaultCursorShape = CursorShape.Arrow;
-				break;
-			case InputEventMouseMotion motion:
-				if (_dragging) {
-					Position += motion.Position - _relativePos;
-				}
+		using (@event) {
+			switch (@event) {
+				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
+					_dragging = true;
+					_tabBar.MouseDefaultCursorShape = CursorShape.Drag;
+					_relativePos = mouseButton.Position;
+					break;
+				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
+					_dragging = false;
+					_tabBar.MouseDefaultCursorShape = CursorShape.Arrow;
+					break;
+				case InputEventMouseMotion motion:
+					if (_dragging) {
+						Position += motion.Position - _relativePos;
+					}
 
-				break;
+					break;
+			}
 		}
+
 	}
 
 	private void OnResized(InputEvent @event, ResizeDirection resizeDirection) {
-		switch (@event) {
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
-				_resizable = true;
-				_relativePos = mouseButton.Position;
-				break;
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
-				_resizable = false;
-				break;
-			case InputEventMouseMotion motion:
-				if (_resizable) {
-					ResizeWindow(resizeDirection, motion.Position - _relativePos);
-				}
+		using (@event) {
+			switch (@event) {
+				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
+					_resizable = true;
+					_relativePos = mouseButton.Position;
+					break;
+				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
+					_resizable = false;
+					break;
+				case InputEventMouseMotion motion:
+					if (_resizable) {
+						ResizeWindow(resizeDirection, motion.Position - _relativePos);
+					}
 
-				break;
+					break;
+			}
 		}
 	}
 }
