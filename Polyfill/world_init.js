@@ -16,6 +16,7 @@ World.getSourceMapStack = stack => {
 
 const Log = puer.loadType('创世记.Log');
 const Utils = puer.loadType('创世记.Utils');
+const Json = puer.loadType('Godot.Json');
 
 World.Log = Log;
 
@@ -57,7 +58,7 @@ World.addText = (type, text) => world.AddText(type, text);
 World.addTitle = text => world.AddTitle(text);
 World.addLeftText = text => world.AddLeftText(text);
 World.addCenterText = text => world.AddCenterText(text);
-World.addSetRightText = text => world.AddRightText(text);
+World.addRightText = text => world.AddRightText(text);
 
 World.setCommandPlaceholderText = text => world.SetCommandPlaceholderText(text);
 
@@ -72,8 +73,46 @@ World.setRightStretchRatio = (ratio) => world.SetRightStretchRatio(ratio);
 World.setTextBackgroundColor = (type, colorHex) => world.SetTextBackgroundColor(type, colorHex);
 World.setTextFontColor = (type, colorHex) => world.SetTextFontColor(type, colorHex);
 
-World.setBackgroundColor = (colorHex) => world.SetTextBackgroundColor(colorHex);
+World.setBackgroundColor = (colorHex) => world.SetBackgroundColor(colorHex);
 World.setBackgroundTexture = (path, filter = World.FilterType.Linear) => world.SetBackgroundTexture(path, filter);
+
+World.setSaveValue = (section, key, value) => {
+    if (typeof value === "object") {
+        value = {
+            value: JSON.stringify(value)
+        }
+    }
+    Utils.SetSaveValue(section, key, value);
+}
+
+World.getSaveValue = (section, key, defaultValue) => {
+    let value = Utils.GetSaveValue(section, key);
+    if(value && typeof value === "object") {
+        if (value.constructor.name.includes("Godot.Collections.Dictionary") || value.constructor.name.includes("Godot.Collections.Array")) {
+            value = JSON.parse(Utils.GetJsonString(value));
+        }
+    }
+    return value ?? defaultValue;
+}
+
+World.setGlobalSaveValue = (section, key, value) => {
+    if (typeof value === "object") {
+        value = {
+            value: JSON.stringify(value)
+        }
+    }
+    Utils.SetGlobalSaveValue(section, key, value);
+}
+
+World.getGlobalSaveValue = (section, key, defaultValue) => {
+    let value = Utils.GetGlobalSaveValue(section, key);
+    if(value && typeof value === "object") {
+        if (value.constructor.name.includes("Godot.Collections.Dictionary") || value.constructor.name.includes("Godot.Collections.Array")) {
+            value = JSON.parse(Utils.GetJsonString(value));
+        }
+    }
+    return value ?? defaultValue;
+}
 
 World.versionCompare = (version1, version2) => Utils.VersionCompare(version1, version2);
 World.exit = (exitCode = 1) => world.Exit(exitCode);
@@ -83,7 +122,7 @@ world.JsEvent = {
         if (args !=null) {
             let array = [];
             for(let i = 0; i < args.Length; i++) {
-                array.push(args.GetValue(i) ?? undefined);
+                array.push(args.GetValue(i) ?? "");
             }
             World.event.emit(event, ...array);
         } else {

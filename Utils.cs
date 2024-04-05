@@ -3,6 +3,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Godot;
+using Godot.Collections;
+using Puerts;
+using Array = Godot.Collections.Array;
 using Timer = System.Threading.Timer;
 
 // ReSharper disable MemberCanBePrivate.Global
@@ -207,6 +210,111 @@ public static partial class Utils {
 		}
 
 		return img;
+	}
+
+
+	static private object? VariantToSaveValue(Variant value) {
+		switch (value.VariantType) {
+			case Variant.Type.Bool:
+				return value.AsBool();
+			case Variant.Type.Int:
+				return value.AsInt32();
+			case Variant.Type.Float:
+				return value.AsDouble();
+			case Variant.Type.String:
+				return value.AsString();
+			case Variant.Type.Dictionary:
+				return value.AsGodotDictionary();
+			case Variant.Type.Array:
+				return value.AsGodotArray();
+			case Variant.Type.Vector2:
+			case Variant.Type.Vector2I:
+			case Variant.Type.Rect2:
+			case Variant.Type.Rect2I:
+			case Variant.Type.Vector3:
+			case Variant.Type.Vector3I:
+			case Variant.Type.Transform2D:
+			case Variant.Type.Vector4:
+			case Variant.Type.Vector4I:
+			case Variant.Type.Plane:
+			case Variant.Type.Quaternion:
+			case Variant.Type.Aabb:
+			case Variant.Type.Basis:
+			case Variant.Type.Transform3D:
+			case Variant.Type.Projection:
+			case Variant.Type.Color:
+			case Variant.Type.StringName:
+			case Variant.Type.NodePath:
+			case Variant.Type.Rid:
+			case Variant.Type.Object:
+			case Variant.Type.Callable:
+			case Variant.Type.Signal:
+			case Variant.Type.PackedByteArray:
+			case Variant.Type.PackedInt32Array:
+			case Variant.Type.PackedInt64Array:
+			case Variant.Type.PackedFloat32Array:
+			case Variant.Type.PackedFloat64Array:
+			case Variant.Type.PackedStringArray:
+			case Variant.Type.PackedVector2Array:
+			case Variant.Type.PackedVector3Array:
+			case Variant.Type.PackedColorArray:
+			case Variant.Type.Max:
+			case Variant.Type.Nil:
+			default: return null;
+		}
+	}
+
+	static private Variant SaveValueToVariant(object? value) {
+		switch (value) {
+			case bool boolValue:
+				return boolValue;
+			case int intValue:
+				return intValue;
+			case double doubleValue:
+				return doubleValue;
+			case string stringValue:
+				return stringValue;
+			case JSObject jsObject: {
+				var str = jsObject.Get<string>("value");
+				var json = new Json();
+				json.Parse(str);
+				return json.Data;
+			}
+			default:
+				return default;
+		}
+	}
+
+	public static object? GetSaveValue(string section, string key) {
+		using var defaultVariant = new RefCounted();
+		using var value = Main.CurrentWorldInfo!.Config.GetValue(section, key, defaultVariant);
+		return VariantToSaveValue(value);
+	}
+
+	public static void SetSaveValue(string section, string key, object? value) {
+		Main.CurrentWorldInfo!.Config.SetValue(section, key, SaveValueToVariant(value));
+		Main.CurrentWorldInfo.Config.SaveEncryptedPass(
+			$"{SavesPath}/{Main.CurrentWorldInfo.Author}:{Main.CurrentWorldInfo.Name}.save",
+			$"{Main.CurrentWorldInfo.Author}:{Main.CurrentWorldInfo.Name}");
+	}
+
+	public static object? GetGlobalSaveValue(string section, string key) {
+		using var defaultVariant = new RefCounted();
+		using var value = GlobalConfig.GetValue(section, key, defaultVariant);
+		return VariantToSaveValue(value);
+	}
+
+	public static void SetGlobalSaveValue(string section, string key, object? value) {
+		GlobalConfig.SetValue(section, key, SaveValueToVariant(value));
+		GlobalConfig.SaveEncryptedPass($"{SavesPath}/global.save", "global");
+	}
+
+	public static string GetJsonString(Dictionary dictionary) {
+		return Json.Stringify(dictionary);
+	}
+
+	public static string GetJsonString(Array array) {
+		return Json.Stringify(array);
 	}
 
 	static private partial string SCRIPT_AES256_ENCRYPTION_KEY();

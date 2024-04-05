@@ -244,16 +244,4 @@ public sealed partial class Main : Control {
 
 		Utils.TextureCache.Clear();
 	}
-
-	static private string GetSaveValue(string section, string key) {
-		var value = CurrentWorldInfo!.Config.GetValue(section, key, new RefCounted()).ToString();
-		return value;
-	}
-
-	static private void SetSaveValue(string section, string key, string value) {
-		CurrentWorldInfo!.Config.SetValue(section, key, value);
-		CurrentWorldInfo.Config.SaveEncryptedPass(
-			$"{Utils.SavesPath}/{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}.save",
-			$"{CurrentWorldInfo.Author}:{CurrentWorldInfo.Name}");
-	}
 }

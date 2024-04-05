@@ -14,6 +14,7 @@ public static partial class Utils {
 			typeof(Array),
 			typeof(Task),
 			typeof(Log),
+			typeof(Utils),
 			typeof(World),
 			typeof(WorldInfo),
 			typeof(WorldModuleLoader),
