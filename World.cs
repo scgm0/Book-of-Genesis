@@ -110,11 +110,7 @@ public partial class World : Control {
 	private void OnMetaClickedEventHandler(Variant meta, TextType type) {
 		var str = meta.ToString();
 		meta.Dispose();
-		try {
-			EventEmit(EventType.TextUrlClick, str, type);
-		} catch (Exception) {
-			_jsEnv?.Eval("console.error(World.getLastException())");
-		}
+		EventEmit(EventType.TextUrlClick, str, type);
 	}
 
 	public void EventEmit(EventType type, params object?[]? args) {
@@ -123,7 +119,11 @@ public partial class World : Control {
 			Emit ??= JsEvent.Get<Action<EventType, object?[]?>>("emit");
 		}
 
-		Emit?.Invoke(type, args);
+		try {
+			Emit?.Invoke(type, args);
+		} catch (Exception) {
+			_jsEnv?.Eval("console.error(World.getLastException())");
+		}
 	}
 
 	public void Exit(int exitCode = 0) {
@@ -281,9 +281,10 @@ public partial class World : Control {
 		RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
-	public ulong[] SetLeftButtons(string[] names) {
+	public ulong[] SetLeftButtons(string names) {
+		var namesArray = Json.ParseString(names).AsStringArray();
 		ulong[] buttons;
-		if (LeftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
+		if (LeftButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(namesArray)) {
 			buttons = LeftButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
 			return buttons;
 		}
@@ -293,7 +294,7 @@ public partial class World : Control {
 			node.QueueFree();
 		}
 
-		buttons = names.Select(AddLeftButton).ToArray();
+		buttons = namesArray.Select(AddLeftButton).ToArray();
 
 		return buttons;
 	}
@@ -315,9 +316,10 @@ public partial class World : Control {
 		node.QueueFree();
 	}
 
-	public ulong[] SetRightButtons(string[] names) {
+	public ulong[] SetRightButtons(string names) {
+		var namesArray = Json.ParseString(names).AsStringArray();
 		ulong[] buttons;
-		if (RightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(names)) {
+		if (RightButtonList.GetChildren().Select(node => ((Button)node).Text).SequenceEqual(namesArray)) {
 			buttons = RightButtonList.GetChildren().Select(node => ((Button)node).GetInstanceId()).ToArray();
 			return buttons;
 		}
@@ -327,7 +329,7 @@ public partial class World : Control {
 			node.QueueFree();
 		}
 
-		buttons = names.Select(AddRightButton).ToArray();
+		buttons = namesArray.Select(AddRightButton).ToArray();
 
 		return buttons;
 	}
@@ -347,11 +349,6 @@ public partial class World : Control {
 		if (index >= 0 ? index > RightButtonList.GetChildCount() - 1 : index < -RightButtonList.GetChildCount()) return;
 		var node = RightButtonList.GetChild(index);
 		node.QueueFree();
-	}
-
-	public static void RemoveButtonById(ulong id) {
-		var button = InstanceFromId(id) as Button;
-		button?.QueueFree();
 	}
 
 	public void SetTextBackgroundColor(TextType type, string colorHex) {
@@ -404,4 +401,5 @@ public partial class World : Control {
 			RightText.AddThemeColorOverride("default_color", color);
 		}
 	}
+
 }

@@ -477,7 +477,7 @@ if (Log) {
         indent: 2,
         maxDepth: Infinity,
         maxWidth: Infinity,
-        min: false,
+        min: true,
         plugins: [],
         printBasicPrototype: true,
         printFunctionName: true,

@@ -73,6 +73,26 @@ World.setRightStretchRatio = (ratio) => world.SetRightStretchRatio(ratio);
 World.setTextBackgroundColor = (type, colorHex) => world.SetTextBackgroundColor(type, colorHex);
 World.setTextFontColor = (type, colorHex) => world.SetTextFontColor(type, colorHex);
 
+World.setLeftButtons = (buttons) => {
+    var buttons = world.SetLeftButtons(JSON.stringify(buttons));
+    var array = [];
+    for(let i = 0; i < buttons.Length; i++) {
+        array.push(buttons.GetValue(i) ?? "");
+    }
+    return array;
+}
+World.setRightButtons = (buttons) => {
+    var buttons = world.SetRightButtons(JSON.stringify(buttons));
+    var array = [];
+    for(let i = 0; i < buttons.Length; i++) {
+        array.push(buttons.GetValue(i) ?? "");
+    }
+    return array;
+}
+World.removeLeftButtonByIndex = (index) => world.RemoveLeftButtonByIndex(index);
+World.removeRightButtonByIndex = (index) => world.RemoveRightButtonByIndex(index);
+World.removeButtonById = (id) => Utils.RemoveButtonById(id);
+
 World.setBackgroundColor = (colorHex) => world.SetBackgroundColor(colorHex);
 World.setBackgroundTexture = (path, filter = World.FilterType.Linear) => world.SetBackgroundTexture(path, filter);
 

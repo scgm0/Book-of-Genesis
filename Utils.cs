@@ -212,6 +212,10 @@ public static partial class Utils {
 		return img;
 	}
 
+	public static void RemoveButtonById(ulong id) {
+		var button = GodotObject.InstanceFromId(id) as Button;
+		button?.QueueFree();
+	}
 
 	static private object? VariantToSaveValue(Variant value) {
 		switch (value.VariantType) {
