@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=9 format=3 uid="uid://be0fvf0itb1wb"]
+[gd_resource type="Theme" load_steps=10 format=3 uid="uid://be0fvf0itb1wb"]
 
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_ub4pw"]
 [ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_sxng7"]
@@ -44,6 +44,23 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4dwr7"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6v3t7"]
 
 [resource]
@@ -58,6 +75,7 @@ Button/styles/hover = SubResource("StyleBoxFlat_vemab")
 Button/styles/normal = SubResource("StyleBoxFlat_o7vny")
 Button/styles/pressed = SubResource("StyleBoxFlat_nbjmj")
 LineEdit/font_sizes/font_size = 20
+LineEdit/styles/normal = SubResource("StyleBoxFlat_4dwr7")
 RichTextLabel/colors/selection_color = Color(1, 1, 1, 0.196078)
 RichTextLabel/fonts/bold_font = ExtResource("1_ub4pw")
 RichTextLabel/fonts/bold_italics_font = ExtResource("2_sxng7")

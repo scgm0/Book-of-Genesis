@@ -200,6 +200,7 @@ text = "标题"
 scroll_active = false
 autowrap_mode = 0
 meta_underlined = false
+visible_characters_behavior = 2
 
 [node name="HFlowContainer2" type="HFlowContainer" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer"]
 layout_mode = 2
@@ -249,6 +250,7 @@ scroll_following = true
 autowrap_mode = 1
 meta_underlined = false
 deselect_on_focus_loss_enabled = false
+visible_characters_behavior = 2
 
 [node name="CenterPanel" type="Panel" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
@@ -277,6 +279,7 @@ scroll_following = true
 autowrap_mode = 1
 meta_underlined = false
 deselect_on_focus_loss_enabled = false
+visible_characters_behavior = 2
 
 [node name="RightPanel" type="Panel" parent="Main/MarginContainer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
@@ -305,6 +308,7 @@ scroll_following = true
 autowrap_mode = 1
 meta_underlined = false
 deselect_on_focus_loss_enabled = false
+visible_characters_behavior = 2
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="Main/MarginContainer/Control/VBoxContainer"]
 clip_contents = true

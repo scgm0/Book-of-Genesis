@@ -34,12 +34,9 @@ public partial class World : Control {
 		PuertsDLL.ThrowException(Instance._jsEnv.Isolate, message);
 	}
 
-	public World() {
+	public override void _Ready() {
 		Instance = this;
 		_jsEnv = new JsEnv(new WorldModuleLoader(this));
-	}
-
-	public override void _Ready() {
 		_titleStyle = (StyleBoxFlat)Title.GetThemeStylebox("normal");
 		_leftTextStyle = (StyleBoxFlat)LeftText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
 		_centerTextStyle = (StyleBoxFlat)CenterText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
@@ -77,7 +74,7 @@ public partial class World : Control {
 		};
 
 		SetTitle($"{Main.CurrentWorldInfo!.Name}-{Main.CurrentWorldInfo.Version}");
-		GetNode<Control>("Main").Hide();
+		GetNode<Control>("%Main").Hide();
 		GetNode<Button>("%Encrypt").Disabled = Main.CurrentWorldInfo.IsEncrypt;
 		GetNode<Button>("%Log").Pressed += Log.LogWindow.ToggleVisible;
 		GetNode<Button>("%Exit").Pressed += () => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);

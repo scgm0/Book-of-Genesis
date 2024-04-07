@@ -64,13 +64,12 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 	}
 
 	public void OnBuiltinLoaded(JsEnv env) {
-		env.SetDefaultBindingMode(BindingMode.DontBinding);
+		JsEnv.ClearAllModuleCaches();
 		_isLoaded = true;
 		if (WorldInfo is null) return;
 		env.ExecuteModule("创世记:world_init");
 		env.ExecuteModule("创世记:events");
 		env.ExecuteModule("创世记:console");
-		JsEnv.ClearAllModuleCaches();
 	}
 
 	public string GetSourceMapStack(string stack) {

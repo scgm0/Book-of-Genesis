@@ -21,25 +21,28 @@ const Json = puer.loadType('Godot.Json');
 World.Log = Log;
 
 (function (FilterType) {
-    FilterType[FilterType["Linear"] = 0] = "Linear";
-    FilterType[FilterType["Nearest"] = 1] = "Nearest";
+    const _filterType = puer.loadType('创世记.FilterType');
+    FilterType[FilterType["Linear"] = _filterType.Linear] = "Linear";
+    FilterType[FilterType["Nearest"] = _filterType.Nearest] = "Nearest";
 })(World.FilterType = {});
 
 (function (EventType) {
-    EventType[EventType["Ready"] = 0] = "Ready";
-    EventType[EventType["Exit"] = 1] = "Exit";
-    EventType[EventType["Command"] = 2] = "Command";
-    EventType[EventType["LeftButtonClick"] = 3] = "LeftButtonClick";
-    EventType[EventType["RightButtonClick"] = 4] = "RightButtonClick";
-    EventType[EventType["TextUrlClick"] = 5] = "TextUrlClick";
+    const _eventType = puer.loadType('创世记.EventType');
+    EventType[EventType["Ready"] = _eventType.Ready] = "Ready";
+    EventType[EventType["Exit"] = _eventType.Exit] = "Exit";
+    EventType[EventType["Command"] = _eventType.Command] = "Command";
+    EventType[EventType["LeftButtonClick"] = _eventType.LeftButtonClick] = "LeftButtonClick";
+    EventType[EventType["RightButtonClick"] = _eventType.RightButtonClick] = "RightButtonClick";
+    EventType[EventType["TextUrlClick"] = _eventType.TextUrlClick] = "TextUrlClick";
 })(World.EventType = {});
 
 (function (TextType) {
-    TextType[TextType["Title"] = 1] = "Title";
-    TextType[TextType["LeftText"] = 2] = "LeftText";
-    TextType[TextType["CenterText"] = 4] = "CenterText";
-    TextType[TextType["RightText"] = 8] = "RightText";
-    TextType[TextType["All"] = 15] = "All";
+    const _textType = puer.loadType('创世记.TextType');
+    TextType[TextType["Title"] = _textType.Title] = "Title";
+    TextType[TextType["LeftText"] = _textType.LeftText] = "LeftText";
+    TextType[TextType["CenterText"] = _textType.CenterText] = "CenterText";
+    TextType[TextType["RightText"] = _textType.RightText] = "RightText";
+    TextType[TextType["All"] = _textType.All] = "All";
 })(World.TextType = {});
 
 World.gameVersion = Utils.GameVersion;
@@ -62,18 +65,18 @@ World.addRightText = text => world.AddRightText(text);
 
 World.setCommandPlaceholderText = text => world.SetCommandPlaceholderText(text);
 
-World.getParagraphCount = (type) => world.GetParagraphCount(type);
+World.getParagraphCount = type => world.GetParagraphCount(type);
 World.removeParagraph = (type, index) => world.RemoveParagraph(type, index);
 
 World.setStretchRatio = (type, ratio) => world.SetStretchRatio(type, ratio);
-World.setLeftStretchRatio = (ratio) => world.SetLeftStretchRatio(ratio);
-World.setCenterStretchRatio = (ratio) => world.SetCenterStretchRatio(ratio);
-World.setRightStretchRatio = (ratio) => world.SetRightStretchRatio(ratio);
+World.setLeftStretchRatio = ratio => world.SetLeftStretchRatio(ratio);
+World.setCenterStretchRatio = ratio => world.SetCenterStretchRatio(ratio);
+World.setRightStretchRatio = ratio => world.SetRightStretchRatio(ratio);
 
 World.setTextBackgroundColor = (type, colorHex) => world.SetTextBackgroundColor(type, colorHex);
 World.setTextFontColor = (type, colorHex) => world.SetTextFontColor(type, colorHex);
 
-World.setLeftButtons = (buttons) => {
+World.setLeftButtons = buttons => {
     var buttons = world.SetLeftButtons(JSON.stringify(buttons));
     var array = [];
     for(let i = 0; i < buttons.Length; i++) {
@@ -81,7 +84,7 @@ World.setLeftButtons = (buttons) => {
     }
     return array;
 }
-World.setRightButtons = (buttons) => {
+World.setRightButtons = buttons => {
     var buttons = world.SetRightButtons(JSON.stringify(buttons));
     var array = [];
     for(let i = 0; i < buttons.Length; i++) {
@@ -89,11 +92,12 @@ World.setRightButtons = (buttons) => {
     }
     return array;
 }
-World.removeLeftButtonByIndex = (index) => world.RemoveLeftButtonByIndex(index);
-World.removeRightButtonByIndex = (index) => world.RemoveRightButtonByIndex(index);
-World.removeButtonById = (id) => Utils.RemoveButtonById(id);
 
-World.setBackgroundColor = (colorHex) => world.SetBackgroundColor(colorHex);
+World.removeLeftButtonByIndex = index => world.RemoveLeftButtonByIndex(index);
+World.removeRightButtonByIndex = index => world.RemoveRightButtonByIndex(index);
+World.removeButtonById = id => Utils.RemoveButtonById(id);
+
+World.setBackgroundColor = colorHex => world.SetBackgroundColor(colorHex);
 World.setBackgroundTexture = (path, filter = World.FilterType.Linear) => world.SetBackgroundTexture(path, filter);
 
 World.setSaveValue = (section, key, value) => {
