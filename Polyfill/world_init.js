@@ -92,7 +92,8 @@ World.setRightButtons = buttons => {
     }
     return array;
 }
-
+World.addLeftButton = text => world.AddLeftButton(text);
+World.addRightButton = text => world.AddRightButton(text);
 World.removeLeftButtonByIndex = index => world.RemoveLeftButtonByIndex(index);
 World.removeRightButtonByIndex = index => world.RemoveRightButtonByIndex(index);
 World.removeButtonById = id => Utils.RemoveButtonById(id);

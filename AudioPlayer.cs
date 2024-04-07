@@ -1,6 +1,6 @@
 using System;
 using Godot;
-using 创世记;
+using Puerts;
 using FileAccess = Godot.FileAccess;
 
 // ReSharper disable UnusedMethodReturnValue.Global
@@ -8,15 +8,15 @@ using FileAccess = Godot.FileAccess;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable NotAccessedField.Local
 // ReSharper disable UnusedMember.Global
-// ReSharper disable once CheckNamespace
-// ReSharper disable once ClassNeverInstantiated.Global
+
+namespace 创世记;
 
 public sealed class AudioPlayer {
 	private readonly AudioStreamPlayer _player = new();
 	private AudioStream? _audioStream;
 	private string? _audioStreamPath;
 
-	public Action? FinishedCallback;
+	public JSObject JsObject;
 
 	public double Duration { get => _audioStream?.GetLength() ?? 0; }
 
@@ -26,11 +26,11 @@ public sealed class AudioPlayer {
 
 	public bool Loop { set => _player.Set("parameters/looping", value); get => _player.Get("parameters/looping").AsBool(); }
 
-	public AudioPlayer() {
+	public AudioPlayer(JSObject jsObject) {
+		JsObject = jsObject;
 		Utils.Tree.Root.AddChild(_player);
 		_player.Finished += () => {
-			if (FinishedCallback is null) return;
-			FinishedCallback();
+			JsObject.Get<Action?>("finishedCallback")?.Invoke();
 		};
 		Utils.AudioPlayerCache.Add(this);
 	}
@@ -115,16 +115,10 @@ public sealed class AudioPlayer {
 	}
 
 	public AudioPlayer Stop() {
-
-		if (_audioStream == null) {
-			throw new Exception("未设置音频文件");
+		if (IsPlaying && _audioStream != null) {
+			_player.Stop();
 		}
 
-		if (!IsPlaying) {
-			return this;
-		}
-
-		_player.Stop();
 		return this;
 	}
 
@@ -132,19 +126,5 @@ public sealed class AudioPlayer {
 		Stop();
 		_audioStream?.Dispose();
 		_player.QueueFree();
-	}
-
-	public static AudioPlayer PlayFile(
-		string path,
-		bool loop = false,
-		float? fromPosition = null,
-		Action? finishCallback = null) {
-		var audioPlayer = new AudioPlayer {
-			FinishedCallback = finishCallback
-		};
-		audioPlayer.SetAudioPath(path);
-		audioPlayer.Loop = loop;
-		audioPlayer.Play(fromPosition);
-		return audioPlayer;
 	}
 }

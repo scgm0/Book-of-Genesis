@@ -70,6 +70,7 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 		env.ExecuteModule("创世记:world_init");
 		env.ExecuteModule("创世记:events");
 		env.ExecuteModule("创世记:console");
+		env.ExecuteModule("创世记:audio");
 	}
 
 	public string GetSourceMapStack(string stack) {

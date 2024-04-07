@@ -15,6 +15,7 @@ public static partial class Utils {
 			typeof(Task),
 			typeof(Log),
 			typeof(Utils),
+			typeof(AudioPlayer),
 			typeof(World),
 			typeof(WorldInfo),
 			typeof(WorldModuleLoader),
