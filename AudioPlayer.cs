@@ -3,18 +3,11 @@ using Godot;
 using Puerts;
 using FileAccess = Godot.FileAccess;
 
-// ReSharper disable UnusedMethodReturnValue.Global
-// ReSharper disable UnassignedField.Global
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable NotAccessedField.Local
-// ReSharper disable UnusedMember.Global
-
 namespace 创世记;
 
 public sealed class AudioPlayer {
 	private readonly AudioStreamPlayer _player = new();
 	private AudioStream? _audioStream;
-	private string? _audioStreamPath;
 
 	public JSObject JsObject;
 
@@ -36,22 +29,23 @@ public sealed class AudioPlayer {
 	}
 
 	public AudioPlayer SetAudioPath(string path) {
-		path = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
+		var filePath = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
 		_audioStream?.Dispose();
 
-		if (!FileAccess.FileExists(path)) {
-			throw new Exception($"{path}文件不存在");
+		if (!FileAccess.FileExists(filePath)) {
+			World.ThrowException($"{path}文件不存在");
+			return this;
 		}
 
-		using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+		using var file = FileAccess.Open(filePath, FileAccess.ModeFlags.Read);
 
 		switch (AudioFileFormatFinder.GetAudioFormat(file.Get32())) {
 			case AudioFormat.Ogg:
-				_audioStream = AudioStreamOggVorbis.LoadFromFile(path);
+				_audioStream = AudioStreamOggVorbis.LoadFromFile(filePath);
 				break;
 			case AudioFormat.Mp3:
 				_audioStream = new AudioStreamMP3();
-				((AudioStreamMP3)_audioStream).Data = FileAccess.GetFileAsBytes(path);
+				((AudioStreamMP3)_audioStream).Data = FileAccess.GetFileAsBytes(filePath);
 				break;
 			case AudioFormat.Wav:
 				_audioStream = new AudioStreamWav();
@@ -64,22 +58,24 @@ public sealed class AudioPlayer {
 				break;
 			case AudioFormat.Unknown:
 			default:
-				throw new Exception("不支持的音频格式，仅支持ogg、mp3与wav");
+				World.ThrowException("不支持的音频格式，仅支持ogg、mp3与wav");
+				return this;
 		}
 
 		if (_audioStream?.InstantiatePlayback() == null) {
 			_audioStream = null;
-			throw new Exception("不支持的音频格式，仅支持ogg、mp3与wav");
+			World.ThrowException("不支持的音频格式，仅支持ogg、mp3与wav");
+			return this;
 		}
 
-		_audioStreamPath = path;
 		_player.Stream = _audioStream;
 		return this;
 	}
 
 	public AudioPlayer Pause() {
 		if (_audioStream == null) {
-			throw new Exception("未设置音频文件");
+			World.ThrowException("未设置音频文件");
+			return this;
 		}
 
 		_player.StreamPaused = true;
@@ -88,7 +84,8 @@ public sealed class AudioPlayer {
 
 	public AudioPlayer Play(float? fromPosition = null) {
 		if (_audioStream == null) {
-			throw new Exception("未设置音频文件");
+			World.ThrowException("未设置音频文件");
+			return this;
 		}
 
 		if (IsPlaying) {
@@ -105,17 +102,18 @@ public sealed class AudioPlayer {
 		return this;
 	}
 
-	public AudioPlayer Seek(float pos) {
+	public AudioPlayer Seek(float position) {
 		if (_audioStream == null) {
-			throw new Exception("未设置音频文件");
+			World.ThrowException("未设置音频文件");
+			return this;
 		}
 
-		_player.Seek(pos);
+		_player.Seek(position);
 		return this;
 	}
 
 	public AudioPlayer Stop() {
-		if (IsPlaying && _audioStream != null) {
+		if (_audioStream != null && IsPlaying) {
 			_player.Stop();
 		}
 

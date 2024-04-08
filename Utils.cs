@@ -8,8 +8,6 @@ using Puerts;
 using Array = Godot.Collections.Array;
 using Timer = System.Threading.Timer;
 
-// ReSharper disable MemberCanBePrivate.Global
-
 namespace 创世记;
 
 public static partial class Utils {
@@ -21,9 +19,9 @@ public static partial class Utils {
 
 	public static readonly string ScriptAes256EncryptionKey = SCRIPT_AES256_ENCRYPTION_KEY();
 
-	public static readonly StringName GameVersion = ProjectSettings.GetSetting("application/config/version").AsStringName();
+	public static readonly string GameVersion = ProjectSettings.GetSetting("application/config/version").AsString();
 
-	public static readonly StringName GameName = ProjectSettings.GetSetting("application/config/name").AsStringName();
+	public static readonly string GameName = ProjectSettings.GetSetting("application/config/name").AsString();
 
 #if GODOT_ANDROID
 	public static readonly string GameUserDataPath = $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{GameName}";
@@ -218,54 +216,20 @@ public static partial class Utils {
 	}
 
 	static private object? VariantToSaveValue(Variant value) {
-		switch (value.VariantType) {
-			case Variant.Type.Bool:
-				return value.AsBool();
-			case Variant.Type.Int:
-				return value.AsInt32();
-			case Variant.Type.Float:
-				return value.AsDouble();
-			case Variant.Type.String:
-				return value.AsString();
-			case Variant.Type.Dictionary:
-				return value.AsGodotDictionary();
-			case Variant.Type.Array:
-				return value.AsGodotArray();
-			case Variant.Type.Vector2:
-			case Variant.Type.Vector2I:
-			case Variant.Type.Rect2:
-			case Variant.Type.Rect2I:
-			case Variant.Type.Vector3:
-			case Variant.Type.Vector3I:
-			case Variant.Type.Transform2D:
-			case Variant.Type.Vector4:
-			case Variant.Type.Vector4I:
-			case Variant.Type.Plane:
-			case Variant.Type.Quaternion:
-			case Variant.Type.Aabb:
-			case Variant.Type.Basis:
-			case Variant.Type.Transform3D:
-			case Variant.Type.Projection:
-			case Variant.Type.Color:
-			case Variant.Type.StringName:
-			case Variant.Type.NodePath:
-			case Variant.Type.Rid:
-			case Variant.Type.Object:
-			case Variant.Type.Callable:
-			case Variant.Type.Signal:
-			case Variant.Type.PackedByteArray:
-			case Variant.Type.PackedInt32Array:
-			case Variant.Type.PackedInt64Array:
-			case Variant.Type.PackedFloat32Array:
-			case Variant.Type.PackedFloat64Array:
-			case Variant.Type.PackedStringArray:
-			case Variant.Type.PackedVector2Array:
-			case Variant.Type.PackedVector3Array:
-			case Variant.Type.PackedColorArray:
-			case Variant.Type.Max:
-			case Variant.Type.Nil:
-			default: return null;
-		}
+		return value.VariantType switch {
+			Variant.Type.Bool => value.AsBool(),
+			Variant.Type.Int => value.AsInt32(),
+			Variant.Type.Float => value.AsDouble(),
+			Variant.Type.String => value.AsString(),
+			Variant.Type.Dictionary => value.AsGodotDictionary(),
+			Variant.Type.Array => value.AsGodotArray(),
+			Variant.Type.Vector2 or Variant.Type.Vector2I or Variant.Type.Rect2 or Variant.Type.Rect2I or Variant.Type.Vector3 or Variant.Type.Vector3I or Variant.Type.Transform2D or Variant.Type.Vector4
+				or Variant.Type.Vector4I or Variant.Type.Plane or Variant.Type.Quaternion or Variant.Type.Aabb or Variant.Type.Basis or Variant.Type.Transform3D or Variant.Type.Projection or Variant.Type.Color
+				or Variant.Type.StringName or Variant.Type.NodePath or Variant.Type.Rid or Variant.Type.Object or Variant.Type.Callable or Variant.Type.Signal or Variant.Type.PackedByteArray or Variant.Type.PackedInt32Array
+				or Variant.Type.PackedInt64Array or Variant.Type.PackedFloat32Array or Variant.Type.PackedFloat64Array or Variant.Type.PackedStringArray or Variant.Type.PackedVector2Array or Variant.Type.PackedVector3Array
+				or Variant.Type.PackedColorArray or Variant.Type.Max or Variant.Type.Nil => null,
+			_ => null
+		};
 	}
 
 	static private Variant SaveValueToVariant(object? value) {
@@ -280,7 +244,7 @@ public static partial class Utils {
 				return stringValue;
 			case JSObject jsObject: {
 				var str = jsObject.Get<string>("value");
-				var json = new Json();
+				using var json = new Json();
 				json.Parse(str);
 				return json.Data;
 			}

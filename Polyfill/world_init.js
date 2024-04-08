@@ -142,9 +142,27 @@ World.getGlobalSaveValue = (section, key, defaultValue) => {
 World.versionCompare = (version1, version2) => Utils.VersionCompare(version1, version2);
 World.exit = (exitCode = 1) => world.Exit(exitCode);
 
+World.callSites = () => {
+    const _prepareStackTrace = Error.prepareStackTrace;
+    try {
+        let result = [];
+        Error.prepareStackTrace = (_, callSites) => {
+            const callSitesWithoutCurrent = callSites.slice(1);
+            result = callSitesWithoutCurrent;
+            return callSitesWithoutCurrent;
+        };
+
+        new Error().stack;
+        Error.prepareStackTrace = _prepareStackTrace;
+        return result;
+    } finally {
+        Error.prepareStackTrace = _prepareStackTrace;
+    }
+}
+
 world.JsEvent = {
     emit(event, args){
-        if (args !=null) {
+        if (args != null) {
             let array = [];
             for(let i = 0; i < args.Length; i++) {
                 array.push(args.GetValue(i) ?? "");

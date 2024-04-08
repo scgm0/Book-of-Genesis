@@ -53,12 +53,12 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 
 		if (WorldInfo is null) return code;
 
-		debugPath = WorldInfo.Path.PathJoin(filePath).SimplifyPath();
+		debugPath = filePath;
 		var fullPath = WorldInfo.GlobalPath.PathJoin(filePath).SimplifyPath();
 
 		if (!FileAccess.FileExists(fullPath)) return code;
 
-		code = fullPath.EndsWith(".ts") ? ReadTs2Js(fullPath, debugPath) : FileAccess.GetFileAsString(fullPath);
+		code = fullPath.EndsWith(".ts") ? ReadTs2Js(fullPath, WorldInfo.Path.PathJoin(filePath).SimplifyPath()) : FileAccess.GetFileAsString(fullPath);
 		RegisterSourceMap(in code, debugPath);
 		return code;
 	}

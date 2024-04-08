@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Godot;
 using SourceMaps;
 
 namespace 创世记;
@@ -29,8 +30,7 @@ public static class StackTraceParser {
 			if (originalPosition == null)
 				continue;
 			// 更新文件名
-			frame.File =
-				new Uri(new Uri(frame.File!), originalPosition.Value.OriginalFileName!).AbsolutePath.ReplaceOnce("Z:/", "/");
+			frame.File = frame.File!.GetBaseDir().PathJoin(originalPosition.Value.OriginalFileName!);
 			// 更新方法名
 			frame.Method = originalPosition.Value.OriginalName ?? frame.Method;
 			// 更新行号

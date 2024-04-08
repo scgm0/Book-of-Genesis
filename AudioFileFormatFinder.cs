@@ -1,6 +1,5 @@
-// ReSharper disable CheckNamespace
+namespace 创世记;
 
-// ReSharper disable UnusedMember.Global
 public static class AudioFileFormatFinder {
 	public static AudioFormat GetAudioFormat(byte[] fileHeader) {
 		return fileHeader switch {

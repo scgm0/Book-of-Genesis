@@ -228,17 +228,14 @@ public partial class World : Control {
 
 	public void SetLeftText(string text) {
 		Utils.SetRichText(LeftText, text);
-		LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public void SetCenterText(string text) {
 		Utils.SetRichText(CenterText, text);
-		CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public void SetRightText(string text) {
 		Utils.SetRichText(RightText, text);
-		RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public void AddText(TextType textType, string text) {
@@ -263,19 +260,14 @@ public partial class World : Control {
 
 	public void AddLeftText(string text) {
 		Utils.AddRichText(LeftText, text);
-
-		LeftText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
-
 	}
 
 	public void AddCenterText(string text) {
 		Utils.AddRichText(CenterText, text);
-		CenterText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public void AddRightText(string text) {
 		Utils.AddRichText(RightText, text);
-		RightText.GetParent().GetParent<Panel>().Visible = !string.IsNullOrEmpty(text);
 	}
 
 	public ulong[] SetLeftButtons(string names) {
