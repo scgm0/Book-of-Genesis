@@ -139,6 +139,14 @@ World.getGlobalSaveValue = (section, key, defaultValue) => {
     return value ?? defaultValue;
 }
 
+World.readText = path => {
+    if (global.__puer_path__.isRelative(path)) {
+        let file = World.callSites()[1].getFileName();
+        path = global.__puer_path__.normalize(global.__puer_path__.dirname(file) + "/" + path);
+    }
+    return Utils.ReadText(path) ?? "";
+}
+
 World.versionCompare = (version1, version2) => Utils.VersionCompare(version1, version2);
 World.exit = (exitCode = 1) => world.Exit(exitCode);
 

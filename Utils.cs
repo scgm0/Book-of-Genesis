@@ -277,6 +277,11 @@ public static partial class Utils {
 		GlobalConfig.SaveEncryptedPass($"{SavesPath}/global.save", "global");
 	}
 
+	public static string? ReadText(string path) {
+		var filePath = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
+		return FileAccess.FileExists(filePath) ? FileAccess.GetFileAsString(filePath) : null;
+	}
+
 	public static string GetJsonString(Dictionary dictionary) {
 		return Json.Stringify(dictionary);
 	}
