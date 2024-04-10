@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=10 format=3 uid="uid://be0fvf0itb1wb"]
+[gd_resource type="Theme" load_steps=10 format=4 uid="uid://be0fvf0itb1wb"]
 
 [ext_resource type="FontFile" uid="uid://bi3ee5xbvcywy" path="res://Assets/Font/SourceHanSerifCN-Bold-sub.otf" id="1_ub4pw"]
 [ext_resource type="FontVariation" uid="uid://ckxuwl0k7w18e" path="res://Assets/Font/BoldItalicsFont.tres" id="2_sxng7"]

@@ -23,6 +23,12 @@ boot_splash/show_image=false
 config/icon="res://Assets/Icon/icon.png"
 run/disable_stderr.release=true
 
+[compression]
+
+formats/zstd/compression_level=22
+formats/zlib/compression_level=9
+formats/gzip/compression_level=9
+
 [debug]
 
 file_logging/enable_file_logging=true
@@ -46,7 +52,6 @@ enabled=PackedStringArray("res://addons/PuerTs/plugin.cfg")
 [gui]
 
 theme/custom_font="res://Assets/Font/Regular.tres"
-theme/default_font_multichannel_signed_distance_field=true
 theme/default_font_generate_mipmaps=true
 
 [importer_defaults]
