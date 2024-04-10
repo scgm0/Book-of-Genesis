@@ -1,15 +1,12 @@
 using System.Text.Json;
 using Godot;
 using Puerts;
-using SourceMaps;
 
 namespace 创世记;
 
 public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoader, IBuiltinLoadedListener {
-	private readonly bool _isRes = worldInfo?.GlobalPath.StartsWith("res://") ?? false;
 	private bool _isLoaded;
 	private readonly GodotDefaultLoader _defaultLoader = new();
-	private readonly SourceMapCollection _sourceMapCollection = new();
 
 	public World? World { get; set; }
 	public WorldInfo? WorldInfo { get; } = worldInfo;
@@ -59,7 +56,6 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 		if (!FileAccess.FileExists(fullPath)) return code;
 
 		code = fullPath.EndsWith(".ts") ? ReadTs2Js(fullPath, WorldInfo.Path.PathJoin(filePath).SimplifyPath()) : FileAccess.GetFileAsString(fullPath);
-		RegisterSourceMap(in code, debugPath);
 		return code;
 	}
 
@@ -67,14 +63,8 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 		JsEnv.ClearAllModuleCaches();
 		_isLoaded = true;
 		if (WorldInfo is null) return;
-		env.ExecuteModule("创世记:world_init");
-		env.ExecuteModule("创世记:events");
+		env.ExecuteModule("创世记:world-init");
 		env.ExecuteModule("创世记:console");
-		env.ExecuteModule("创世记:audio");
-	}
-
-	public string GetSourceMapStack(string stack) {
-		return StackTraceParser.ReTrace(_sourceMapCollection, stack);
 	}
 
 	private string ReadTs2Js(string fullPath, string filePath) {
@@ -137,20 +127,5 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 				: FileAccess.Open(metaPath, FileAccess.ModeFlags.Write);
 		tsMetaFile.StoreString($"{{\"ts_sha256\":\"{tsSha256}\",\"js_sha256\":\"{jsSha256}\"}}");
 		tsMetaFile.Dispose();
-	}
-
-	private void RegisterSourceMap(in string code, string path) {
-		if (!Utils.SourceMapPathRegex().IsMatch(code)) return;
-		var sourceMappingUrl = Utils.SourceMapPathRegex().Match(code).Value;
-		if (sourceMappingUrl.StartsWith("data:application/json;base64,")) {
-			_sourceMapCollection.Register(path,
-				SourceMapParser.Parse(sourceMappingUrl.Replace("data:application/json;base64,", "").UnEnBase64()));
-		} else {
-			var sourceFile =
-				$"{(_isRes ? Utils.ResWorldsPath : Utils.UserWorldsPath)}{path.PathJoin(sourceMappingUrl)}".SimplifyPath();
-			if (!FileAccess.FileExists(sourceFile)) return;
-			var sourceMap = SourceMapParser.Parse(FileAccess.GetFileAsString(sourceFile));
-			_sourceMapCollection.Register(path, sourceMap);
-		}
 	}
 }

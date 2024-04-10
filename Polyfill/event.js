@@ -1,4 +1,4 @@
-class EventEmitter {
+export class EventEmitter {
 	events = new Map();
 	maxListeners;
 	#defaultMaxListeners = 10;
@@ -176,9 +176,4 @@ class EventEmitter {
 	}
 }
 
-World.event = new EventEmitter();
-puer.on('unhandledRejection', (error, promise) => {
-	if (World.event.emit('unhandledRejection', error, promise)) return;
-	console.error('unhandledRejection', error);
-});
-global.EventEmitter = EventEmitter;
+export default EventEmitter;

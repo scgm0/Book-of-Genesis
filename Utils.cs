@@ -292,9 +292,6 @@ public static partial class Utils {
 
 	static private partial string SCRIPT_AES256_ENCRYPTION_KEY();
 
-	[GeneratedRegex(@"(?<=(//# sourceMappingURL=))[.\s\S]*?", RegexOptions.RightToLeft)]
-	public static partial Regex SourceMapPathRegex();
-
 	[GeneratedRegex(@"\[img.*\](?<path>.*?)\[\/img\]")]
 	public static partial Regex ImgPathRegex();
 

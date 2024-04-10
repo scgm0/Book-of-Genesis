@@ -1,24 +1,41 @@
+import EventEmitter from "event";
+import AudioPlayer from "audio";
+import sourceMapSupport from 'source-map-support';
+
 var global = global || globalThis || (function () { return this; }());
 
-let World = global.World = global.World || {};
+globalThis.EventEmitter = EventEmitter;
+globalThis.AudioPlayer = AudioPlayer;
 
+const World = global.World = global.World || {};
+
+World.event = new EventEmitter();
+World.playFile = AudioPlayer.playFile;
+
+puer.on('unhandledRejection', (error, promise) => {
+	if (World.event.emit('unhandledRejection', error, promise)) return;
+	console.error('unhandledRejection', error);
+});
+
+sourceMapSupport.install({
+    retrieveFile: (path) => {
+        return loadFile(path).content
+    }
+});
+
+const loadFile = puer.loadFile;
 const loader = puer.loader;
 const world = loader.World;
 const worldInfo = loader.WorldInfo;
 const getLastException = puerts.getLastException;
-const GetSourceMapStack = loader.GetSourceMapStack.bind(loader);
 
 World.getLastException = () => getLastException();
 
-World.getSourceMapStack = stack => {
-    return GetSourceMapStack(stack);
-}
-
 const Log = puer.loadType('创世记.Log');
 const Utils = puer.loadType('创世记.Utils');
-const Json = puer.loadType('Godot.Json');
 
 World.Log = Log;
+
 
 (function (FilterType) {
     const _filterType = puer.loadType('创世记.FilterType');

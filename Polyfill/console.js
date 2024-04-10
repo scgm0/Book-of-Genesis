@@ -5,7 +5,6 @@ const Log = World.Log;
 if (Log) {
     delete World.Log;
     const console = {};
-    const getSourceMapStack = World.getSourceMapStack;
 
     function getStack(error, rm = false) {
         let stack = error.stack;
@@ -586,7 +585,7 @@ if (Log) {
     function argsToString(args) {
         return Array.prototype.map.call(args, x => {
             try {
-                return typeof x ==="string" ? x : x instanceof Error ? `${x}\n${getSourceMapStack(getStack(x))}` : format(x);
+                return typeof x ==="string" ? x : x instanceof Error ? `${x}\n${getStack(x)}` : format(x);
             } catch (err) {
                 return err;
             }
@@ -616,7 +615,7 @@ if (Log) {
     }
 
     console.trace = function() {
-        Log.Trace(argsToString(arguments) + "\n" + getSourceMapStack(getStack(new Error("Trace"), true)));
+        Log.Trace(argsToString(arguments) + "\n" + getStack(new Error("Trace"), true));
     }
 
     console.assert = function(condition) {

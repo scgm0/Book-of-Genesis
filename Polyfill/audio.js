@@ -80,7 +80,4 @@ export class AudioPlayer {
     }
 }
 
-globalThis.AudioPlayer = AudioPlayer;
-World.playFile = AudioPlayer.playFile;
-
 export default AudioPlayer;
