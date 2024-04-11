@@ -7,7 +7,7 @@ namespace 创世记;
 public sealed partial class Main {
 	public static WorldInfo? CurrentWorldInfo { get; set; }
 
-	public static void LoadWorldInfos(string worldsPath, bool loadPackage = false) {
+	public static void LoadWorldInfos(string worldsPath, bool encrypt = false) {
 		worldsPath = worldsPath.SimplifyPath();
 		using var dir = DirAccess.Open(worldsPath);
 		if (dir == null) return;
@@ -16,12 +16,8 @@ public sealed partial class Main {
 		while (fileName is not "" and not "." and not "..") {
 			var filePath = worldsPath.PathJoin(fileName);
 			if (dir.CurrentIsDir()) {
-				DeserializeWorldInfo(filePath.PathJoin("config.json"), fileName, worldsPath, loadPackage);
-			} else if (loadPackage &&
-				(fileName.GetExtension() == Utils.EncryptionWorldExtension || fileName.GetExtension() == "zip")) {
-				Log.Debug(fileName, ProjectSettings.LoadResourcePack(filePath).ToString());
+				DeserializeWorldInfo(filePath.PathJoin("config.json"), fileName, worldsPath, encrypt);
 			}
-
 			fileName = dir.GetNext();
 		}
 	}
@@ -30,18 +26,23 @@ public sealed partial class Main {
 		string worldConfigPath,
 		string fileName,
 		string worldsPath,
-		bool loadPackage) {
-		if (!FileAccess.FileExists(worldConfigPath)) return;
+		bool encrypt) {
+		if (FileAccess.GetFileAsString(worldConfigPath).Length <= 1) return;
 		try {
 			var worldInfo = JsonSerializer.Deserialize(FileAccess.GetFileAsString(worldConfigPath),
 				SourceGenerationContext.Default.WorldInfo);
-			worldInfo!.Path = $"/{fileName}/";
+			if (worldInfo == null) return;
+			if (Utils.WorldInfos.ContainsKey(worldInfo.WorldKey)) {
+				Utils.WorldInfos.Remove(worldInfo.WorldKey);
+			}
+			worldInfo.Path = $"/{fileName}/";
 			worldInfo.GlobalPath = worldsPath.PathJoin(fileName).SimplifyPath();
-			worldInfo.IsEncrypt = !loadPackage && FileAccess.FileExists(
+			worldInfo.IsEncrypt = encrypt && FileAccess.FileExists(
 				$"{worldInfo.GlobalPath}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt");
 			Utils.WorldInfos[worldInfo.WorldKey] = worldInfo;
-		} catch (Exception) {
-			// ignored
+
+		} catch (Exception e) {
+			Log.Debug(e.ToString());
 		}
 	}
 }

@@ -59,7 +59,7 @@ public static partial class Utils {
 		packer.AddFile(
 			$"{ResWorldsPath}{worldInfo.Path}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt",
 			"res://Assets/.Encrypt");
-		packer.Flush(true);
+		packer.Flush();
 		Log.Debug("加密结束:",
 			ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}"));
 	}
@@ -132,6 +132,20 @@ public static partial class Utils {
 	public static void AddRichText(RichTextLabel label, string text) {
 		LoadRichTextImg(ref text);
 		label.AppendText(text);
+	}
+
+	public static void LoadPacks(string path) {
+		using var dir = DirAccess.Open(path);
+		if (dir == null) return;
+		dir.ListDirBegin();
+		var fileName = dir.GetNext();
+		while (fileName is not "" and not "." and not "..") {
+			if (!dir.CurrentIsDir() && (fileName.GetExtension() == EncryptionWorldExtension || fileName.GetExtension() == "zip")) {
+				Log.Debug(fileName, ProjectSettings.LoadResourcePack($"{path}/{fileName}".SimplifyPath()).ToString());
+			}
+
+			fileName = dir.GetNext();
+		}
 	}
 
 	public static void LoadRichTextImg(ref string text) {

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Godot;
 using Environment = System.Environment;
 
@@ -100,8 +101,9 @@ public sealed partial class Main : Control {
 	private async void ChooseWorld() {
 		Log.Debug("加载世界列表");
 		ClearCache();
-		LoadWorldInfos(Utils.UserWorldsPath, true);
-		LoadWorldInfos(Utils.ResWorldsPath);
+		Utils.LoadPacks(Utils.UserWorldsPath);
+		LoadWorldInfos(Utils.UserWorldsPath);
+		LoadWorldInfos(Utils.ResWorldsPath, true);
 		_chooseWorldButton.ReleaseFocus();
 		_chooseWorld.Show();
 		var list = GetNode<VBoxContainer>("%WorldList");
@@ -109,7 +111,7 @@ public sealed partial class Main : Control {
 			child.QueueFree();
 		}
 
-		foreach (var (key, worldInfo) in Utils.WorldInfos) {
+		foreach (var (key, worldInfo) in Utils.WorldInfos.Reverse()) {
 			Log.Debug(key, worldInfo.JsonString);
 			var worldItem = _worldItem.Instantiate();
 			worldItem.GetNode<Label>("%Name").Text = $"{worldInfo.Name}-{worldInfo.Version}";
@@ -173,6 +175,11 @@ public sealed partial class Main : Control {
 	}
 
 	private void LoadWorld(WorldInfo worldInfo) {
+		if (FileAccess.GetFileAsString(worldInfo.GlobalPath.PathJoin("./config.json")).Length <= 1) {
+			Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
+			Log.Error("世界不存在:", worldInfo.JsonString);
+			return;
+		}
 		CurrentWorldInfo = worldInfo;
 		Log.Debug("加载世界:", CurrentWorldInfo.JsonString);
 		_chooseWorld.Hide();
@@ -214,7 +221,7 @@ public sealed partial class Main : Control {
 			var fileName = CurrentWorldInfo.GlobalPath.GetFile();
 			var encrypt = CurrentWorldInfo.IsEncrypt;
 			World.Instance?.Exit();
-			DeserializeWorldInfo(worldConfigPath, fileName, worldsPath, !encrypt);
+			DeserializeWorldInfo(worldConfigPath, fileName, worldsPath, encrypt);
 			LoadWorld(Utils.WorldInfos[worldKey]);
 		};
 
