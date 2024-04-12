@@ -127,7 +127,7 @@ public sealed partial class Main : Control {
 			worldItem.Set("modulate", Colors.Transparent);
 			list.AddChild(worldItem);
 			using var tween = worldItem.CreateTween();
-			tween.TweenProperty(worldItem, "modulate:a", 1, 0.25f);
+			tween.TweenProperty(worldItem, "modulate:a", 1, 0.125f);
 			await ToSignal(tween, Tween.SignalName.Finished);
 		}
 
@@ -167,7 +167,7 @@ public sealed partial class Main : Control {
 			worldItem.Set("modulate", Colors.Transparent);
 			list.AddChild(worldItem);
 			using var tween = worldItem.CreateTween();
-			tween.TweenProperty(worldItem, "modulate:a", 1, 0.25f);
+			tween.TweenProperty(worldItem, "modulate:a", 1, 0.125f);
 			await ToSignal(tween, Tween.SignalName.Finished);
 		}
 
