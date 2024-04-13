@@ -48,8 +48,8 @@ public sealed partial class Main : Control {
 
 		_gameVersion.Text = $"v{Utils.GameVersion}";
 		_dotNetVersion.Text = $"dotnet: {Environment.Version}";
-		_worldsPathHint.Text += ProjectSettings.GlobalizePath(Utils.UserWorldsPath);
-		_worldsPathHint.Uri = ProjectSettings.GlobalizePath(Utils.UserWorldsPath);
+		_worldsPathHint.Text += ProjectSettings.GlobalizePath(Utils.UserWorldsPath).SimplifyPath();
+		_worldsPathHint.Uri = ProjectSettings.GlobalizePath(Utils.UserWorldsPath).SimplifyPath();
 
 		_chooseWorldButton.Pressed += ChooseWorld;
 		_templateWorldButton.Pressed += ChooseTemplate;
@@ -64,11 +64,11 @@ public sealed partial class Main : Control {
 
 	public override void _Input(InputEvent @event) {
 		using (@event) {
-			if (!@event.IsActionPressed("ui_select")) return;
+			if (!@event.IsActionPressed("ui_accept")) return;
 			using var pressedEvent = new InputEventMouseButton();
 			pressedEvent.ButtonIndex = MouseButton.Left;
 			pressedEvent.Pressed = true;
-			pressedEvent.Position = GetGlobalMousePosition();
+			pressedEvent.Position = GetViewportTransform() * GetGlobalTransformWithCanvas() * GetLocalMousePosition();
 			Input.ParseInputEvent(pressedEvent);
 			using var releasedEvent = (InputEventMouseButton)pressedEvent.Duplicate(true);
 			releasedEvent.Pressed = false;

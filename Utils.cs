@@ -26,7 +26,7 @@ public static partial class Utils {
 #if GODOT_ANDROID
 	public static readonly string GameUserDataPath = $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{GameName}";
 #else
-	public static readonly string GameUserDataPath = ProjectSettings.GlobalizePath("user://");
+	public const string GameUserDataPath = "user://";
 #endif
 
 	public static readonly string SavesPath = $"{GameUserDataPath}/Saves";
