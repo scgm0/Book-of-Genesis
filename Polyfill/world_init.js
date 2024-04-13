@@ -163,12 +163,20 @@ World.getGlobalSaveValue = (section, key, defaultValue) => {
     return value ?? defaultValue;
 }
 
-World.readText = path => {
+World.readAsText = path => {
     if (isRelative(path)) {
         let file = World.callSites()[1].getFileName();
         path = normalize(dirname(file) + "/" + path);
     }
-    return Utils.ReadText(path) ?? "";
+    return Utils.ReadAsText(path) ?? "";
+}
+
+World.readAsArrayBuffer = path => {
+    if (isRelative(path)) {
+        let file = World.callSites()[1].getFileName();
+        path = normalize(dirname(file) + "/" + path);
+    }
+    return Utils.ReadAsArrayBuffer(path) ?? new ArrayBuffer(0);
 }
 
 World.versionCompare = (version1, version2) => Utils.VersionCompare(version1, version2);

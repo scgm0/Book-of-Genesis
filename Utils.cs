@@ -291,9 +291,14 @@ public static partial class Utils {
 		GlobalConfig.SaveEncryptedPass($"{SavesPath}/global.save", "global");
 	}
 
-	public static string? ReadText(string path) {
+	public static string? ReadAsText(string path) {
 		var filePath = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
 		return FileAccess.FileExists(filePath) ? FileAccess.GetFileAsString(filePath) : null;
+	}
+
+	public static ArrayBuffer? ReadAsArrayBuffer(string path) {
+		var filePath = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
+		return FileAccess.FileExists(filePath) ? new ArrayBuffer(FileAccess.GetFileAsBytes(filePath)) : null;
 	}
 
 	public static string GetJsonString(Dictionary dictionary) {
