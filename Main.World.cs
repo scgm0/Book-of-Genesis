@@ -27,9 +27,10 @@ public sealed partial class Main {
 		string fileName,
 		string worldsPath,
 		bool encrypt) {
-		if (FileAccess.GetFileAsString(worldConfigPath).Length <= 1) return;
+		var configStr = FileAccess.GetFileAsString(worldConfigPath);
+		if (configStr.Length <= 1) return;
 		try {
-			var worldInfo = JsonSerializer.Deserialize(FileAccess.GetFileAsString(worldConfigPath),
+			var worldInfo = JsonSerializer.Deserialize(configStr,
 				SourceGenerationContext.Default.WorldInfo);
 			if (worldInfo == null) return;
 			if (Utils.WorldInfos.ContainsKey(worldInfo.WorldKey)) {
