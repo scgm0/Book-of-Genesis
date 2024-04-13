@@ -8,6 +8,7 @@ globalThis.EventEmitter = EventEmitter;
 globalThis.AudioPlayer = AudioPlayer;
 
 const World = global.World = global.World || {};
+const { isRelative, normalize, dirname } = global.__puer_path__;
 
 World.event = new EventEmitter();
 World.playFile = AudioPlayer.playFile;
@@ -116,7 +117,13 @@ World.removeRightButtonByIndex = index => world.RemoveRightButtonByIndex(index);
 World.removeButtonById = id => Utils.RemoveButtonById(id);
 
 World.setBackgroundColor = colorHex => world.SetBackgroundColor(colorHex);
-World.setBackgroundTexture = (path, filter = World.FilterType.Linear) => world.SetBackgroundTexture(path, filter);
+World.setBackgroundTexture = (path, filter = World.FilterType.Linear) => {
+    if (isRelative(path)) {
+        let file = World.callSites()[1].getFileName();
+        path = normalize(dirname(file) + "/" + path);
+    }
+    world.SetBackgroundTexture(path, filter);
+};
 
 World.setSaveValue = (section, key, value) => {
     if (typeof value === "object") {
@@ -157,9 +164,9 @@ World.getGlobalSaveValue = (section, key, defaultValue) => {
 }
 
 World.readText = path => {
-    if (global.__puer_path__.isRelative(path)) {
+    if (isRelative(path)) {
         let file = World.callSites()[1].getFileName();
-        path = global.__puer_path__.normalize(global.__puer_path__.dirname(file) + "/" + path);
+        path = normalize(dirname(file) + "/" + path);
     }
     return Utils.ReadText(path) ?? "";
 }

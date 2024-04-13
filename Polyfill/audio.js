@@ -1,4 +1,5 @@
 const CSAudioPlayer = puer.loadType('创世记.AudioPlayer');
+const { isRelative, normalize, dirname } = global.__puer_path__;
 
 export class AudioPlayer {
     #audio_player = new CSAudioPlayer(this);
@@ -34,9 +35,9 @@ export class AudioPlayer {
     }
 
     setAudioPath(path) {
-        if (global.__puer_path__.isRelative(path)) {
+        if (isRelative(path)) {
             let file = World.callSites()[1].getFileName();
-            path = global.__puer_path__.normalize(global.__puer_path__.dirname(file) + "/" + path);
+            path = normalize(dirname(file) + "/" + path);
         }
         this.#audio_player.SetAudioPath(path);
         return this;
