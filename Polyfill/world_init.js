@@ -118,7 +118,7 @@ World.removeButtonById = id => Utils.RemoveButtonById(id);
 
 World.setBackgroundColor = colorHex => world.SetBackgroundColor(colorHex);
 World.setBackgroundTexture = (path, filter = World.FilterType.Linear) => {
-    if (isRelative(path)) {
+    if (path && isRelative(path)) {
         let file = World.callSites()[1].getFileName();
         path = normalize(dirname(file) + "/" + path);
     }
@@ -164,7 +164,7 @@ World.getGlobalSaveValue = (section, key, defaultValue) => {
 }
 
 World.readAsText = path => {
-    if (isRelative(path)) {
+    if (path && isRelative(path)) {
         let file = World.callSites()[1].getFileName();
         path = normalize(dirname(file) + "/" + path);
     }
@@ -172,7 +172,7 @@ World.readAsText = path => {
 }
 
 World.readAsArrayBuffer = path => {
-    if (isRelative(path)) {
+    if (path && isRelative(path)) {
         let file = World.callSites()[1].getFileName();
         path = normalize(dirname(file) + "/" + path);
     }

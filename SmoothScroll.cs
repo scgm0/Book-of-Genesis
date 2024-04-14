@@ -183,7 +183,7 @@ public partial class SmoothScroll : ScrollContainer {
 					break;
 			}
 
-			Utils.Tree.Root.SetInputAsHandled();
+			AcceptEvent();
 		}
 	}
 

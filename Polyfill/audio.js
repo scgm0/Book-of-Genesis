@@ -35,7 +35,7 @@ export class AudioPlayer {
     }
 
     setAudioPath(path) {
-        if (isRelative(path)) {
+        if (path && isRelative(path)) {
             let file = World.callSites()[1].getFileName();
             path = normalize(dirname(file) + "/" + path);
         }
