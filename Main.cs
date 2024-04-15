@@ -111,7 +111,7 @@ public sealed partial class Main : Control {
 			child.QueueFree();
 		}
 
-		foreach (var (key, worldInfo) in Utils.WorldInfos.Reverse()) {
+		foreach (var (key, worldInfo) in Utils.WorldInfos.OrderByDescending(worldInfo => worldInfo.Value.WorldModifiedTime)) {
 			Log.Debug(key, worldInfo.JsonString);
 			var worldItem = _worldItem.Instantiate();
 			worldItem.GetNode<Label>("%Name").Text = $"{worldInfo.Name}-{worldInfo.Version}";

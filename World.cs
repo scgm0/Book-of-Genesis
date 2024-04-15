@@ -36,7 +36,6 @@ public partial class World : Control {
 
 	public override void _Ready() {
 		Instance = this;
-		_jsEnv = new JsEnv(new WorldModuleLoader(this));
 		_titleStyle = (StyleBoxFlat)Title.GetThemeStylebox("normal");
 		_leftTextStyle = (StyleBoxFlat)LeftText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
 		_centerTextStyle = (StyleBoxFlat)CenterText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
@@ -84,6 +83,7 @@ public partial class World : Control {
 		};
 
 		try {
+			_jsEnv = new JsEnv(new WorldModuleLoader(this));
 			_jsEnv?.ExecuteModule(Main.CurrentWorldInfo.Main);
 		} catch (Exception) {
 			_jsEnv?.Eval("console.error(World.getLastException())");

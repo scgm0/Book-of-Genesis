@@ -18,6 +18,7 @@ public sealed partial class Main {
 			if (dir.CurrentIsDir()) {
 				DeserializeWorldInfo(filePath.PathJoin("config.json"), fileName, worldsPath, encrypt);
 			}
+
 			fileName = dir.GetNext();
 		}
 	}
@@ -33,15 +34,20 @@ public sealed partial class Main {
 			var worldInfo = JsonSerializer.Deserialize(configStr,
 				SourceGenerationContext.Default.WorldInfo);
 			if (worldInfo == null) return;
-			if (Utils.WorldInfos.ContainsKey(worldInfo.WorldKey)) {
-				Utils.WorldInfos.Remove(worldInfo.WorldKey);
-			}
+
 			worldInfo.Path = $"/{fileName}/";
 			worldInfo.GlobalPath = worldsPath.PathJoin(fileName).SimplifyPath();
 			worldInfo.IsEncrypt = encrypt && FileAccess.FileExists(
-				$"{worldInfo.GlobalPath}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt");
-			Utils.WorldInfos[worldInfo.WorldKey] = worldInfo;
+				$"{worldInfo.GlobalPath}/{worldInfo.WorldKey.EnBase64()}.isEncrypt");
 
+			if (!worldInfo.IsEncrypt) {
+				worldInfo.WorldModifiedTime = FileAccess.GetModifiedTime(worldInfo.GlobalPath);
+			} else {
+				using var encryptFile = FileAccess.Open($"{worldInfo.GlobalPath}/{worldInfo.WorldKey.EnBase64()}.isEncrypt", FileAccess.ModeFlags.Read);
+				worldInfo.WorldModifiedTime = encryptFile.Get64();
+			}
+
+			Utils.WorldInfos[worldInfo.WorldKey] = worldInfo;
 		} catch (Exception e) {
 			Log.Debug(e.ToString());
 		}

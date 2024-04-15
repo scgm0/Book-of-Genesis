@@ -50,16 +50,20 @@ public static partial class Utils {
 
 	public static void ExportEncryptionWorldPck(WorldInfo worldInfo) {
 		Log.Debug("加密开始:", worldInfo.JsonString);
-		var packer = new PckPacker();
-		packer.PckStart($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}",
+		using var packer = new PckPacker();
+		packer.PckStart($"{UserWorldsPath}/{worldInfo.WorldKey}.{EncryptionWorldExtension}",
 			32,
 			ScriptAes256EncryptionKey,
 			true);
-		packer.AddDir($"{UserWorldsPath}{worldInfo.Path}");
-		packer.AddFile(
-			$"{ResWorldsPath}{worldInfo.Path}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt",
-			"res://Assets/.Encrypt");
+		packer.AddDir($"{worldInfo.GlobalPath}", worldInfo.GlobalPath, ResWorldsPath.PathJoin(worldInfo.WorldKey).SimplifyPath());
+
+		using var encryptFile = FileAccess.Open($"{UserWorldsPath}/{worldInfo.WorldKey.EnBase64()}.isEncrypt", FileAccess.ModeFlags.Write);
+		encryptFile.Store64((ulong)DateTimeOffset.Now.Ticks);
+		encryptFile.Flush();
+		packer.AddFile($"{ResWorldsPath.PathJoin(worldInfo.WorldKey).SimplifyPath()}/{worldInfo.WorldKey.EnBase64()}.isEncrypt", $"{UserWorldsPath}/{$"{worldInfo.WorldKey}".EnBase64()}.isEncrypt");
 		packer.Flush();
+
+		DirAccess.RemoveAbsolute($"{UserWorldsPath}/{worldInfo.WorldKey.EnBase64()}.isEncrypt");
 		Log.Debug("加密结束:",
 			ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}"));
 	}
@@ -140,7 +144,7 @@ public static partial class Utils {
 		dir.ListDirBegin();
 		var fileName = dir.GetNext();
 		while (fileName is not "" and not "." and not "..") {
-			if (!dir.CurrentIsDir() && (fileName.GetExtension() == EncryptionWorldExtension || fileName.GetExtension() == "zip")) {
+			if (!dir.CurrentIsDir() && fileName.GetExtension() == EncryptionWorldExtension) {
 				Log.Debug(fileName, ProjectSettings.LoadResourcePack($"{path}/{fileName}".SimplifyPath()).ToString());
 			}
 

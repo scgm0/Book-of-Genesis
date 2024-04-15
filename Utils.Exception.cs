@@ -35,7 +35,7 @@ public static partial class Utils {
 		return string.IsNullOrEmpty(str) ? "" : Encoding.UTF8.GetString(Convert.FromBase64String(str));
 	}
 
-	static private void AddDir(this PckPacker packer, string path) {
+	static private void AddDir(this PckPacker packer, string path, string oldValue, string newValue) {
 		using var dir = DirAccess.Open(path);
 		if (dir == null) return;
 		dir.ListDirBegin();
@@ -43,9 +43,9 @@ public static partial class Utils {
 		while (fileName is not "" and not "." and not "..") {
 			var filePath = path.PathJoin(fileName);
 			if (dir.CurrentIsDir()) {
-				packer.AddDir(filePath);
+				packer.AddDir(filePath, oldValue, newValue);
 			} else {
-				packer.AddFile(filePath.ReplaceOnce(UserWorldsPath, ResWorldsPath), filePath, true);
+				packer.AddFile(filePath.Replace(oldValue, newValue), filePath, true);
 			}
 
 			fileName = dir.GetNext();
