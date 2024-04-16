@@ -58,7 +58,7 @@
         <PackageReference Include="FuzzySharp" Version="2.0.2"/>
         <PackageReference Include="GDViews.VirtualGridView" Version="0.0.1" />
         <PackageReference Include="GodotGetNode" Version="0.1.3"/>
-        <PackageReference Include="PuerTs.Net" Version="2.0.4-11" />
+        <PackageReference Include="PuerTs.Net" Version="2.0.4-12" />
         <TrimmerRootAssembly Include="GodotSharp"/>
         <TrimmerRootAssembly Include="PuerTs.Net"/>
         <TrimmerRootAssembly Include="$(TargetName)"/>
