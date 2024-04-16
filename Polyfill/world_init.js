@@ -20,7 +20,7 @@ puer.on('unhandledRejection', (error, promise) => {
 
 sourceMapSupport.install({
     retrieveFile: (path) => {
-        return loadFile(path).content
+        return loadFile(path).content;
     }
 });
 
@@ -29,14 +29,11 @@ const loader = puer.loader;
 const world = loader.World;
 const worldInfo = loader.WorldInfo;
 const getLastException = puerts.getLastException;
-
-World.getLastException = () => getLastException();
-
 const Log = puer.loadType('创世记.Log');
 const Utils = puer.loadType('创世记.Utils');
 
+World.getLastException = getLastException;
 World.Log = Log;
-
 
 (function (FilterType) {
     const _filterType = puer.loadType('创世记.FilterType');

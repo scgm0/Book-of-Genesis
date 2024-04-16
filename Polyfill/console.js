@@ -8,7 +8,7 @@ if (Log) {
 
     function getStack(error, rm = false) {
         let stack = error.stack;
-        stack = stack.replace(`${error.toString()}\n`, "");
+        stack = stack.replace(`${error.toString()}`, "");
         if (rm) stack = stack.substring(stack.indexOf("\n")+1);
         return stack;
     }
@@ -585,7 +585,7 @@ if (Log) {
     function argsToString(args) {
         return Array.prototype.map.call(args, x => {
             try {
-                return typeof x ==="string" ? x : x instanceof Error ? `${x}\n${getStack(x)}` : format(x);
+                return typeof x === "string" ? x : x instanceof Error ? x.stack : format(x);
             } catch (err) {
                 return err;
             }
@@ -622,9 +622,9 @@ if (Log) {
         if (condition)
             return
         if (arguments.length > 1)
-            Log.Assert(false, "Assertion failed: " + argsToString(Array.prototype.slice.call(arguments, 1)) + "\n" + getStack(new Error()));
+            Log.Assert(false, "Assertion failed: " + argsToString(Array.prototype.slice.call(arguments, 1)) + getStack(new Error("Assert")));
         else
-            Log.Assert(false, "Assertion failed: console.assert\n" + getStack(new Error()));
+            Log.Assert(false, "Assertion failed" + getStack(new Error("Assert")));
     }
 
     const timeRecorder = new Map();
