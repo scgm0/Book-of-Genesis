@@ -17,6 +17,7 @@ public sealed partial class Main : Control {
 	[GetNode("%ReadyBar")] private Control _readyBar;
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
 	[GetNode("%LogButton")] private Button _logButton;
+	[GetNode("%ExitButton")] private Button _exitButton;
 	[GetNode("%WorldsPathHint")] private LinkButton _worldsPathHint;
 	[GetNode("%Back")] private Button _back;
 
@@ -54,8 +55,8 @@ public sealed partial class Main : Control {
 		_chooseWorldButton.Pressed += ChooseWorld;
 		_templateWorldButton.Pressed += ChooseTemplate;
 		_logButton.Pressed += Log.LogWindow.ToggleVisible;
-		_back.Pressed +=
-			() => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
+		_exitButton.Pressed += () => Utils.Tree.Root.PropagateNotification((int)NotificationWMCloseRequest);
+		_back.Pressed += () => Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
 
 		TsTransform.Prepare();
 		Log.Debug($"初始化完成，耗时: {(DateTime.Now - StartTime).ToString()}\nPlatform: {OS.GetName()}\nGameVersion: {Utils.GameVersion}\nDotNetVersion: {Environment.Version}\nTypeScriptVersion: {TsTransform.TypeScriptVersion}");
@@ -78,10 +79,7 @@ public sealed partial class Main : Control {
 
 	public override void _Notification(int what) {
 		if (what == NotificationWMCloseRequest) {
-			if (World.Instance != null) {
-				World.Instance.Exit();
-			}
-
+			World.Instance?.Exit();
 			_worldScene.Dispose();
 			_worldItem.Dispose();
 			Utils.GlobalConfig.Dispose();
@@ -180,6 +178,7 @@ public sealed partial class Main : Control {
 			Log.Error("世界不存在:", worldInfo.JsonString);
 			return;
 		}
+
 		CurrentWorldInfo = worldInfo;
 		Log.Debug("加载世界:", CurrentWorldInfo.JsonString);
 		_chooseWorld.Hide();

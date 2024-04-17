@@ -1,9 +1,13 @@
+import Console from "console";
 import EventEmitter from "event";
 import AudioPlayer from "audio";
 import sourceMapSupport from 'source-map-support';
 
-var global = global || globalThis || (function () { return this; }());
+var global = global || globalThis || (function () {
+    return this;
+}());
 
+globalThis.console = new Console(puer.loadType('创世记.Log'));
 globalThis.EventEmitter = EventEmitter;
 globalThis.AudioPlayer = AudioPlayer;
 
@@ -14,8 +18,8 @@ World.event = new EventEmitter();
 World.playFile = AudioPlayer.playFile;
 
 puer.on('unhandledRejection', (error, promise) => {
-	if (World.event.emit('unhandledRejection', error, promise)) return;
-	console.error('unhandledRejection', error);
+    if (World.event.emit('unhandledRejection', error, promise)) return;
+    console.error('unhandledRejection', error);
 });
 
 sourceMapSupport.install({
@@ -29,11 +33,59 @@ const loader = puer.loader;
 const world = loader.World;
 const worldInfo = loader.WorldInfo;
 const getLastException = puerts.getLastException;
-const Log = puer.loadType('创世记.Log');
 const Utils = puer.loadType('创世记.Utils');
 
-World.getLastException = getLastException;
-World.Log = Log;
+World.getLastException = function () {
+    let error = getLastException();
+    if (error instanceof SyntaxError) {
+        var match = /\n    at (.*?):(\d+):(\d+)/.exec(arguments[0]);
+        let filePath = match[1];
+        let lineNumber = match[2];
+        let columnNumber = match[3];
+        error.stack = Error.prepareStackTrace(error, [new SyntaxCallSite(filePath, lineNumber * 1, ++columnNumber)]).toString();
+    }
+    return error;
+}
+
+class SyntaxCallSite {
+    #fileName;
+    #lineNumber;
+    #columnNumber;
+
+    constructor(fileName, lineNumber, columnNumber) {
+        this.#fileName = fileName;
+        this.#lineNumber = lineNumber;
+        this.#columnNumber = columnNumber;
+    }
+
+    getFileName() {
+        return this.#fileName;
+    }
+
+    getLineNumber() {
+        return this.#lineNumber;
+    }
+
+    getColumnNumber() {
+        return this.#columnNumber;
+    }
+
+    getFunctionName() {
+        return "";
+    }
+
+    isNative() {
+        return false;
+    }
+
+    isConstructor() {
+        return false;
+    }
+
+    isToplevel() {
+        return true;
+    }
+}
 
 (function (FilterType) {
     const _filterType = puer.loadType('创世记.FilterType');
@@ -94,7 +146,7 @@ World.setTextFontColor = (type, colorHex) => world.SetTextFontColor(type, colorH
 World.setLeftButtons = buttons => {
     var buttons = world.SetLeftButtons(JSON.stringify(buttons));
     var array = [];
-    for(let i = 0; i < buttons.Length; i++) {
+    for (let i = 0; i < buttons.Length; i++) {
         array.push(buttons.GetValue(i) ?? "");
     }
     return array;
@@ -102,7 +154,7 @@ World.setLeftButtons = buttons => {
 World.setRightButtons = buttons => {
     var buttons = world.SetRightButtons(JSON.stringify(buttons));
     var array = [];
-    for(let i = 0; i < buttons.Length; i++) {
+    for (let i = 0; i < buttons.Length; i++) {
         array.push(buttons.GetValue(i) ?? "");
     }
     return array;
@@ -133,7 +185,7 @@ World.setSaveValue = (section, key, value) => {
 
 World.getSaveValue = (section, key, defaultValue) => {
     let value = Utils.GetSaveValue(section, key);
-    if(value && typeof value === "object") {
+    if (value && typeof value === "object") {
         if (value.constructor.name.includes("Godot.Collections.Dictionary") || value.constructor.name.includes("Godot.Collections.Array")) {
             value = JSON.parse(Utils.GetJsonString(value));
         }
@@ -152,7 +204,7 @@ World.setGlobalSaveValue = (section, key, value) => {
 
 World.getGlobalSaveValue = (section, key, defaultValue) => {
     let value = Utils.GetGlobalSaveValue(section, key);
-    if(value && typeof value === "object") {
+    if (value && typeof value === "object") {
         if (value.constructor.name.includes("Godot.Collections.Dictionary") || value.constructor.name.includes("Godot.Collections.Array")) {
             value = JSON.parse(Utils.GetJsonString(value));
         }
@@ -198,10 +250,10 @@ World.callSites = () => {
 }
 
 world.JsEvent = {
-    emit(event, args){
+    emit(event, args) {
         if (args != null) {
             let array = [];
-            for(let i = 0; i < args.Length; i++) {
+            for (let i = 0; i < args.Length; i++) {
                 array.push(args.GetValue(i) ?? "");
             }
             World.event.emit(event, ...array);

@@ -25,7 +25,7 @@ public partial class World : Control {
 	private StyleBoxFlat _rightTextStyle;
 	private Tween? _toastTween;
 	private JsEnv? _jsEnv;
-	public JSObject JsEvent { get; set; }
+	public JSObject? JsEvent { get; set; }
 	public Action<EventType, object?[]?>? Emit { get; set; }
 	public static World? Instance { get; private set; }
 
@@ -84,9 +84,11 @@ public partial class World : Control {
 
 		try {
 			_jsEnv = new JsEnv(new WorldModuleLoader(this));
-			_jsEnv?.ExecuteModule(Main.CurrentWorldInfo.Main);
-		} catch (Exception) {
-			_jsEnv?.Eval("console.error(World.getLastException())");
+			_jsEnv.ExecuteModule(Main.CurrentWorldInfo.Main);
+		} catch (Exception e) {
+			if (_jsEnv != null) {
+				Log.Error(_jsEnv.Eval<JSObject>($"World.getLastException(`{e.Message}`)").Get<string>("stack"));
+			}
 		}
 	}
 
@@ -113,13 +115,15 @@ public partial class World : Control {
 	public void EventEmit(EventType type, params object?[]? args) {
 		if (Emit is null) {
 			_jsEnv?.UsingAction<EventType, object?[]?>();
-			Emit ??= JsEvent.Get<Action<EventType, object?[]?>>("emit");
+			Emit ??= JsEvent?.Get<Action<EventType, object?[]?>>("emit");
 		}
 
 		try {
 			Emit?.Invoke(type, args);
-		} catch (Exception) {
-			_jsEnv?.Eval("console.error(World.getLastException())");
+		} catch (Exception e) {
+			if (_jsEnv != null) {
+				Log.Error(_jsEnv.Eval<JSObject>($"World.getLastException(`{e.Message}`)").Get<string>("stack"));
+			}
 		}
 	}
 
@@ -127,16 +131,14 @@ public partial class World : Control {
 		if (Main.CurrentWorldInfo is null) return;
 		EventEmit(EventType.Exit, exitCode);
 		Log.Debug("退出世界:", exitCode.ToString(), Main.CurrentWorldInfo.JsonString);
+		Instance = null;
+		_jsEnv?.Dispose();
+		_jsEnv = null;
 		Main.CurrentWorldInfo = null;
 		Main.ClearCache();
-		Instance = null;
-		Hide();
 		SetProcess(false);
 		SetPhysicsProcess(false);
-		ToSignal(Utils.Tree, SceneTree.SignalName.ProcessFrame).OnCompleted(() => {
-			_jsEnv?.Dispose();
-			_jsEnv = null;
-		});
+		Hide();
 	}
 
 	public void ShowToast(string text) {

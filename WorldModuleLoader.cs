@@ -64,7 +64,6 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 		_isLoaded = true;
 		if (WorldInfo is null) return;
 		env.ExecuteModule("创世记:world-init");
-		env.ExecuteModule("创世记:console");
 	}
 
 	private string ReadTs2Js(string fullPath, string filePath) {
