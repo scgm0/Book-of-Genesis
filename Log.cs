@@ -48,7 +48,6 @@ public static partial class Log {
 	}
 
 	static private void _log(string m, Severity s) {
-		if(World.Instance is null) return;
 		var data = new LogInfo(m, s, DateTime.Now.ToString("MM-dd HH:mm:ss.fff"), Main.CurrentWorldInfo?.Name);
 		_log(data);
 	}
