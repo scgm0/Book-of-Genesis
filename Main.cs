@@ -87,7 +87,7 @@ public sealed partial class Main : Control {
 			Log.Debug("退出游戏，运行时长:", (DateTime.Now - StartTime).ToString());
 			Utils.Tree.Quit();
 		} else if (what == NotificationWMGoBackRequest) {
-			if (_world is { Visible: true }) {
+			if (_world != null && IsInstanceValid(_world) && _world.Visible) {
 				World.Instance?.Exit();
 			} else if (_chooseWorld.Visible) {
 				_chooseWorld.Hide();

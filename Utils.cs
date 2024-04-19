@@ -197,6 +197,10 @@ public static partial class Utils {
 		if (imageTexture == null) {
 			var data = FileAccess.GetFileAsBytes(filePath);
 			using var img = ImageFromBuffer(data);
+			if (img == null) {
+				return null;
+			}
+
 			imageTexture = ImageTexture.CreateFromImage(img);
 		}
 
@@ -205,7 +209,7 @@ public static partial class Utils {
 		return texture;
 	}
 
-	public static Image ImageFromBuffer(byte[] data) {
+	public static Image? ImageFromBuffer(byte[] data) {
 		var img = new Image();
 		switch (ImageFileFormatFinder.GetImageFormat(data)) {
 			case ImageFormat.Png:
@@ -222,7 +226,8 @@ public static partial class Utils {
 				break;
 			case ImageFormat.Unknown:
 			default:
-				throw new Exception("不支持的图像格式，仅支持png、jpg、bmp与webp");
+				World.ThrowException("不支持的图像格式，仅支持png、jpg、bmp与webp");
+				return null;
 		}
 
 		return img;
