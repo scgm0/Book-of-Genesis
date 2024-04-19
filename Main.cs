@@ -15,6 +15,7 @@ public sealed partial class Main : Control {
 	[GetNode("%DotNetVersion")] private Label _dotNetVersion;
 	[GetNode("%ChooseWorld")] private Control _chooseWorld;
 	[GetNode("%ReadyBar")] private Control _readyBar;
+	[GetNode("%Home")] private Control _home;
 	[GetNode("%TemplateWorldButton")] private Button _templateWorldButton;
 	[GetNode("%LogButton")] private Button _logButton;
 	[GetNode("%ExitButton")] private Button _exitButton;
@@ -24,7 +25,7 @@ public sealed partial class Main : Control {
 	[Export] private PackedScene _worldScene;
 	[Export] private PackedScene _worldItem;
 
-	private World _world;
+	private World? _world;
 
 	static private readonly DateTime StartTime;
 
@@ -195,23 +196,22 @@ public sealed partial class Main : Control {
 
 	private void RunWorld() {
 		InitWorld();
+		if (_world == null) return;
 		using var tween = _world.CreateTween();
 		tween.SetEase(Tween.EaseType.Out);
 		tween.TweenProperty(_world.BackgroundColor, "modulate:a", 1, 1.5).From(0);
 		tween.TweenCallback(new Callable(this, nameof(ReadyWorld)));
+
 	}
 
 	private void ReadyWorld() {
 		if (CurrentWorldInfo == null) return;
 		Log.Debug("进入世界:", CurrentWorldInfo.JsonString);
-		_world.EventEmit(EventType.Ready);
-		_world.GetNode<Control>("Main").Show();
+		_world?.EventEmit(EventType.Ready);
+		_world?.GetNode<Control>("Main").Show();
 	}
 
 	private void InitWorld() {
-		// ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-		var oldWorld = _world ?? GetNode("%World");
-
 		_world = _worldScene.Instantiate<World>();
 		_world.GetNode<Button>("%Overload").Pressed += () => {
 			var worldKey = CurrentWorldInfo!.WorldKey;
@@ -224,8 +224,7 @@ public sealed partial class Main : Control {
 			LoadWorld(Utils.WorldInfos[worldKey]);
 		};
 
-		oldWorld.AddSibling(_world);
-		oldWorld.QueueFree();
+		_home.AddSibling(_world);
 	}
 
 	public static void ClearCache() {

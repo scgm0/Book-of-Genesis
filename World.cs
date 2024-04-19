@@ -85,10 +85,8 @@ public partial class World : Control {
 		try {
 			_jsEnv = new JsEnv(new WorldModuleLoader(this));
 			_jsEnv.ExecuteModule(Main.CurrentWorldInfo.Main);
-		} catch (Exception e) {
-			if (_jsEnv != null) {
-				Log.Error(_jsEnv.Eval<JSObject>($"World.getLastException(`{e.Message}`)").Get<string>("stack"));
-			}
+		} catch (Exception e) { 
+			Log.Error(_jsEnv?.Eval<JSObject>($"World.getLastException(`{e.Message}`)")?.Get<string>("stack") ?? e.Message);
 		}
 	}
 
@@ -121,9 +119,7 @@ public partial class World : Control {
 		try {
 			Emit?.Invoke(type, args);
 		} catch (Exception e) {
-			if (_jsEnv != null) {
-				Log.Error(_jsEnv.Eval<JSObject>($"World.getLastException(`{e.Message}`)").Get<string>("stack"));
-			}
+			Log.Error(_jsEnv?.Eval<JSObject>($"World.getLastException(`{e.Message}`)")?.Get<string>("stack") ?? e.Message);
 		}
 	}
 
@@ -138,7 +134,7 @@ public partial class World : Control {
 		Main.ClearCache();
 		SetProcess(false);
 		SetPhysicsProcess(false);
-		Hide();
+		QueueFree();
 	}
 
 	public void ShowToast(string text) {

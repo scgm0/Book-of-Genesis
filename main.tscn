@@ -210,11 +210,6 @@ theme_override_font_sizes/font_size = 25
 text = "退出"
 flat = true
 
-[node name="World" type="Control" parent="PanelContainer"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-
 [node name="Window" type="CanvasLayer" parent="."]
 
 [node name="ChooseWorld" type="Panel" parent="Window"]
