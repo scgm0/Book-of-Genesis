@@ -13,9 +13,12 @@ globalThis.AudioPlayer = AudioPlayer;
 
 const World = global.World = global.World || {};
 const { isRelative, normalize, dirname } = global.__puer_path__;
-
-World.event = new EventEmitter();
-World.playFile = AudioPlayer.playFile;
+const loadFile = puer.loadFile;
+const loader = puer.loader;
+const world = loader.World;
+const worldInfo = loader.WorldInfo;
+const getLastException = puerts.getLastException;
+const Utils = puer.loadType('创世记.Utils');
 
 puer.on('unhandledRejection', (error, promise) => {
     if (World.event.emit('unhandledRejection', error, promise)) return;
@@ -28,13 +31,8 @@ sourceMapSupport.install({
     }
 });
 
-const loadFile = puer.loadFile;
-const loader = puer.loader;
-const world = loader.World;
-const worldInfo = loader.WorldInfo;
-const getLastException = puerts.getLastException;
-const Utils = puer.loadType('创世记.Utils');
-
+World.event = new EventEmitter();
+World.playFile = AudioPlayer.playFile;
 World.getLastException = function () {
     let error = getLastException();
     if (error instanceof SyntaxError) {

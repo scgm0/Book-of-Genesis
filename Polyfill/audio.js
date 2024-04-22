@@ -82,3 +82,5 @@ export class AudioPlayer {
 }
 
 export default AudioPlayer;
+
+export { AudioPlayer };

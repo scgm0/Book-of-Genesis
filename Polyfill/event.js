@@ -2,9 +2,11 @@ export class EventEmitter {
 	events = new Map();
 	maxListeners;
 	#defaultMaxListeners = 10;
+
 	get defaultMaxListeners() {
 		return this.#defaultMaxListeners;
 	}
+
 	set defaultMaxListeners(n) {
 		if (Number.isInteger(n) || n < 0) {
 			const error = new RangeError('“defaultMaxListeners”的值超出范围。它必须是一个非负整数。已收到 ' +
@@ -14,9 +16,11 @@ export class EventEmitter {
 		}
 		this.#defaultMaxListeners = n;
 	}
+
 	addListener(eventName, listener) {
 		return this.on(eventName, listener);
 	}
+
 	emit(eventName, ...args) {
 		const listeners = this.events.get(eventName);
 		if (listeners === undefined) {
@@ -34,6 +38,7 @@ export class EventEmitter {
 		}
 		return true;
 	}
+
 	setMaxListeners(n) {
 		if (!Number.isInteger(n) || n < 0) {
 			throw new RangeError('“n”的值超出范围。它必须是一个非负整数。已收到' +
@@ -43,26 +48,32 @@ export class EventEmitter {
 		this.maxListeners = n;
 		return this;
 	}
+
 	getMaxListeners() {
 		if (this.maxListeners === undefined) {
 			return this.defaultMaxListeners;
 		}
 		return this.maxListeners;
 	}
+
 	listenerCount(eventName) {
 		const events = this.events.get(eventName);
 		return events === undefined ? 0 : events.length;
 	}
+
 	eventNames() {
 		return Reflect.ownKeys(this.events);
 	}
+
 	listeners(eventName) {
 		const listeners = this.events.get(eventName);
 		return listeners === undefined ? [] : listeners;
 	}
+
 	off(eventName, listener) {
 		return this.removeListener(eventName, listener);
 	}
+
 	on(eventName, listener, prepend) {
 		if (this.events.has(eventName) === false) {
 			this.events.set(eventName, []);
@@ -91,6 +102,7 @@ export class EventEmitter {
 		}
 		return this;
 	}
+
 	removeAllListeners(eventName) {
 		const events = this.events;
 		if (!events.has("removeListener")) {
@@ -120,6 +132,7 @@ export class EventEmitter {
 		}
 		return this;
 	}
+
 	removeListener(eventName, listener) {
 		const events = this.events;
 		if (events.size === 0)
@@ -138,10 +151,12 @@ export class EventEmitter {
 		}
 		return this;
 	}
+
 	once(eventName, listener) {
 		this.on(eventName, this.onceWrap(eventName, listener));
 		return this;
 	}
+
 	onceWrap(eventName, listener) {
 		const wrapper = function (...args) {
 			this.context.removeListener(this.eventName, this.wrapedListener);
@@ -158,13 +173,16 @@ export class EventEmitter {
 		wrapped.listener = listener;
 		return wrapped;
 	}
+
 	prependListener(eventName, listener) {
 		return this.on(eventName, listener, true);
 	}
+
 	prependOnceListener(eventName, listener) {
 		this.prependListener(eventName, this.onceWrap(eventName, listener));
 		return this;
 	}
+
 	rawListeners(eventName) {
 		const events = this.events;
 		if (events === undefined)
@@ -177,3 +195,5 @@ export class EventEmitter {
 }
 
 export default EventEmitter;
+
+export { EventEmitter };
