@@ -1,4 +1,4 @@
-export class EventEmitter {
+export default class EventEmitter {
 	events = new Map();
 	maxListeners;
 	#defaultMaxListeners = 10;
@@ -193,7 +193,5 @@ export class EventEmitter {
 		return [...listeners];
 	}
 }
-
-export default EventEmitter;
 
 export { EventEmitter };

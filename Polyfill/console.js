@@ -639,6 +639,4 @@ export default class Console {
     }
 }
 
-export default Console;
-
 export { Console };

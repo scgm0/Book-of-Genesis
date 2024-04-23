@@ -1,7 +1,7 @@
 const CSAudioPlayer = puer.loadType('创世记.AudioPlayer');
 const { isRelative, normalize, dirname } = global.__puer_path__;
 
-export class AudioPlayer {
+export default class AudioPlayer {
     #audio_player = new CSAudioPlayer(this);
     #finishedCallback = null;
 
@@ -80,7 +80,5 @@ export class AudioPlayer {
         return audio_player;
     }
 }
-
-export default AudioPlayer;
 
 export { AudioPlayer };

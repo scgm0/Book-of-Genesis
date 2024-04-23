@@ -34,7 +34,9 @@ public static partial class Log {
 			} else {
 				_instance!.Show();
 				_instance.ProcessMode = ProcessModeEnum.Always;
-				ScrollLog(LogList[^1]);
+				if (LogList.Count > 0) {
+					ScrollLog(LogList[^1]);
+				}
 			}
 		}
 
@@ -268,6 +270,9 @@ public static partial class Log {
 								var openButton = new Button {
 									Text = "打开日志文件"
 								};
+								var clearButton = new Button {
+									Text = "清除日志列表"
+								};
 
 								searchButton.Pressed += () => SearchLog(searchBox.Text);
 								searchBox.TextChanged += text => {
@@ -289,10 +294,18 @@ public static partial class Log {
 #endif
 									OS.ShellOpen(path);
 								};
+								clearButton.Pressed += () => {
+									LogList.Clear();
+									instance._treeItemMap.Clear();
+									instance._logDataMap.Clear();
+									tree.Clear();
+									instance._rootTreeItem = tree.CreateItem();
+								};
 
 								toolbar.AddChild(searchButton);
 								toolbar.AddChild(searchBox);
 								toolbar.AddChild(openButton);
+								toolbar.AddChild(clearButton);
 							}
 							vBox.AddChild(toolbar);
 						}
@@ -347,7 +360,7 @@ public static partial class Log {
 		}
 
 		private readonly Tree _tree;
-		private readonly TreeItem _rootTreeItem;
+		private TreeItem _rootTreeItem;
 		private readonly TextEdit _textEdit;
 		private readonly Dictionary<LogInfo, TreeItem> _logDataMap = new();
 		private readonly Dictionary<TreeItem, LogInfo> _treeItemMap = new();
