@@ -111,7 +111,15 @@ class SyntaxCallSite {
 })(World.TextType = {});
 
 World.gameVersion = Utils.GameVersion;
-World.info = JSON.parse(worldInfo.JsonString);
+World.info = {
+    name: worldInfo.Name,
+    author: worldInfo.Author,
+    main: worldInfo.Main,
+    icon: worldInfo.Icon,
+    version: worldInfo.Version,
+    description: worldInfo.Description,
+    is_encrypt: worldInfo.IsEncrypt
+};
 
 World.delay = n => new Promise(resolve => setTimeout(resolve, n));
 World.toast = text => world.ShowToast(text);
@@ -165,11 +173,7 @@ World.removeButtonById = id => Utils.RemoveButtonById(id);
 
 World.setBackgroundColor = colorHex => world.SetBackgroundColor(colorHex);
 World.setBackgroundTexture = (path, filter = World.FilterType.Linear) => {
-    if (path && isRelative(path)) {
-        let file = World.callSites()[1].getFileName();
-        path = normalize(dirname(file) + "/" + path);
-    }
-    world.SetBackgroundTexture(path, filter);
+    world.SetBackgroundTexture(World.toAbsolutePath(path), filter);
 };
 
 World.setSaveValue = (section, key, value) => {
@@ -211,23 +215,19 @@ World.getGlobalSaveValue = (section, key, defaultValue) => {
 }
 
 World.readAsText = path => {
-    if (path && isRelative(path)) {
-        let file = World.callSites()[1].getFileName();
-        path = normalize(dirname(file) + "/" + path);
-    }
-    return Utils.ReadAsText(path) ?? "";
+    return Utils.ReadAsText(World.toAbsolutePath(path));
 }
 
 World.readAsArrayBuffer = path => {
-    if (path && isRelative(path)) {
-        let file = World.callSites()[1].getFileName();
-        path = normalize(dirname(file) + "/" + path);
-    }
-    return Utils.ReadAsArrayBuffer(path) ?? new ArrayBuffer(0);
+    return Utils.ReadAsArrayBuffer(World.toAbsolutePath(path));
 }
 
 World.versionCompare = (version1, version2) => Utils.VersionCompare(version1, version2);
 World.exit = (exitCode = 1) => world.Exit(exitCode);
+
+World.toAbsolutePath = (path) => {
+    return typeof path === "string" && isRelative(path) ? normalize(dirname(World.callSites()[2].getFileName()) + "/" + path) : path;
+}
 
 World.callSites = () => {
     const _prepareStackTrace = Error.prepareStackTrace;
@@ -252,7 +252,7 @@ world.JsEvent = {
         if (args != null) {
             let array = [];
             for (let i = 0; i < args.Length; i++) {
-                array.push(args.GetValue(i) ?? "");
+                array.push(args.GetValue(i));
             }
             World.event.emit(event, ...array);
         } else {

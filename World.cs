@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Godot;
 using Puerts;
-// ReSharper disable MemberCanBePrivate.Global
+
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
 namespace 创世记;
@@ -105,9 +105,9 @@ public partial class World : Control {
 	}
 
 	private void OnMetaClickedEventHandler(Variant meta, TextType type) {
-		var str = meta.ToString();
-		meta.Dispose();
-		EventEmit(EventType.TextUrlClick, str, type);
+		using (meta) {
+			EventEmit(EventType.TextUrlClick, meta.AsString(), type);
+		}
 	}
 
 	public void EventEmit(EventType type, params object?[]? args) {

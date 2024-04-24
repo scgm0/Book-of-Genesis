@@ -1,7 +1,5 @@
 using System;
 using Puerts;
-#pragma warning disable IL2026
-#pragma warning disable IL2111
 
 namespace 创世记;
 

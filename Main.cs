@@ -3,10 +3,6 @@ using System.Linq;
 using Godot;
 using Environment = System.Environment;
 
-#pragma warning disable CS8974 // 将方法组转换为非委托类型
-#pragma warning disable IL2026
-#pragma warning disable IL2111
-
 namespace 创世记;
 
 public sealed partial class Main : Control {

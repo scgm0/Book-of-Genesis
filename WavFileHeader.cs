@@ -1,10 +1,10 @@
 using System;
 using System.Text;
 using Godot;
-using 创世记;
 
 // ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable CheckNamespace
+
+namespace 创世记;
 
 public struct WavFileHeader {
 	public uint ChunkId;

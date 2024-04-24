@@ -18,7 +18,7 @@ public partial class ControlWindow : PanelContainer {
 	private Panel _decorations;
 	private MarginContainer _tabBar;
 	private Label _title;
-	private Vector2 _relativePos;
+	private Vector2 _relativePosition;
 	private Vector2? _defaultSize;
 	private bool _dragging;
 	private bool _resizable;
@@ -244,7 +244,7 @@ public partial class ControlWindow : PanelContainer {
 				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
 					_dragging = true;
 					_tabBar.MouseDefaultCursorShape = CursorShape.Drag;
-					_relativePos = mouseButton.Position;
+					_relativePosition = mouseButton.Position;
 					break;
 				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
 					_dragging = false;
@@ -252,7 +252,7 @@ public partial class ControlWindow : PanelContainer {
 					break;
 				case InputEventMouseMotion motion:
 					if (_dragging) {
-						Position += motion.Position - _relativePos;
+						Position += motion.Position - _relativePosition;
 					}
 
 					break;
@@ -266,14 +266,14 @@ public partial class ControlWindow : PanelContainer {
 			switch (@event) {
 				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
 					_resizable = true;
-					_relativePos = mouseButton.Position;
+					_relativePosition = mouseButton.Position;
 					break;
 				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
 					_resizable = false;
 					break;
 				case InputEventMouseMotion motion:
 					if (_resizable) {
-						ResizeWindow(resizeDirection, motion.Position - _relativePos);
+						ResizeWindow(resizeDirection, motion.Position - _relativePosition);
 					}
 
 					break;
