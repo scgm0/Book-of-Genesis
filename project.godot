@@ -31,9 +31,7 @@ formats/gzip/compression_level=9
 
 [debug]
 
-file_logging/enable_file_logging=true
-file_logging/log_path="user://Logs/game.log"
-file_logging/log_path.android="/storage/emulated/0/创世记/Logs/game.log"
+file_logging/enable_file_logging.pc=false
 
 [display]
 

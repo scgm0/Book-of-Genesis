@@ -46,8 +46,8 @@ public sealed partial class Main : Control {
 
 		_gameVersion.Text = $"v{Utils.GameVersion}";
 		_dotNetVersion.Text = $"dotnet: {Environment.Version}";
-		_worldsPathHint.Text += ProjectSettings.GlobalizePath(Utils.UserWorldsPath).SimplifyPath();
-		_worldsPathHint.Uri = ProjectSettings.GlobalizePath(Utils.UserWorldsPath).SimplifyPath();
+		_worldsPathHint.Text += Utils.UserWorldsPath;
+		_worldsPathHint.Uri = Utils.UserWorldsPath;
 
 		_chooseWorldButton.Pressed += ChooseWorld;
 		_templateWorldButton.Pressed += ChooseTemplate;

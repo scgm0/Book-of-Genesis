@@ -24,18 +24,18 @@ public static partial class Utils {
 	public static readonly string GameName = ProjectSettings.GetSetting("application/config/name").AsString();
 
 #if GODOT_ANDROID
-	public static readonly string GameUserDataPath = $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{GameName}";
+	public static readonly string GameUserDataPath = $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{GameName}/";
 #else
-	public const string GameUserDataPath = "user://";
+	public static readonly string GameUserDataPath = ProjectSettings.GlobalizePath("user://");
 #endif
 
-	public static readonly string SavesPath = $"{GameUserDataPath}/Saves";
+	public static readonly string SavesPath = $"{GameUserDataPath}Saves";
 
-	public static readonly string UserWorldsPath = $"{GameUserDataPath}/Worlds";
+	public static readonly string UserWorldsPath = $"{GameUserDataPath}Worlds";
 
-	public static readonly string TsGenPath = $"{GameUserDataPath}/TsGen";
+	public static readonly string TsGenPath = $"{GameUserDataPath}TsGen";
 
-	public static readonly string LogPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
+	public static readonly string LogPath = $"{GameUserDataPath}Logs/game.log";
 
 	public static readonly GodotSynchronizationContext SyncCtx = Dispatcher.SynchronizationContext;
 
@@ -65,7 +65,7 @@ public static partial class Utils {
 
 		DirAccess.RemoveAbsolute($"{UserWorldsPath}/{worldInfo.WorldKey.EnBase64()}.isEncrypt");
 		Log.Debug("加密结束:",
-			ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}"));
+			$"{UserWorldsPath}{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}");
 	}
 
 	public static string ParseExpressionsFilter(string bbcode) {
