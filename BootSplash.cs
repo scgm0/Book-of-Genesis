@@ -10,6 +10,9 @@ public partial class BootSplash : Control {
 	public override void _Ready() {
 		Control? instancedScene = null;
 		_logo.Modulate = _logo.Modulate with { A = 0 };
+#if GODOT_ANDROID
+		OS.RequestPermissions();
+#endif
 		var tween = CreateTween();
 		tween.SetTrans(Tween.TransitionType.Cubic);
 		tween.TweenProperty(_logo, "modulate:a", 1, 1);

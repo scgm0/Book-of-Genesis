@@ -35,9 +35,9 @@ file_logging/enable_file_logging.pc=false
 
 [display]
 
-window/energy_saving/keep_screen_on.editor=true
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/energy_saving/keep_screen_on.editor=true
 
 [dotnet]
 

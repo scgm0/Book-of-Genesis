@@ -30,6 +30,10 @@ public sealed partial class Main : Control {
 	}
 
 	public override void _Ready() {
+		if (!DirAccess.DirExistsAbsolute(Utils.LogPath.GetBaseDir())) {
+			DirAccess.MakeDirRecursiveAbsolute(Utils.LogPath.GetBaseDir());
+		}
+
 		if (!DirAccess.DirExistsAbsolute(Utils.UserWorldsPath)) {
 			DirAccess.MakeDirRecursiveAbsolute(Utils.UserWorldsPath);
 		}

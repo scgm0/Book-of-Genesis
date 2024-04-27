@@ -97,6 +97,8 @@ public partial class World : Control {
 
 	public override void _ExitTree() {
 		base._ExitTree();
+		_jsEnv?.Dispose();
+		_jsEnv = null;
 		_titleStyle.Dispose();
 		_leftTextStyle.Dispose();
 		_centerTextStyle.Dispose();
@@ -128,8 +130,6 @@ public partial class World : Control {
 		EventEmit(EventType.Exit, exitCode);
 		Log.Debug("退出世界:", exitCode.ToString(), Main.CurrentWorldInfo.JsonString);
 		Instance = null;
-		_jsEnv?.Dispose();
-		_jsEnv = null;
 		Main.CurrentWorldInfo = null;
 		Main.ClearCache();
 		SetProcess(false);
