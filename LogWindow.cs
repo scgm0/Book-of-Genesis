@@ -79,13 +79,13 @@ public static partial class Log {
 			SortLog(LogList);
 		}
 
-		static private void SortLog(IEnumerable<LogInfo> logDatas) {
+		static private void SortLog(IEnumerable<LogInfo> logInfos) {
 			_instance!._tree.DeselectAll();
 			_instance._textEdit.Text = "";
 			TreeItem? lastItem = null;
-			foreach (var logData in logDatas) {
-				var treeItem = _instance._logDataMap[logData with { Ratio = 100 }];
-				treeItem.Visible = logData.Ratio > 0;
+			foreach (var logInfo in logInfos) {
+				var treeItem = _instance._logDataMap[logInfo with { Ratio = 100 }];
+				treeItem.Visible = logInfo.Ratio > 0;
 				if (lastItem == null) {
 					lastItem = treeItem;
 				} else {
@@ -148,7 +148,7 @@ public static partial class Log {
 		}
 
 		static private void UpdateTreeItem(LogInfo logInfo, TreeItem treeItem) {
-			treeItem.SetText(0, logInfo.Time);
+			treeItem.SetText(0, logInfo.Date);
 			treeItem.SetText(1, logInfo.WorldName ?? string.Empty);
 			treeItem.SetTooltipText(2, logInfo.Severity.ToString());
 			treeItem.SetText(3, logInfo.Message.Replace("\n", string.Empty));
