@@ -42,33 +42,26 @@ public static partial class Log {
 
 		if (LogSeverity > info.Severity) return;
 		var str = info.LogText;
-		var old = Console.ForegroundColor;
 		switch (info.Severity) {
 			case Severity.Trace:
-				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine(str);
+				GD.PrintRich($"[color=green]{str}[/color]");
 				break;
 			case Severity.Error:
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine(str);
+				GD.PrintRich($"[color=red]{str}[/color]");
 				LogWindow.ToggleVisible(true);
 				LogWindow.ScrollLog(info);
 				break;
 			case Severity.Warn:
-				Console.ForegroundColor = ConsoleColor.Yellow;
-				Console.WriteLine(str);
+				GD.PrintRich($"[color=yellow]{str}[/color]");
 				break;
 			case Severity.Info:
-				Console.WriteLine(str);
+				GD.Print(str);
 				break;
 			case Severity.Debug:
 			default:
-				Console.ForegroundColor = ConsoleColor.Gray;
-				Console.WriteLine(str);
+				GD.PrintRich($"[color=gray]{str}[/color]");
 				break;
 		}
-
-		Console.ForegroundColor = old;
 
 		using (_logWriter = new StreamWriter(Utils.LogPath, true)) {
 			_logWriter.WriteLineAsync(info.LogText);
