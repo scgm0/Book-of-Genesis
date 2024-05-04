@@ -202,8 +202,8 @@ public static partial class Log {
 				DrawSpaces = true
 			};
 			textEdit.AddThemeFontOverride("font", monoFont);
-			textEdit.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
-			textEdit.AddThemeStyleboxOverride("normal", new StyleBoxFlat {
+			textEdit.AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.Focus, new StyleBoxEmpty());
+			textEdit.AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.Normal, new StyleBoxFlat {
 				BgColor = Color.FromHtml("#1a1a1a99"),
 				CornerRadiusTopRight = 3,
 				CornerRadiusBottomRight = 3,
@@ -214,7 +214,7 @@ public static partial class Log {
 				ContentMarginTop = 8,
 				ContentMarginBottom = 8
 			});
-			textEdit.AddThemeStyleboxOverride("read_only", new StyleBoxFlat {
+			textEdit.AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.ReadOnly, new StyleBoxFlat {
 				DrawCenter = false,
 				ContentMarginLeft = 8,
 				ContentMarginRight = 8,
@@ -245,14 +245,13 @@ public static partial class Log {
 					SizeFlagsHorizontal = SizeFlags.ExpandFill,
 					SizeFlagsVertical = SizeFlags.ExpandFill
 				};
-				panelContainer.AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
+				panelContainer.AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.Panel, new StyleBoxEmpty());
 				{
 					var marginContainer = new MarginContainer();
 					const int margin = 10;
-					// marginContainer.AddThemeConstantOverride("margin_top", margin);
-					marginContainer.AddThemeConstantOverride("margin_left", margin);
-					marginContainer.AddThemeConstantOverride("margin_bottom", margin);
-					marginContainer.AddThemeConstantOverride("margin_right", margin);
+					marginContainer.AddThemeConstantOverride(Utils.ThemeConstantName.MarginLeft, margin);
+					marginContainer.AddThemeConstantOverride(Utils.ThemeConstantName.MarginBottom, margin);
+					marginContainer.AddThemeConstantOverride(Utils.ThemeConstantName.MarginRight, margin);
 					{
 						var vBox = new VBoxContainer {
 							Alignment = BoxContainer.AlignmentMode.Begin
@@ -335,7 +334,7 @@ public static partial class Log {
 									var item = tree.GetSelected();
 									if (!instance._treeItemMap.TryGetValue(item, out var logData)) return;
 									textEdit.Text = logData.LogText;
-									textEdit.AddThemeColorOverride("font_readonly_color", item.GetIconModulate(2));
+									textEdit.AddThemeColorOverride(Utils.ThemeColorName.FontReadonlyColor, item.GetIconModulate(2));
 								};
 
 								vSplitContainer.AddChild(tree);
@@ -364,7 +363,7 @@ public static partial class Log {
 			_tree = tree;
 			_textEdit = textEdit;
 			_rootTreeItem = _tree.CreateItem();
-			AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
+			AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.Panel, new StyleBoxEmpty());
 		}
 
 		public LogWindow() { }

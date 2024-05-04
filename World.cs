@@ -30,16 +30,16 @@ public partial class World : Control {
 	public static World? Instance { get; private set; }
 
 	public static void ThrowException(string message) {
-		if (Instance?._jsEnv == null) return;
+		if (Instance?._jsEnv?.Isolate == null) return;
 		PuertsDLL.ThrowException(Instance._jsEnv.Isolate, message);
 	}
 
 	public override void _Ready() {
 		Instance = this;
-		_titleStyle = (StyleBoxFlat)Title.GetThemeStylebox("normal");
-		_leftTextStyle = (StyleBoxFlat)LeftText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
-		_centerTextStyle = (StyleBoxFlat)CenterText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
-		_rightTextStyle = (StyleBoxFlat)RightText.GetParent().GetParent<Panel>().GetThemeStylebox("panel");
+		_titleStyle = (StyleBoxFlat)Title.GetThemeStylebox(Utils.ThemeStyleBoxName.Normal);
+		_leftTextStyle = (StyleBoxFlat)LeftText.GetParent().GetParent<Panel>().GetThemeStylebox(Utils.ThemeStyleBoxName.Panel);
+		_centerTextStyle = (StyleBoxFlat)CenterText.GetParent().GetParent<Panel>().GetThemeStylebox(Utils.ThemeStyleBoxName.Panel);
+		_rightTextStyle = (StyleBoxFlat)RightText.GetParent().GetParent<Panel>().GetThemeStylebox(Utils.ThemeStyleBoxName.Panel);
 
 		LeftText.MetaClicked += meta => OnMetaClickedEventHandler(meta, TextType.LeftText);
 		CenterText.MetaClicked += meta => OnMetaClickedEventHandler(meta, TextType.CenterText);
@@ -85,7 +85,7 @@ public partial class World : Control {
 		try {
 			_jsEnv = new JsEnv(new WorldModuleLoader(this));
 			_jsEnv.ExecuteModule(Main.CurrentWorldInfo.Main);
-		} catch (Exception e) { 
+		} catch (Exception e) {
 			Log.Error(_jsEnv?.Eval<JSObject>($"World.getLastException(`{e.Message}`)")?.Get<string>("stack") ?? e.Message);
 		}
 	}
@@ -373,19 +373,19 @@ public partial class World : Control {
 
 	private void SetTextFontColor(TextType type, Color color) {
 		if ((type & TextType.Title) > 0) {
-			Title.AddThemeColorOverride("default_color", color);
+			Title.AddThemeColorOverride(Utils.ThemeColorName.DefaultColor, color);
 		}
 
 		if ((type & TextType.LeftText) > 0) {
-			LeftText.AddThemeColorOverride("default_color", color);
+			LeftText.AddThemeColorOverride(Utils.ThemeColorName.DefaultColor, color);
 		}
 
 		if ((type & TextType.CenterText) > 0) {
-			CenterText.AddThemeColorOverride("default_color", color);
+			CenterText.AddThemeColorOverride(Utils.ThemeColorName.DefaultColor, color);
 		}
 
 		if ((type & TextType.RightText) > 0) {
-			RightText.AddThemeColorOverride("default_color", color);
+			RightText.AddThemeColorOverride(Utils.ThemeColorName.DefaultColor, color);
 		}
 	}
 

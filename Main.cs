@@ -66,7 +66,7 @@ public sealed partial class Main : Control {
 
 	public override void _Input(InputEvent @event) {
 		using (@event) {
-			if (!@event.IsActionPressed("ui_accept")) return;
+			if (!@event.IsActionPressed(Utils.InputActionName.UiAccept)) return;
 			using var pressedEvent = new InputEventMouseButton();
 			pressedEvent.ButtonIndex = MouseButton.Left;
 			pressedEvent.Pressed = true;
@@ -123,7 +123,7 @@ public sealed partial class Main : Control {
 
 			worldItem.GetNode<Button>("%Choose").Pressed += () => LoadWorld(worldInfo);
 			worldItem.GetNode<Button>("%Choose").Text = "进入\n世界";
-			worldItem.Set("modulate", Colors.Transparent);
+			worldItem.Set(CanvasItem.PropertyName.Modulate, Colors.Transparent);
 			list.AddChild(worldItem);
 			using var tween = worldItem.CreateTween();
 			tween.TweenProperty(worldItem, "modulate:a", 1, 0.125f);
@@ -163,7 +163,7 @@ public sealed partial class Main : Control {
 				Utils.Tree.Root.PropagateNotification((int)NotificationWMGoBackRequest);
 			};
 			worldItem.GetNode<Button>("%Choose").Text = "导出\n模版";
-			worldItem.Set("modulate", Colors.Transparent);
+			worldItem.Set(CanvasItem.PropertyName.Modulate, Colors.Transparent);
 			list.AddChild(worldItem);
 			using var tween = worldItem.CreateTween();
 			tween.TweenProperty(worldItem, "modulate:a", 1, 0.125f);
@@ -200,7 +200,7 @@ public sealed partial class Main : Control {
 		using var tween = _world.CreateTween();
 		tween.SetEase(Tween.EaseType.Out);
 		tween.TweenProperty(_world.BackgroundColor, "modulate:a", 1, 1.5).From(0);
-		tween.TweenCallback(new Callable(this, nameof(ReadyWorld)));
+		tween.TweenCallback(new Callable(this, MethodName.ReadyWorld));
 
 	}
 
