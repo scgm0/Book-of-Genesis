@@ -28,7 +28,7 @@ public static partial class Utils {
 		public static readonly StringName DefaultColor = "default_color";
 		public static readonly StringName FontReadonlyColor = "font_readonly_color";
 	}
-	
+
 	public static class ThemeConstantName {
 		public static readonly StringName MarginTop = "margin_top";
 		public static readonly StringName MarginBottom = "margin_bottom";

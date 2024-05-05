@@ -66,14 +66,15 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 		env.ExecuteModule("创世记:world-init");
 	}
 
-	private string ReadTs2Js(string fullPath, string filePath) {
+	private string ReadTs2Js(string tsPath, string filePath) {
 		string code;
 		var cachePath = Utils.TsGenPath.PathJoin(filePath.ReplaceOnce(WorldInfo!.Path, $"/{WorldInfo.WorldKey}/")).SimplifyPath();
 		var jsPath = $"{cachePath}{(WorldInfo.IsEncrypt ? ".encrypt" : "")}.js";
 		var metaPath = $"{cachePath}{(WorldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
 		if (FileAccess.FileExists(jsPath) &&
 			FileAccess.FileExists(metaPath)) {
-			var tsSha256 = FileAccess.GetSha256(fullPath);
+			var tsSha256 = FileAccess.GetSha256(tsPath);
+			var jsSha256 = FileAccess.GetSha256(jsPath);
 			using var metaFile = WorldInfo.IsEncrypt
 				? FileAccess.OpenEncryptedWithPass(metaPath,
 					FileAccess.ModeFlags.Read,
@@ -84,7 +85,6 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 			var tsMeta = JsonSerializer.Deserialize(
 				tsMetaJson,
 				SourceGenerationContext.Default.TsMeta);
-			var jsSha256 = FileAccess.GetSha256(jsPath);
 			if (jsSha256 == tsMeta.JsSha256 && tsSha256 == tsMeta.TsSha256) {
 				using var jsFile = WorldInfo.IsEncrypt
 					? FileAccess.OpenEncryptedWithPass(jsPath,
@@ -93,24 +93,21 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 					: FileAccess.Open(jsPath, FileAccess.ModeFlags.Read);
 				code = jsFile.GetAsText();
 			} else {
-				TsGen(out code, fullPath, filePath, cachePath);
+				TsGen(out code, tsPath, jsPath, metaPath, filePath);
 			}
 		} else {
-			TsGen(out code, fullPath, filePath, cachePath);
+			TsGen(out code, tsPath, jsPath, metaPath, filePath);
 		}
 
 		return code;
 	}
 
-	private void TsGen(out string code, string fullPath, string filePath, string cachePath) {
-		var jsPath = $"{cachePath}{(WorldInfo!.IsEncrypt ? ".encrypt" : "")}.js";
-		var metaPath = $"{cachePath}{(WorldInfo.IsEncrypt ? ".encrypt" : "")}.meta";
-		DirAccess.MakeDirRecursiveAbsolute($"{cachePath}".GetBaseDir());
-		var tsSha256 = FileAccess.GetSha256(fullPath);
-		var res = TsTransform.Compile(FileAccess.GetFileAsString(fullPath), filePath);
+	private void TsGen(out string code, string tsPath, string jsPath, string metaPath, string filePath) {
+		DirAccess.MakeDirRecursiveAbsolute($"{jsPath}".GetBaseDir());
+		var res = TsTransform.Compile(FileAccess.GetFileAsString(tsPath), filePath);
 		code = res.Get<string>("outputText");
 		var jsFile =
-			WorldInfo.IsEncrypt
+			WorldInfo!.IsEncrypt
 				? FileAccess.OpenEncryptedWithPass(jsPath,
 					FileAccess.ModeFlags.Write,
 					$"{Utils.ScriptAes256EncryptionKey}_{WorldInfo.WorldKey}")
@@ -118,6 +115,7 @@ public class WorldModuleLoader(WorldInfo? worldInfo) : ILoader, IResolvableLoade
 		jsFile.StoreString(code);
 		jsFile.Dispose();
 		var jsSha256 = FileAccess.GetSha256(jsPath);
+		var tsSha256 = FileAccess.GetSha256(tsPath);
 		var tsMetaFile =
 			WorldInfo.IsEncrypt
 				? FileAccess.OpenEncryptedWithPass(metaPath,

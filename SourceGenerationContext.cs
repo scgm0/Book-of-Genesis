@@ -5,4 +5,4 @@ namespace 创世记;
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower, AllowTrailingCommas = true)]
 [JsonSerializable(typeof(WorldInfo))]
 [JsonSerializable(typeof(TsMeta))]
-sealed partial class SourceGenerationContext : JsonSerializerContext;
+public sealed partial class SourceGenerationContext : JsonSerializerContext;
