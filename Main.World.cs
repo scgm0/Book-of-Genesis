@@ -1,19 +1,13 @@
 using System;
 using System.Text.Json;
 using Godot;
-using Jint.Native;
-using Engine = Jint.Engine;
 
 namespace 创世记;
 
 public sealed partial class Main {
+	public static WorldInfo? CurrentWorldInfo { get; set; }
 
-	static private JsObject? _currentWorld;
-	static private JsObject? _currentWorldEvent;
-	public static Engine? CurrentEngine { get; private set; }
-	public static WorldInfo? CurrentWorldInfo { get; private set; }
-
-	static private void LoadWorldInfos(string worldsPath, bool loadPackage = false) {
+	public static void LoadWorldInfos(string worldsPath, bool encrypt = false) {
 		worldsPath = worldsPath.SimplifyPath();
 		using var dir = DirAccess.Open(worldsPath);
 		if (dir == null) return;
@@ -22,10 +16,7 @@ public sealed partial class Main {
 		while (fileName is not "" and not "." and not "..") {
 			var filePath = worldsPath.PathJoin(fileName);
 			if (dir.CurrentIsDir()) {
-				DeserializeWorldInfo(filePath.PathJoin("config.json"), fileName, worldsPath, loadPackage);
-			} else if (loadPackage &&
-				(fileName.GetExtension() == Utils.EncryptionWorldExtension || fileName.GetExtension() == "zip")) {
-				Log.Debug(fileName, ProjectSettings.LoadResourcePack(filePath).ToString());
+				DeserializeWorldInfo(filePath.PathJoin("config.json"), fileName, worldsPath, encrypt);
 			}
 
 			fileName = dir.GetNext();
@@ -36,18 +27,29 @@ public sealed partial class Main {
 		string worldConfigPath,
 		string fileName,
 		string worldsPath,
-		bool loadPackage) {
-		if (!FileAccess.FileExists(worldConfigPath)) return;
+		bool encrypt) {
+		var configStr = FileAccess.GetFileAsString(worldConfigPath);
+		if (configStr.Length <= 1) return;
 		try {
-			var worldInfo = JsonSerializer.Deserialize(FileAccess.GetFileAsString(worldConfigPath),
+			var worldInfo = JsonSerializer.Deserialize(configStr,
 				SourceGenerationContext.Default.WorldInfo);
-			worldInfo!.Path = $"/{fileName}/";
+			if (worldInfo == null) return;
+
+			worldInfo.Path = $"/{fileName}/";
 			worldInfo.GlobalPath = worldsPath.PathJoin(fileName).SimplifyPath();
-			worldInfo.IsEncrypt = !loadPackage && FileAccess.FileExists(
-				$"{worldInfo.GlobalPath}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt");
+			worldInfo.IsEncrypt = encrypt && FileAccess.FileExists(
+				$"{worldInfo.GlobalPath}/{worldInfo.WorldKey.EnBase64()}.isEncrypt");
+
+			if (!worldInfo.IsEncrypt) {
+				worldInfo.WorldModifiedTime = FileAccess.GetModifiedTime(worldInfo.GlobalPath);
+			} else {
+				using var encryptFile = FileAccess.Open($"{worldInfo.GlobalPath}/{worldInfo.WorldKey.EnBase64()}.isEncrypt", FileAccess.ModeFlags.Read);
+				worldInfo.WorldModifiedTime = encryptFile.Get64();
+			}
+
 			Utils.WorldInfos[worldInfo.WorldKey] = worldInfo;
-		} catch (Exception) {
-			// ignored
+		} catch (Exception e) {
+			Log.Debug(e.ToString());
 		}
 	}
 }

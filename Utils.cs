@@ -3,11 +3,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Godot;
-using Jint.Native.Json;
-using Jint.Runtime;
-using World;
-
-// ReSharper disable MemberCanBePrivate.Global
+using Godot.Collections;
+using Puerts;
+using Array = Godot.Collections.Array;
+using Timer = System.Threading.Timer;
 
 namespace 创世记;
 
@@ -20,57 +19,53 @@ public static partial class Utils {
 
 	public static readonly string ScriptAes256EncryptionKey = SCRIPT_AES256_ENCRYPTION_KEY();
 
-	public static readonly StringName GameVersion = ProjectSettings.GetSetting("application/config/version").AsStringName();
+	public static readonly string GameVersion = ProjectSettings.GetSetting("application/config/version").AsString();
 
-	public static readonly StringName GameName = ProjectSettings.GetSetting("application/config/name").AsStringName();
+	public static readonly string GameName = ProjectSettings.GetSetting("application/config/name").AsString();
 
 #if GODOT_ANDROID
-	public static readonly string GameUserDataPath = $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{GameName}";
-
-	public static readonly string SavesPath = $"{GameUserDataPath}/Saves";
-
-	public static readonly string UserWorldsPath = $"{GameUserDataPath}/Worlds";
-
-	public static readonly string TsGenPath = $"{GameUserDataPath}/TsGen";
+	public static readonly string GameUserDataPath = $"{OS.GetSystemDir(OS.SystemDir.Desktop)}/{GameName}/";
 #else
 	public static readonly string GameUserDataPath = ProjectSettings.GlobalizePath("user://");
-
-	public const string SavesPath = "user://Saves";
-
-	public const string UserWorldsPath = "user://Worlds";
-
-	public const string TsGenPath = "user://TsGen";
 #endif
 
-	public static readonly string LogPath = ProjectSettings.GetSettingWithOverride("debug/file_logging/log_path").ToString();
-	public static readonly GodotSynchronizationContext SyncCtx = Dispatcher.SynchronizationContext;
-	
-	public static JsonParser? JsonParser;
-	public static JsonSerializer? JsonSerializer;
+	public static readonly string SavesPath = $"{GameUserDataPath}Saves";
 
-	static private System.Threading.Timer? _debounceTimer;
+	public static readonly string UserWorldsPath = $"{GameUserDataPath}Worlds";
+
+	public static readonly string TsGenPath = $"{GameUserDataPath}TsGen";
+
+	public static readonly string LogPath = $"{GameUserDataPath}Logs/game.log";
+
+	public static readonly GodotSynchronizationContext SyncCtx = Dispatcher.SynchronizationContext;
+
+	static private Timer? _debounceTimer;
 
 	public static void Debounce(Action action, int delay) {
 		_debounceTimer?.Dispose();
-		_debounceTimer = new System.Threading.Timer(_ => {
+		_debounceTimer = new Timer(_ => {
 			action.Invoke();
 		}, null, delay, Timeout.Infinite);
 	}
 
 	public static void ExportEncryptionWorldPck(WorldInfo worldInfo) {
 		Log.Debug("加密开始:", worldInfo.JsonString);
-		var packer = new PckPacker();
-		packer.PckStart($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}",
+		using var packer = new PckPacker();
+		packer.PckStart($"{UserWorldsPath}/{worldInfo.WorldKey}.{EncryptionWorldExtension}",
 			32,
 			ScriptAes256EncryptionKey,
 			true);
-		packer.AddDir($"{UserWorldsPath}{worldInfo.Path}");
-		packer.AddFile(
-			$"{ResWorldsPath}{worldInfo.Path}/{$"{worldInfo.Author}:{worldInfo.Name}-{worldInfo.Version}".EnBase64()}.isEncrypt",
-			"res://Assets/.Encrypt");
-		packer.Flush(true);
+		packer.AddDir($"{worldInfo.GlobalPath}", worldInfo.GlobalPath, ResWorldsPath.PathJoin(worldInfo.WorldKey).SimplifyPath());
+
+		using var encryptFile = FileAccess.Open($"{UserWorldsPath}/{worldInfo.WorldKey.EnBase64()}.isEncrypt", FileAccess.ModeFlags.Write);
+		encryptFile.Store64((ulong)DateTimeOffset.Now.Ticks);
+		encryptFile.Flush();
+		packer.AddFile($"{ResWorldsPath.PathJoin(worldInfo.WorldKey).SimplifyPath()}/{worldInfo.WorldKey.EnBase64()}.isEncrypt", $"{UserWorldsPath}/{$"{worldInfo.WorldKey}".EnBase64()}.isEncrypt");
+		packer.Flush();
+
+		DirAccess.RemoveAbsolute($"{UserWorldsPath}/{worldInfo.WorldKey.EnBase64()}.isEncrypt");
 		Log.Debug("加密结束:",
-			ProjectSettings.GlobalizePath($"{UserWorldsPath}/{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}"));
+			$"{UserWorldsPath}{worldInfo.Name}-{worldInfo.Version}.{EncryptionWorldExtension}");
 	}
 
 	public static string ParseExpressionsFilter(string bbcode) {
@@ -134,17 +129,27 @@ public static partial class Utils {
 	}
 
 	public static void SetRichText(RichTextLabel label, string text) {
-		LoadRichTextImg(ref text); 
-		Tree.Root.SyncSend(_ => {
-			label.ParseBbcode(text);
-		});
+		LoadRichTextImg(ref text);
+		label.ParseBbcode(text);
 	}
 
 	public static void AddRichText(RichTextLabel label, string text) {
 		LoadRichTextImg(ref text);
-		Tree.Root.SyncSend(_ => {
-			label.AppendText(text);
-		});
+		label.AppendText(text);
+	}
+
+	public static void LoadPacks(string path) {
+		using var dir = DirAccess.Open(path);
+		if (dir == null) return;
+		dir.ListDirBegin();
+		var fileName = dir.GetNext();
+		while (fileName is not "" and not "." and not "..") {
+			if (!dir.CurrentIsDir() && fileName.GetExtension() == EncryptionWorldExtension) {
+				Log.Debug(fileName, ProjectSettings.LoadResourcePack($"{path}/{fileName}".SimplifyPath()).ToString());
+			}
+
+			fileName = dir.GetNext();
+		}
 	}
 
 	public static void LoadRichTextImg(ref string text) {
@@ -192,6 +197,10 @@ public static partial class Utils {
 		if (imageTexture == null) {
 			var data = FileAccess.GetFileAsBytes(filePath);
 			using var img = ImageFromBuffer(data);
+			if (img == null) {
+				return null;
+			}
+
 			imageTexture = ImageTexture.CreateFromImage(img);
 		}
 
@@ -200,7 +209,7 @@ public static partial class Utils {
 		return texture;
 	}
 
-	public static Image ImageFromBuffer(byte[] data) {
+	public static Image? ImageFromBuffer(byte[] data) {
 		var img = new Image();
 		switch (ImageFileFormatFinder.GetImageFormat(data)) {
 			case ImageFormat.Png:
@@ -217,21 +226,103 @@ public static partial class Utils {
 				break;
 			case ImageFormat.Unknown:
 			default:
-				throw new JavaScriptException("不支持的图像格式，仅支持png、jpg、bmp与webp");
+				World.ThrowException("不支持的图像格式，仅支持png、jpg、bmp与webp");
+				return null;
 		}
 
 		return img;
 	}
 
-	static private partial string SCRIPT_AES256_ENCRYPTION_KEY();
+	public static void RemoveButtonById(ulong id) {
+		var button = GodotObject.InstanceFromId(id) as Button;
+		button?.QueueFree();
+	}
 
-	[GeneratedRegex(@"(?<=(//# sourceMappingURL=))[.\s\S]*?", RegexOptions.RightToLeft)]
-	public static partial Regex SourceMapPathRegex();
+	static private object? VariantToSaveValue(Variant value) {
+		return value.VariantType switch {
+			Variant.Type.Bool => value.AsBool(),
+			Variant.Type.Int => value.AsInt32(),
+			Variant.Type.Float => value.AsDouble(),
+			Variant.Type.String => value.AsString(),
+			Variant.Type.Dictionary => value.AsGodotDictionary(),
+			Variant.Type.Array => value.AsGodotArray(),
+			Variant.Type.Vector2 or Variant.Type.Vector2I or Variant.Type.Rect2 or Variant.Type.Rect2I or Variant.Type.Vector3 or Variant.Type.Vector3I or Variant.Type.Transform2D or Variant.Type.Vector4
+				or Variant.Type.Vector4I or Variant.Type.Plane or Variant.Type.Quaternion or Variant.Type.Aabb or Variant.Type.Basis or Variant.Type.Transform3D or Variant.Type.Projection or Variant.Type.Color
+				or Variant.Type.StringName or Variant.Type.NodePath or Variant.Type.Rid or Variant.Type.Object or Variant.Type.Callable or Variant.Type.Signal or Variant.Type.PackedByteArray or Variant.Type.PackedInt32Array
+				or Variant.Type.PackedInt64Array or Variant.Type.PackedFloat32Array or Variant.Type.PackedFloat64Array or Variant.Type.PackedStringArray or Variant.Type.PackedVector2Array or Variant.Type.PackedVector3Array
+				or Variant.Type.PackedColorArray or Variant.Type.Max or Variant.Type.Nil => null,
+			_ => null
+		};
+	}
+
+	static private Variant SaveValueToVariant(object? value) {
+		switch (value) {
+			case bool boolValue:
+				return boolValue;
+			case int intValue:
+				return intValue;
+			case double doubleValue:
+				return doubleValue;
+			case string stringValue:
+				return stringValue;
+			case JSObject jsObject: {
+				var str = jsObject.Get<string>("value");
+				using var json = new Json();
+				json.Parse(str);
+				return json.Data;
+			}
+			default:
+				return default;
+		}
+	}
+
+	public static object? GetSaveValue(string section, string key) {
+		using var defaultVariant = new RefCounted();
+		using var value = Main.CurrentWorldInfo!.Config.GetValue(section, key, defaultVariant);
+		return VariantToSaveValue(value);
+	}
+
+	public static void SetSaveValue(string section, string key, object? value) {
+		Main.CurrentWorldInfo!.Config.SetValue(section, key, SaveValueToVariant(value));
+		Main.CurrentWorldInfo.Config.SaveEncryptedPass(
+			$"{SavesPath}/{Main.CurrentWorldInfo.Author}:{Main.CurrentWorldInfo.Name}.save",
+			$"{Main.CurrentWorldInfo.Author}:{Main.CurrentWorldInfo.Name}");
+	}
+
+	public static object? GetGlobalSaveValue(string section, string key) {
+		using var defaultVariant = new RefCounted();
+		using var value = GlobalConfig.GetValue(section, key, defaultVariant);
+		return VariantToSaveValue(value);
+	}
+
+	public static void SetGlobalSaveValue(string section, string key, object? value) {
+		GlobalConfig.SetValue(section, key, SaveValueToVariant(value));
+		GlobalConfig.SaveEncryptedPass($"{SavesPath}/global.save", "global");
+	}
+
+	public static string? ReadAsText(string path) {
+		var filePath = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
+		return FileAccess.FileExists(filePath) ? FileAccess.GetFileAsString(filePath) : null;
+	}
+
+	public static ArrayBuffer? ReadAsArrayBuffer(string path) {
+		var filePath = Main.CurrentWorldInfo!.GlobalPath.PathJoin(path).SimplifyPath();
+		return FileAccess.FileExists(filePath) ? new ArrayBuffer(FileAccess.GetFileAsBytes(filePath)) : null;
+	}
+
+	public static string GetJsonString(Dictionary dictionary) {
+		return Json.Stringify(dictionary);
+	}
+
+	public static string GetJsonString(Array array) {
+		return Json.Stringify(array);
+	}
+
+	static private partial string SCRIPT_AES256_ENCRYPTION_KEY();
 
 	[GeneratedRegex(@"\[img.*\](?<path>.*?)\[\/img\]")]
 	public static partial Regex ImgPathRegex();
 
 	[GeneratedRegex(@"^\w:[\\\/]")]
 	public static partial Regex DriveLetterRegex();
-
 }

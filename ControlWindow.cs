@@ -9,29 +9,28 @@ public partial class ControlWindow : PanelContainer {
 #pragma warning restore CA1050
 	[Flags]
 	private enum ResizeDirection {
-		Left = 1 << 1,
-		Top = 1 << 2,
-		Right = 1 << 3,
-		Bottom = 1 << 4
+		Left = 1,
+		Top = 2,
+		Right = 4,
+		Bottom = 8
 	}
-
-	private StyleBoxFlat _decorationsStyle;
 
 	private Panel _decorations;
 	private MarginContainer _tabBar;
 	private Label _title;
-	private Vector2 _relativePos;
+	private Vector2 _relativePosition;
 	private Vector2? _defaultSize;
 	private bool _dragging;
 	private bool _resizable;
 	[Export] public string Title { get => _title.Text; set => _title.Text = value; }
-	[Export] public int DecorationsWidth = 8;
-	[Export] public int TabBarHeight = 24;
-	[Export] public int ResizeGripExtra = 2;
+	[Export] public int DecorationsWidth { get; set; } = 8;
+	[Export] public int TabBarHeight { get; set; } = 24;
+	[Export] public int ResizeGripExtra { get; set; } = 2;
+	[Export] public StyleBoxFlat DecorationsStyle { get; set; }
 
 	public ControlWindow() {
 		var defaultTheme = ThemeDB.GetDefaultTheme();
-		_decorationsStyle = new StyleBoxFlat {
+		DecorationsStyle = new StyleBoxFlat {
 			BgColor = Color.Color8(56, 56, 56),
 			CornerRadiusTopLeft = 3,
 			CornerRadiusTopRight = 3,
@@ -48,13 +47,13 @@ public partial class ControlWindow : PanelContainer {
 			ShowBehindParent = true
 		};
 
-		_decorations.AddThemeStyleboxOverride("panel", _decorationsStyle);
+		_decorations.AddThemeStyleboxOverride("panel", DecorationsStyle);
 
 		{
 			_tabBar = new MarginContainer {
 				Name = "TabBar",
 				AnchorRight = 1,
-				OffsetTop = -_decorationsStyle.ExpandMarginTop,
+				OffsetTop = -DecorationsStyle.ExpandMarginTop,
 				GrowHorizontal = GrowDirection.Begin,
 				FocusMode = FocusModeEnum.Click
 			};
@@ -218,62 +217,67 @@ public partial class ControlWindow : PanelContainer {
 	}
 
 	private void ResizeWindow(ResizeDirection resizeDirection, Vector2 relative) {
-		if ((resizeDirection & ResizeDirection.Left) == ResizeDirection.Left) {
+		if ((resizeDirection & ResizeDirection.Left) > 0) {
 			var oldX = Size.X;
 			Size = Size with { X = Size.X - relative.X };
 			Position = Position with { X = Position.X + oldX - Size.X };
 		}
 
-		if ((resizeDirection & ResizeDirection.Top) == ResizeDirection.Top) {
+		if ((resizeDirection & ResizeDirection.Top) > 0) {
 			var oldY = Size.Y;
 			Size = Size with { Y = Size.Y - relative.Y };
 			Position = Position with { Y = Position.Y + oldY - Size.Y };
 		}
 
-		if ((resizeDirection & ResizeDirection.Right) == ResizeDirection.Right) {
+		if ((resizeDirection & ResizeDirection.Right) > 0) {
 			Size = Size with { X = Size.X + relative.X };
 		}
 
-		if ((resizeDirection & ResizeDirection.Bottom) == ResizeDirection.Bottom) {
+		if ((resizeDirection & ResizeDirection.Bottom) > 0) {
 			Size = Size with { Y = Size.Y + relative.Y };
 		}
 	}
 
 	private void OnTabBarGuiInput(InputEvent @event) {
-		switch (@event) {
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
-				_dragging = true;
-				_tabBar.MouseDefaultCursorShape = CursorShape.Drag;
-				_relativePos = mouseButton.Position;
-				break;
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
-				_dragging = false;
-				_tabBar.MouseDefaultCursorShape = CursorShape.Arrow;
-				break;
-			case InputEventMouseMotion motion:
-				if (_dragging) {
-					Position += motion.Position - _relativePos;
-				}
+		using (@event) {
+			switch (@event) {
+				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
+					_dragging = true;
+					_tabBar.MouseDefaultCursorShape = CursorShape.Drag;
+					_relativePosition = mouseButton.Position;
+					break;
+				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
+					_dragging = false;
+					_tabBar.MouseDefaultCursorShape = CursorShape.Arrow;
+					break;
+				case InputEventMouseMotion motion:
+					if (_dragging) {
+						Position += motion.Position - _relativePosition;
+					}
 
-				break;
+					break;
+			}
 		}
+
 	}
 
 	private void OnResized(InputEvent @event, ResizeDirection resizeDirection) {
-		switch (@event) {
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
-				_resizable = true;
-				_relativePos = mouseButton.Position;
-				break;
-			case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
-				_resizable = false;
-				break;
-			case InputEventMouseMotion motion:
-				if (_resizable) {
-					ResizeWindow(resizeDirection, motion.Position - _relativePos);
-				}
+		using (@event) {
+			switch (@event) {
+				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } mouseButton:
+					_resizable = true;
+					_relativePosition = mouseButton.Position;
+					break;
+				case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
+					_resizable = false;
+					break;
+				case InputEventMouseMotion motion:
+					if (_resizable) {
+						ResizeWindow(resizeDirection, motion.Position - _relativePosition);
+					}
 
-				break;
+					break;
+			}
 		}
 	}
 }

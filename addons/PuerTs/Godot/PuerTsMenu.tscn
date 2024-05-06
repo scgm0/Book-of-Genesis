@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://8hvdmjc08ffg"]
+
+[ext_resource type="Script" path="res://addons/PuerTs/Godot/PuerTsMenu.cs" id="1_chkv8"]
+
+[node name="PuerTsMenu" type="PopupMenu"]
+size = Vector2i(170, 100)
+visible = true
+item_count = 3
+item_0/text = "Generate All"
+item_1/text = "Generate d.ts only"
+item_1/id = 1
+item_2/text = "Clear Generated"
+item_2/id = 2
+script = ExtResource("1_chkv8")

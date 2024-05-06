@@ -1,10 +1,10 @@
 using System;
 using System.Text;
 using Godot;
-using 创世记;
 
 // ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable CheckNamespace
+
+namespace 创世记;
 
 public struct WavFileHeader {
 	public uint ChunkId;
@@ -112,23 +112,5 @@ public struct WavFileHeader {
 			(header.NumChannels * (double)header.BitsPerSample / 8));
 		header.Duration = 1 / (double)header.SampleRate * header.TotalSamples;
 		return header;
-	}
-
-	public override string ToString() {
-		return "[WAVE]\n" + $"ChunkID:\t\t{Encoding.ASCII.GetString(BitConverter.GetBytes(ChunkId))}\n" +
-			$"ChunkSize:\t\t{ChunkSize}\n" + $"Format:\t\t{Encoding.ASCII.GetString(BitConverter.GetBytes(Format))}\n" +
-			"[fmt]\n" + $"Subchunk1ID:\t\t{Encoding.ASCII.GetString(BitConverter.GetBytes(SubChunk1Id))}\n" +
-			$"SubChunk1Size:\t{SubChunk1Size}\n" +
-			$"AudioFormat:\t\t{AudioFormat switch { 1 => "1 : PCM", 0xFFFE => "0xFFFE : WAVEFORMATEXTENSIBLE", _ => AudioFormat.ToString() }}\n" +
-			$"NumChannels:\t\t{NumChannels}\n" + $"SampleRate:\t\t{SampleRate}\n" + $"ByteRate:\t\t{ByteRate}\n" +
-			$"BlockAlign:\t\t{BlockAlign}\n" + $"BitsPerSample:\t{BitsPerSample}\n" + "[extra]\n" +
-			$"ExtraParamSize:\t{ExtraParamSize}\n" + "[extensible]\n" + $"Samples:\t\t{Samples}\n" +
-			$"ChannelMask:\t\t{ChannelMask}\n" + $"GuidSubFormat:\t{GuidSubFormat + " : " + (GuidSubFormat == SubTypePcm
-				? "PCM"
-				: GuidSubFormat == SubTypeIeeeFloat ? "IEEE FLOAT" : "Unknown")}\n" + "[data]\n" +
-			$"Subchunk2ID:\t\t{Encoding.ASCII.GetString(BitConverter.GetBytes(SubChunk2Id))}\n" +
-			$"SubChunk2Size:\t{SubChunk2Size}\n" + "[info]\n" + $"IsExtensible:\t\t{IsExtensible}\n" +
-			$"HeaderSize:\t\t{HeaderSize}\n" + $"Duration:\t\t{TimeSpan.FromSeconds(Duration)}\n" +
-			$"TotalSamples:\t\t{TotalSamples}";
 	}
 }

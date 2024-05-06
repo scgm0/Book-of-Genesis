@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FuzzySharp;
 using Godot;
-// ReSharper disable UnusedMember.Global
+
 #pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
 
 namespace 创世记;
@@ -12,12 +12,12 @@ public static partial class Log {
 	public sealed partial class LogWindow : ControlWindow {
 		static private LogWindow? _instance;
 
-		static private readonly Dictionary<string, Texture2D> LogSeverityIcons = new() {
-			{ "Debug", GD.Load<Texture2D>("res://Assets/Debug.svg") },
-			{ "Info", GD.Load<Texture2D>("res://Assets/Info.svg") },
-			{ "Warn", GD.Load<Texture2D>("res://Assets/Warn.svg") },
-			{ "Error", GD.Load<Texture2D>("res://Assets/Error.svg") }
-		};
+		static private readonly Texture2D DebugIcon = GD.Load<Texture2D>("res://Assets/Icon/Debug.svg");
+		static private readonly Texture2D InfoIcon = GD.Load<Texture2D>("res://Assets/Icon/Info.svg");
+		static private readonly Texture2D WarnIcon = GD.Load<Texture2D>("res://Assets/Icon/Warn.svg");
+		static private readonly Texture2D ErrorIcon = GD.Load<Texture2D>("res://Assets/Icon/Error.svg");
+		static private readonly Texture2D TraceIcon = GD.Load<Texture2D>("res://Assets/Icon/Trace.svg");
+
 
 		public static void ToggleVisible() => ToggleVisible(null);
 
@@ -34,11 +34,13 @@ public static partial class Log {
 			} else {
 				_instance!.Show();
 				_instance.ProcessMode = ProcessModeEnum.Always;
-				ScrollLog(LogList[^1]);
+				if (LogList.Count > 0) {
+					ScrollLog(LogList[^1]);
+				}
 			}
 		}
 
-		internal static void Launch() {
+		static private void Launch() {
 			if (_instance != null) return;
 
 			_instance = CreateInstance();
@@ -77,13 +79,13 @@ public static partial class Log {
 			SortLog(LogList);
 		}
 
-		static private void SortLog(IEnumerable<LogData> logDatas) {
+		static private void SortLog(IEnumerable<LogInfo> logInfos) {
 			_instance!._tree.DeselectAll();
 			_instance._textEdit.Text = "";
 			TreeItem? lastItem = null;
-			foreach (var logData in logDatas) {
-				var treeItem = _instance._logDataMap[logData with { Ratio = 100 }];
-				treeItem.Visible = logData.Ratio > 0;
+			foreach (var logInfo in logInfos) {
+				var treeItem = _instance._logDataMap[logInfo with { Ratio = 100 }];
+				treeItem.Visible = logInfo.Ratio > 0;
 				if (lastItem == null) {
 					lastItem = treeItem;
 				} else {
@@ -93,10 +95,10 @@ public static partial class Log {
 			}
 		}
 
-		internal static void ScrollLog(LogData data, bool focus = true) {
+		internal static void ScrollLog(LogInfo info, bool focus = true) {
 			if (_instance is null) return;
-			if (!_instance._logDataMap.TryGetValue(data, out var item)) {
-				item = TryAddItem(data);
+			if (!_instance._logDataMap.TryGetValue(info, out var item)) {
+				item = TryAddItem(info);
 			}
 
 			_instance._tree.ScrollToItem(item);
@@ -105,7 +107,7 @@ public static partial class Log {
 			_instance._tree.GrabFocus();
 		}
 
-		internal static TreeItem TryAddItem(LogData logData) {
+		internal static TreeItem TryAddItem(LogInfo logInfo) {
 			if (_instance is null) {
 				Launch();
 			}
@@ -113,7 +115,7 @@ public static partial class Log {
 			var logDataMap = _instance!._logDataMap;
 			var treeItemMap = _instance._treeItemMap;
 			var tree = _instance._tree;
-			if (!logDataMap.TryGetValue(logData, out var treeItem)) {
+			if (!logDataMap.TryGetValue(logInfo, out var treeItem)) {
 				treeItem = tree.CreateItem(_instance._rootTreeItem);
 
 				treeItem.SetTextAlignment(1, HorizontalAlignment.Center);
@@ -126,50 +128,55 @@ public static partial class Log {
 
 				treeItem.SetIconMaxWidth(2, 24);
 
-				logDataMap.Add(logData, treeItem);
-				treeItemMap.Add(treeItem, logData);
+				logDataMap.Add(logInfo, treeItem);
+				treeItemMap.Add(treeItem, logInfo);
 			}
 
-			UpdateTreeItem(logData, treeItem);
+			UpdateTreeItem(logInfo, treeItem);
 			return treeItem;
 		}
 
-		internal static void TryRemoveItem(LogData logData) {
+		internal static void TryRemoveItem(LogInfo logInfo) {
 			if (_instance is null) return;
 			var logDataMap = _instance._logDataMap;
 			var treeItemMap = _instance._treeItemMap;
 
-			if (!logDataMap.Remove(logData, out var treeItem)) return;
+			if (!logDataMap.Remove(logInfo, out var treeItem)) return;
 			treeItemMap.Remove(treeItem);
 
 			treeItem.Free();
 		}
 
-		static private void UpdateTreeItem(LogData logData, TreeItem treeItem) {
-			treeItem.SetText(0, logData.Time);
-			treeItem.SetText(1, logData.WorldName ?? string.Empty);
-			treeItem.SetTooltipText(2, logData.Severity.ToString());
-			treeItem.SetText(3, logData.Message.Replace("\n", string.Empty));
-			switch (logData.Severity) {
+		static private void UpdateTreeItem(LogInfo logInfo, TreeItem treeItem) {
+			treeItem.SetText(0, logInfo.Date);
+			treeItem.SetText(1, logInfo.WorldName ?? string.Empty);
+			treeItem.SetTooltipText(2, logInfo.Severity.ToString());
+			treeItem.SetText(3, logInfo.Message.Replace("\n", string.Empty));
+			switch (logInfo.Severity) {
 				case Severity.Debug:
-					treeItem.SetIcon(2, LogSeverityIcons["Debug"]);
+					treeItem.SetIcon(2, DebugIcon);
 					treeItem.SetIconModulate(2, Colors.Gray);
 					treeItem.SetCustomColor(3, Colors.Gray);
 					break;
 				case Severity.Info:
-					treeItem.SetIcon(2, LogSeverityIcons["Info"]);
+					treeItem.SetIcon(2, InfoIcon);
 					treeItem.SetIconModulate(2, Colors.White);
 					treeItem.SetCustomColor(3, Colors.White);
 					break;
 				case Severity.Warn:
-					treeItem.SetIcon(2, LogSeverityIcons["Warn"]);
+					treeItem.SetIcon(2, WarnIcon);
 					treeItem.SetIconModulate(2, Colors.Orange);
 					treeItem.SetCustomColor(3, Colors.Orange);
 					break;
 				case Severity.Error:
-					treeItem.SetIcon(2, LogSeverityIcons["Error"]);
+					treeItem.SetIcon(2, ErrorIcon);
 					treeItem.SetIconModulate(2, Colors.Red);
 					treeItem.SetCustomColor(3, Colors.Red);
+					break;
+				case Severity.Trace:
+					treeItem.SetIcon(2, TraceIcon);
+					treeItem.SetIconModulate(2, Colors.Green);
+					treeItem.SetCustomColor(3, Colors.Green);
 					break;
 				default: throw new ArgumentOutOfRangeException();
 			}
@@ -178,6 +185,7 @@ public static partial class Log {
 		static private LogWindow CreateInstance() {
 			using var monoFont = GD.Load<Font>("res://Assets/Font/Mono.tres");
 			var tree = new Tree {
+				Name = "Tree",
 				SizeFlagsHorizontal = SizeFlags.Fill,
 				SizeFlagsVertical = SizeFlags.Fill,
 				SelectMode = Tree.SelectModeEnum.Row,
@@ -188,12 +196,31 @@ public static partial class Log {
 			tree.AddThemeFontOverride("font", monoFont);
 			tree.AddThemeFontOverride("title_button_font", monoFont);
 			var textEdit = new TextEdit {
+				Name = "Message",
 				Editable = false,
 				DrawTabs = true,
 				DrawSpaces = true
 			};
 			textEdit.AddThemeFontOverride("font", monoFont);
-			textEdit.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
+			textEdit.AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.Focus, new StyleBoxEmpty());
+			textEdit.AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.Normal, new StyleBoxFlat {
+				BgColor = Color.FromHtml("#1a1a1a99"),
+				CornerRadiusTopRight = 3,
+				CornerRadiusBottomRight = 3,
+				CornerRadiusTopLeft = 3,
+				CornerRadiusBottomLeft = 3,
+				ContentMarginLeft = 8,
+				ContentMarginRight = 8,
+				ContentMarginTop = 8,
+				ContentMarginBottom = 8
+			});
+			textEdit.AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.ReadOnly, new StyleBoxFlat {
+				DrawCenter = false,
+				ContentMarginLeft = 8,
+				ContentMarginRight = 8,
+				ContentMarginTop = 8,
+				ContentMarginBottom = 8
+			});
 
 			var instance = new LogWindow(tree, textEdit) {
 				Title = "创世记 日志",
@@ -203,18 +230,28 @@ public static partial class Log {
 				Size = new Vector2(800, 580),
 				CustomMinimumSize = new Vector2(282, 316)
 			};
+			instance.DecorationsStyle.BgColor = new Color(0.113725f, 0.133333f, 0.160784f);
+			instance.DecorationsStyle.CornerRadiusTopLeft = 8;
+			instance.DecorationsStyle.CornerRadiusTopRight = 8;
+			instance.DecorationsStyle.CornerRadiusBottomLeft = 8;
+			instance.DecorationsStyle.CornerRadiusBottomRight = 8;
+			instance.DecorationsStyle.BorderColor = new Color(1, 1, 1, 0.5f);
+			instance.DecorationsStyle.BorderWidthLeft = 1;
+			instance.DecorationsStyle.BorderWidthRight = 1;
+			instance.DecorationsStyle.BorderWidthTop = 1;
+			instance.DecorationsStyle.BorderWidthBottom = 1;
 			{
 				var panelContainer = new PanelContainer {
 					SizeFlagsHorizontal = SizeFlags.ExpandFill,
 					SizeFlagsVertical = SizeFlags.ExpandFill
 				};
+				panelContainer.AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.Panel, new StyleBoxEmpty());
 				{
 					var marginContainer = new MarginContainer();
 					const int margin = 10;
-					marginContainer.AddThemeConstantOverride("margin_top", margin);
-					marginContainer.AddThemeConstantOverride("margin_left", margin);
-					marginContainer.AddThemeConstantOverride("margin_bottom", margin);
-					marginContainer.AddThemeConstantOverride("margin_right", margin);
+					marginContainer.AddThemeConstantOverride(Utils.ThemeConstantName.MarginLeft, margin);
+					marginContainer.AddThemeConstantOverride(Utils.ThemeConstantName.MarginBottom, margin);
+					marginContainer.AddThemeConstantOverride(Utils.ThemeConstantName.MarginRight, margin);
 					{
 						var vBox = new VBoxContainer {
 							Alignment = BoxContainer.AlignmentMode.Begin
@@ -232,9 +269,16 @@ public static partial class Log {
 								var openButton = new Button {
 									Text = "打开日志文件"
 								};
+								var clearButton = new Button {
+									Text = "清除日志列表"
+								};
 
 								searchButton.Pressed += () => SearchLog(searchBox.Text);
-								searchBox.TextChanged += SearchLog;
+								searchBox.TextChanged += text => {
+									if (string.IsNullOrEmpty(text)) {
+										SearchLog(text);
+									}
+								};
 								searchBox.TextSubmitted += SearchLog;
 								searchBox.VisibilityChanged += () => {
 									if (!instance.Visible) {
@@ -242,17 +286,20 @@ public static partial class Log {
 									}
 								};
 								openButton.Pressed += () => {
-#if GODOT_ANDROID
-									var path = Utils.LogPath;
-#else
-									var path = ProjectSettings.GlobalizePath(Utils.LogPath);
-#endif
-									OS.ShellOpen(path);
+									OS.ShellOpen(Utils.LogPath);
+								};
+								clearButton.Pressed += () => {
+									LogList.Clear();
+									instance._treeItemMap.Clear();
+									instance._logDataMap.Clear();
+									tree.Clear();
+									instance._rootTreeItem = tree.CreateItem();
 								};
 
 								toolbar.AddChild(searchButton);
 								toolbar.AddChild(searchBox);
 								toolbar.AddChild(openButton);
+								toolbar.AddChild(clearButton);
 							}
 							vBox.AddChild(toolbar);
 						}
@@ -287,7 +334,7 @@ public static partial class Log {
 									var item = tree.GetSelected();
 									if (!instance._treeItemMap.TryGetValue(item, out var logData)) return;
 									textEdit.Text = logData.LogText;
-									textEdit.AddThemeColorOverride("font_readonly_color", item.GetIconModulate(2));
+									textEdit.AddThemeColorOverride(Utils.ThemeColorName.FontReadonlyColor, item.GetIconModulate(2));
 								};
 
 								vSplitContainer.AddChild(tree);
@@ -307,16 +354,16 @@ public static partial class Log {
 		}
 
 		private readonly Tree _tree;
-		private readonly TreeItem _rootTreeItem;
+		private TreeItem _rootTreeItem;
 		private readonly TextEdit _textEdit;
-		private readonly Dictionary<LogData, TreeItem> _logDataMap = new();
-		private readonly Dictionary<TreeItem, LogData> _treeItemMap = new();
+		private readonly Dictionary<LogInfo, TreeItem> _logDataMap = new();
+		private readonly Dictionary<TreeItem, LogInfo> _treeItemMap = new();
 
 		private LogWindow(Tree tree, TextEdit textEdit) {
 			_tree = tree;
 			_textEdit = textEdit;
 			_rootTreeItem = _tree.CreateItem();
-			AddThemeStyleboxOverride("panel", new StyleBoxEmpty());
+			AddThemeStyleboxOverride(Utils.ThemeStyleBoxName.Panel, new StyleBoxEmpty());
 		}
 
 		public LogWindow() { }

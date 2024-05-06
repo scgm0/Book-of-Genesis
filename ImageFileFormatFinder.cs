@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 namespace 创世记;
@@ -11,7 +12,7 @@ public static class ImageFileFormatFinder {
 
 	public static ImageFormat GetImageFormat(byte[] fileHeader) {
 		var buffer = new byte[4];
-		System.Buffer.BlockCopy(fileHeader, 0, buffer, 0, 4);
+		Buffer.BlockCopy(fileHeader, 0, buffer, 0, 4);
 
 		if (Bmp.SequenceEqual(buffer.Take(Bmp.Length)))
 			return ImageFormat.Bmp;

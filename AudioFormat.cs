@@ -1,4 +1,4 @@
-// ReSharper disable CheckNamespace
+namespace 创世记;
 
 public enum AudioFormat {
 	Ogg,

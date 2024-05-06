@@ -20,20 +20,24 @@ run/flush_stdout_on_print=true
 run/low_processor_mode=true
 boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/show_image=false
-config/icon="res://Assets/icon.png"
+config/icon="res://Assets/Icon/icon.png"
 run/disable_stderr.release=true
+
+[compression]
+
+formats/zstd/compression_level=22
+formats/zlib/compression_level=9
+formats/gzip/compression_level=9
 
 [debug]
 
-file_logging/enable_file_logging=true
-file_logging/log_path="user://Logs/game.log"
-file_logging/log_path.android="/storage/emulated/0/创世记/Logs/game.log"
+file_logging/enable_file_logging.pc=false
 
 [display]
 
-window/energy_saving/keep_screen_on.editor=true
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/energy_saving/keep_screen_on.editor=true
 
 [dotnet]
 
@@ -41,12 +45,11 @@ project/assembly_name="创世记"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/PuerTs/plugin.cfg")
 
 [gui]
 
 theme/custom_font="res://Assets/Font/Regular.tres"
-theme/default_font_multichannel_signed_distance_field=true
 theme/default_font_generate_mipmaps=true
 
 [importer_defaults]

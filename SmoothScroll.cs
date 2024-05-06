@@ -103,7 +103,7 @@ public partial class SmoothScroll : ScrollContainer {
 			_scrollbarHideTimer.Start(ScrollbarHideTime);
 		}
 
-		GetTree().NodeAdded += _OnNodeAdded;
+		Utils.Tree.NodeAdded += _OnNodeAdded;
 	}
 
 	public override void _Process(double delta) {
@@ -126,61 +126,65 @@ public partial class SmoothScroll : ScrollContainer {
 	}
 
 	private void _ScrollbarInput(InputEvent ev) {
-		if (HideScrollbarOverTime) {
-			ShowScrollbars();
-			_scrollbarHideTimer?.Start(ScrollbarHideTime);
+		using (ev) {
+			if (HideScrollbarOverTime) {
+				ShowScrollbars();
+				_scrollbarHideTimer?.Start(ScrollbarHideTime);
+			}
+
+			if (ev is not InputEventMouseButton mouseButton) return;
+			if (mouseButton.ButtonIndex is MouseButton.WheelDown or MouseButton.WheelUp or MouseButton.WheelLeft
+				or MouseButton.WheelRight) {
+				_GuiInput(mouseButton);
+			}
 		}
 
-		if (ev is not InputEventMouseButton mouseButton) return;
-		if (mouseButton.ButtonIndex is MouseButton.WheelDown or MouseButton.WheelUp or MouseButton.WheelLeft
-			or MouseButton.WheelRight) {
-			_GuiInput(mouseButton);
-		}
 	}
 
 	public override void _GuiInput(InputEvent @event) {
-		if (_hideScrollbarOverTime) {
-			ShowScrollbars();
-			_scrollbarHideTimer?.Start(ScrollbarHideTime);
+		using (@event) {
+			if (_hideScrollbarOverTime) {
+				ShowScrollbars();
+				_scrollbarHideTimer?.Start(ScrollbarHideTime);
+			}
+
+			_vScrollbarDragging = GetVScrollBar().HasFocus();
+			_hScrollbarDragging = GetHScrollBar().HasFocus();
+
+			switch (@event) {
+				case InputEventMouseButton mouseButtonEvent:
+					switch (mouseButtonEvent.ButtonIndex) {
+						case MouseButton.WheelDown:
+							HandleMouseButtonWheel(ScrollType.Wheel, -Speed, mouseButtonEvent.ShiftPressed);
+							break;
+						case MouseButton.WheelUp:
+							HandleMouseButtonWheel(ScrollType.Wheel, Speed, mouseButtonEvent.ShiftPressed);
+							break;
+						case MouseButton.WheelLeft:
+							HandleMouseButtonWheel(ScrollType.Wheel, -Speed, mouseButtonEvent.ShiftPressed);
+							break;
+						case MouseButton.WheelRight:
+							HandleMouseButtonWheel(ScrollType.Wheel, Speed, mouseButtonEvent.ShiftPressed);
+							break;
+						case MouseButton.Left:
+							HandleMouseButtonLeft(mouseButtonEvent.Pressed, mouseButtonEvent.Position);
+							break;
+					}
+
+					break;
+				case InputEventScreenDrag screenDragEvent:
+					HandleMouseMotion(screenDragEvent.Position);
+					break;
+				case InputEventMouseMotion mouseMotion:
+					HandleMouseMotion(mouseMotion.Position);
+					break;
+				case InputEventScreenTouch screenTouchEvent:
+					HandleScreenTouch(screenTouchEvent.Pressed, screenTouchEvent.Position);
+					break;
+			}
+
+			AcceptEvent();
 		}
-
-		_vScrollbarDragging = GetVScrollBar().HasFocus();
-		_hScrollbarDragging = GetHScrollBar().HasFocus();
-
-		switch (@event) {
-			case InputEventMouseButton mouseButtonEvent:
-				switch (mouseButtonEvent.ButtonIndex) {
-					case MouseButton.WheelDown:
-						HandleMouseButtonWheel(ScrollType.Wheel, -Speed, mouseButtonEvent.ShiftPressed);
-						break;
-					case MouseButton.WheelUp:
-						HandleMouseButtonWheel(ScrollType.Wheel, Speed, mouseButtonEvent.ShiftPressed);
-						break;
-					case MouseButton.WheelLeft:
-						HandleMouseButtonWheel(ScrollType.Wheel, -Speed, mouseButtonEvent.ShiftPressed);
-						break;
-					case MouseButton.WheelRight:
-						HandleMouseButtonWheel(ScrollType.Wheel, Speed, mouseButtonEvent.ShiftPressed);
-						break;
-					case MouseButton.Left:
-						HandleMouseButtonLeft(mouseButtonEvent.Pressed, mouseButtonEvent.Position);
-						break;
-				}
-
-				break;
-			case InputEventScreenDrag screenDragEvent:
-				HandleMouseMotion(screenDragEvent.Position);
-				break;
-			case InputEventMouseMotion mouseMotion:
-				HandleMouseMotion(mouseMotion.Position);
-				break;
-			case InputEventScreenTouch screenTouchEvent:
-				HandleScreenTouch(screenTouchEvent.Pressed, screenTouchEvent.Position);
-				break;
-		}
-
-		GetTree().Root.SetInputAsHandled();
-		@event.Dispose();
 	}
 
 	private void HandleMouseButtonWheel(ScrollType scrollType, float scrollSpeed, bool shiftPressed) {
@@ -628,7 +632,7 @@ public partial class SmoothScroll : ScrollContainer {
 	}
 
 	public bool ShouldScrollVertical() {
-		var disableScroll = _contentNode.Size.Y - Size.Y < 1 || (!AllowVerticalScroll && AutoAllowScroll) ||
+		var disableScroll = _contentNode.Size.Y - Size.Y < 1 || !AllowVerticalScroll && AutoAllowScroll ||
 			!AllowVerticalScroll;
 		if (!disableScroll) return true;
 		_velocity.Y = 0.0f;
@@ -636,7 +640,7 @@ public partial class SmoothScroll : ScrollContainer {
 	}
 
 	public bool ShouldScrollHorizontal() {
-		var disableScroll = _contentNode.Size.X - Size.X < 1 || (!AllowHorizontalScroll && AutoAllowScroll) ||
+		var disableScroll = _contentNode.Size.X - Size.X < 1 || !AllowHorizontalScroll && AutoAllowScroll ||
 			!AllowHorizontalScroll;
 		if (!disableScroll) return true;
 		_velocity.X = 0.0f;

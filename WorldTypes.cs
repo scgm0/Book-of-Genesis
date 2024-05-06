@@ -1,5 +1,6 @@
-// ReSharper disable once CheckNamespace
-namespace World;
+using System;
+
+namespace 创世记;
 
 public enum FilterType {
 	Linear,
@@ -15,10 +16,11 @@ public enum EventType {
 	TextUrlClick
 }
 
+[Flags]
 public enum TextType {
-	All,
-	Title,
-	LeftText,
-	CenterText,
-	RightText
+	Title = 1,
+	LeftText = 2,
+	CenterText = 4,
+	RightText = 8,
+	All = Title | LeftText | CenterText | RightText
 }
