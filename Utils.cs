@@ -325,5 +325,4 @@ public static partial class Utils {
 
 	[GeneratedRegex(@"^\w:[\\\/]")]
 	public static partial Regex DriveLetterRegex();
-
 }

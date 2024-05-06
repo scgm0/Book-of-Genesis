@@ -388,5 +388,4 @@ public partial class World : Control {
 			RightText.AddThemeColorOverride(Utils.ThemeColorName.DefaultColor, color);
 		}
 	}
-
 }

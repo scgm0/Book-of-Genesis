@@ -9,5 +9,4 @@ public static partial class Utils {
 	public static readonly List<CanvasTexture> TextureCache = [];
 	public static readonly ConfigFile GlobalConfig = new();
 	public static readonly SceneTree Tree = (SceneTree)Engine.GetMainLoop();
-
 }

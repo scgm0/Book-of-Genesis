@@ -8,7 +8,6 @@ namespace 创世记;
 [Configure]
 public static partial class Utils {
 	[Binding]
-	// ReSharper disable once UnusedMember.Global
 	public static IEnumerable<Type> Bindings {
 		get => [
 			typeof(Array),
